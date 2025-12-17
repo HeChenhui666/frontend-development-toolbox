@@ -23,7 +23,7 @@ const URLParamsEditor: React.FC = () => {
         }
       });
     }, 0);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -150,20 +150,7 @@ const URLParamsEditor: React.FC = () => {
   };
 
   // 预设参数列表
-  const presetParams = [
-    // {
-    //   name: 'mtop预发',
-    //   params: [
-    //     { key: '__mtop_subdomain__', value: 'wapa' },
-    //     { key: '_env_', value: 'pre' },
-    //     { key: 'env', value: 'debug' },
-    //   ],
-    // },
-    // { name: '移去安全距离', params: [{ key: '__removesafearea__', value: '1' }] },
-    // { name: 'isGray', params: [{ key: 'isGray', value: 'true' }] },
-    // { name: 'debugMode', params: [{ key: '_debugMode_', value: '1' }] },
-    // { name: 'existtitle', params: [{ key: '__existtitle__', value: '1' }] },
-  ];
+  const presetParams = [];
 
   // 添加预设参数
   const addPresetParams = (preset: (typeof presetParams)[0]) => {
@@ -196,7 +183,7 @@ const URLParamsEditor: React.FC = () => {
     });
 
     setParams(newParams);
-    
+
     // 自动更新当前标签页URL
     const urlParams = new URLSearchParams();
     newParams.forEach((param) => {
@@ -206,7 +193,7 @@ const URLParamsEditor: React.FC = () => {
     });
     const queryString = urlParams.toString();
     const newURL = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-    
+
     try {
       new URL(newURL);
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -287,11 +274,7 @@ const URLParamsEditor: React.FC = () => {
                 placeholder='参数值'
                 className='param-value-input'
               />
-              <button
-                onClick={() => removeParam(index)}
-                className='remove-param-btn'
-                title='删除参数'
-              >
+              <button onClick={() => removeParam(index)} className='remove-param-btn' title='删除参数'>
                 ×
               </button>
             </div>
