@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
+import { showMessage } from '../../utils/message';
 
 interface URLParam {
   key: string;
@@ -136,7 +137,7 @@ const URLParamsEditor: React.FC = () => {
   const copyNewURL = () => {
     const newURL = generateNewURL();
     navigator.clipboard.writeText(newURL);
-    alert('URL已复制到剪贴板');
+    showMessage.success('URL已复制到剪贴板');
   };
 
   // 刷新当前URL
@@ -178,7 +179,7 @@ const URLParamsEditor: React.FC = () => {
     // 如果存在预设参数，弹出提醒并返回
     if (existingParams.length > 0) {
       const paramNames = existingParams.join('、');
-      alert(`参数 ${paramNames} 已存在，无需重复添加`);
+      showMessage.warning(`参数 ${paramNames} 已存在，无需重复添加`);
       return;
     }
 

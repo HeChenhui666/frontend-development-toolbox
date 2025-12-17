@@ -194,7 +194,7 @@ const GradientGenerator: React.FC = () => {
   // 复制CSS
   const copyCSS = () => {
     navigator.clipboard.writeText(`background: ${generateCSS()};`);
-    alert('CSS已复制到剪贴板');
+    showMessage.success('CSS已复制到剪贴板');
   };
 
   // 处理滑块拖动

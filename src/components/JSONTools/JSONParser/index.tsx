@@ -118,7 +118,7 @@ const JSONParser: React.FC = () => {
   const copyResult = () => {
     if (outputJson) {
       navigator.clipboard.writeText(outputJson);
-      alert('已复制到剪贴板');
+      showMessage.success('已复制到剪贴板');
     }
   };
 

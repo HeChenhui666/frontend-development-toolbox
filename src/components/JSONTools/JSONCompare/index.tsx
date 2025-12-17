@@ -123,7 +123,7 @@ const JSONCompare: React.FC = () => {
       setDiffs(differences);
 
       if (differences.length === 0) {
-        alert('✅ 两个JSON完全相同');
+        showMessage.success('✅ 两个JSON完全相同');
       }
     } catch (err) {
       setError(`JSON格式错误: ${err instanceof Error ? err.message : '未知错误'}`);

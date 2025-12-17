@@ -67,6 +67,16 @@ body {
   letter-spacing: -0.3px;
 }
 
+.header-title {
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.header-title:active {
+  transform: scale(0.95);
+}
+
 .header-subtitle {
   font-size: 10px;
   opacity: 0.9;

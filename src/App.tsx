@@ -1,5 +1,7 @@
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo, lazy, Suspense, useEffect, useRef } from 'react';
+import { ConfigProvider } from 'antd';
 import './App.css';
+import EasterEgg from './components/EasterEgg';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -24,6 +26,9 @@ interface FeatureConfig {
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FeatureTab>('qrcode');
   const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode'>('generate');
+  const [clickCount, setClickCount] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 功能模块配置 - 使用useMemo缓存，避免每次渲染都重新创建
   const features: FeatureConfig[] = useMemo(() => [
@@ -94,35 +99,74 @@ const App: React.FC = () => {
 
   const currentFeature = features.find((f) => f.id === activeTab);
 
+  // 处理标题点击事件
+  const handleTitleClick = () => {
+    // 清除之前的超时定时器
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+
+    // 如果达到5次点击，显示彩蛋
+    if (newCount >= 10) {
+      setShowEasterEgg(true);
+      setClickCount(0);
+    } else {
+      // 设置超时，如果2秒内没有继续点击，重置计数
+      clickTimeoutRef.current = setTimeout(() => {
+        setClickCount(0);
+      }, 2000);
+    }
+  };
+
+  // 关闭彩蛋页面
+  const handleCloseEasterEgg = () => {
+    setShowEasterEgg(false);
+  };
+
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className='app'>
-      <div className='header'>
-        <div className='header-content'>
-          <h1>工具箱</h1>
-          <p className='header-subtitle'>实用工具集合</p>
+    <ConfigProvider>
+      <div className='app'>
+        <div className='header'>
+          <div className='header-content'>
+            <h1 className='header-title' onClick={handleTitleClick}>工具箱</h1>
+            <p className='header-subtitle'>实用工具集合</p>
+          </div>
+        </div>
+        {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
+        <div className='tabs-container'>
+          <div className='tabs'>
+            {features.map((feature) => (
+              <button
+                key={feature.id}
+                className={`tab ${activeTab === feature.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(feature.id)}
+                title={feature.name}
+              >
+                <span className='tab-icon'>{feature.icon}</span>
+                <span className='tab-text'>{feature.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='content'>
+          <Suspense fallback={<div className="loading">加载中...</div>}>
+            {currentFeature?.component}
+          </Suspense>
         </div>
       </div>
-      <div className='tabs-container'>
-        <div className='tabs'>
-          {features.map((feature) => (
-            <button
-              key={feature.id}
-              className={`tab ${activeTab === feature.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(feature.id)}
-              title={feature.name}
-            >
-              <span className='tab-icon'>{feature.icon}</span>
-              <span className='tab-text'>{feature.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className='content'>
-        <Suspense fallback={<div className="loading">加载中...</div>}>
-          {currentFeature?.component}
-        </Suspense>
-      </div>
-    </div>
+    </ConfigProvider>
   );
 };
 
