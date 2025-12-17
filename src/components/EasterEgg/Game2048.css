@@ -1,0 +1,169 @@
+.game-2048 {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+
+.game-title h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0 0 4px 0;
+}
+
+.game-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.game-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.score-container {
+  background: #667eea;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.score-label {
+  font-size: 10px;
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.score-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.restart-button {
+  background: #f8f9fa;
+  border: 1px solid #e8ecf0;
+  color: #64748b;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.restart-button:hover {
+  background: #e8ecf0;
+  color: #475569;
+}
+
+.game-grid-container {
+  position: relative;
+}
+
+.game-over {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.game-over-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-over-content h3 {
+  font-size: 18px;
+  color: #334155;
+  margin: 0 0 10px 0;
+}
+
+.game-over-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 15px 0;
+}
+
+.game-over-content button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.game-over-content button:hover {
+  background: #5568d3;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 8px;
+  background: #bbada0;
+  padding: 8px;
+  border-radius: 8px;
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.game-cell {
+  background: #cdc1b4;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.game-tile {
+  position: absolute;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: 700;
+  animation: tileAppear 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes tileAppear {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
