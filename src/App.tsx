@@ -140,7 +140,7 @@ const App: React.FC = () => {
       <div className='app'>
         <div className='header'>
           <div className='header-content'>
-            <h1 className='header-title' onClick={handleTitleClick}>工具箱</h1>
+            <h1 className='header-title' onClick={handleTitleClick}>🇨🇳工具箱🇨🇳</h1>
             <p className='header-subtitle'>实用工具集合</p>
           </div>
         </div>
