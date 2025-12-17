@@ -151,18 +151,18 @@ const URLParamsEditor: React.FC = () => {
 
   // 预设参数列表
   const presetParams = [
-    {
-      name: 'mtop预发',
-      params: [
-        { key: '__mtop_subdomain__', value: 'wapa' },
-        { key: '_env_', value: 'pre' },
-        { key: 'env', value: 'debug' },
-      ],
-    },
-    { name: '移去安全距离', params: [{ key: '__removesafearea__', value: '1' }] },
-    { name: 'isGray', params: [{ key: 'isGray', value: 'true' }] },
-    { name: 'debugMode', params: [{ key: '_debugMode_', value: '1' }] },
-    { name: 'existtitle', params: [{ key: '__existtitle__', value: '1' }] },
+    // {
+    //   name: 'mtop预发',
+    //   params: [
+    //     { key: '__mtop_subdomain__', value: 'wapa' },
+    //     { key: '_env_', value: 'pre' },
+    //     { key: 'env', value: 'debug' },
+    //   ],
+    // },
+    // { name: '移去安全距离', params: [{ key: '__removesafearea__', value: '1' }] },
+    // { name: 'isGray', params: [{ key: 'isGray', value: 'true' }] },
+    // { name: 'debugMode', params: [{ key: '_debugMode_', value: '1' }] },
+    // { name: 'existtitle', params: [{ key: '__existtitle__', value: '1' }] },
   ];
 
   // 添加预设参数
