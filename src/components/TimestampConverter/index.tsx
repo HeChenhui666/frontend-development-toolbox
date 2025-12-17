@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
+import { showMessage } from '../../utils/message';
 
 const TimestampConverter: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -134,7 +135,7 @@ const TimestampConverter: React.FC = () => {
   // 复制到剪贴板
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('已复制到剪贴板');
+    showMessage.success('已复制到剪贴板');
   };
 
   // 使用当前时间戳（10位）

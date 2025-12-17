@@ -65,7 +65,7 @@ const QRCodeDecoder: React.FC = () => {
   const copyDecodedText = () => {
     if (decodedText) {
       navigator.clipboard.writeText(decodedText);
-      alert('已复制到剪贴板');
+      showMessage.success('已复制到剪贴板');
     }
   };
 
@@ -73,7 +73,7 @@ const QRCodeDecoder: React.FC = () => {
     if (decodedText && (decodedText.startsWith('http://') || decodedText.startsWith('https://'))) {
       chrome.tabs.create({ url: decodedText });
     } else {
-      alert('解码内容不是有效的URL');
+      showMessage.warning('解码内容不是有效的URL');
     }
   };
 

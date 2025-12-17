@@ -139,11 +139,167 @@
   margin-bottom: 20px;
 }
 
-.game-section {
+.games-list-section {
   margin: 20px 0;
-  padding: 15px;
+}
+
+.games-list-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 12px 0;
+  text-align: left;
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
   background: #f8f9fa;
-  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.game-card:hover {
+  background: #f1f5f9;
+  border-color: #667eea;
+  transform: translateX(4px);
+}
+
+.game-card-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.game-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.game-card-description {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.game-card-arrow {
+  font-size: 18px;
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.game-card:hover .game-card-arrow {
+  transform: translateX(4px);
+  color: #667eea;
+}
+
+/* 游戏弹窗样式 */
+.game-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-in-out;
+  backdrop-filter: blur(4px);
+}
+
+.game-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 85vh;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideUp 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.game-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8ecf0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.game-modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-modal-icon {
+  font-size: 20px;
+}
+
+.game-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.game-modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(85vh - 70px);
+  background: #f8f9fa;
 }
 
 .easter-egg-features {

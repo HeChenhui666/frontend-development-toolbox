@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import './Game2048.css';
+import './index.css';
 
 type Grid = number[][];
 
@@ -273,7 +273,7 @@ const Game2048: React.FC = () => {
                     style={{
                       backgroundColor: getTileColor(cell),
                       color: getTextColor(cell),
-                      fontSize: cell >= 1024 ? '20px' : '24px',
+                      fontSize: cell >= 1024 ? '14px' : cell >= 256 ? '16px' : '18px',
                     }}
                   >
                     {cell}

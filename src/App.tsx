@@ -1,4 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef } from 'react';
+import { ConfigProvider } from 'antd';
 import './App.css';
 import EasterEgg from './components/EasterEgg';
 
@@ -135,35 +136,37 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className='app'>
-      <div className='header'>
-        <div className='header-content'>
-          <h1 className='header-title' onClick={handleTitleClick}>工具箱</h1>
-          <p className='header-subtitle'>实用工具集合</p>
+    <ConfigProvider>
+      <div className='app'>
+        <div className='header'>
+          <div className='header-content'>
+            <h1 className='header-title' onClick={handleTitleClick}>工具箱</h1>
+            <p className='header-subtitle'>实用工具集合</p>
+          </div>
+        </div>
+        {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
+        <div className='tabs-container'>
+          <div className='tabs'>
+            {features.map((feature) => (
+              <button
+                key={feature.id}
+                className={`tab ${activeTab === feature.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(feature.id)}
+                title={feature.name}
+              >
+                <span className='tab-icon'>{feature.icon}</span>
+                <span className='tab-text'>{feature.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='content'>
+          <Suspense fallback={<div className="loading">加载中...</div>}>
+            {currentFeature?.component}
+          </Suspense>
         </div>
       </div>
-      {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
-      <div className='tabs-container'>
-        <div className='tabs'>
-          {features.map((feature) => (
-            <button
-              key={feature.id}
-              className={`tab ${activeTab === feature.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(feature.id)}
-              title={feature.name}
-            >
-              <span className='tab-icon'>{feature.icon}</span>
-              <span className='tab-text'>{feature.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className='content'>
-        <Suspense fallback={<div className="loading">加载中...</div>}>
-          {currentFeature?.component}
-        </Suspense>
-      </div>
-    </div>
+    </ConfigProvider>
   );
 };
 

@@ -65,7 +65,7 @@ const QRCodeGenerator: React.FC = () => {
   // 复制URL
   const copyUrl = () => {
     navigator.clipboard.writeText(url);
-    alert('URL已复制到剪贴板');
+    showMessage.success('URL已复制到剪贴板');
   };
 
   return (
