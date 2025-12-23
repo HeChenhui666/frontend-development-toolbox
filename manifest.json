@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "实用工具集合：二维码生成/解码、URL参数编辑等",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "action": {
     "default_popup": "index.html",
