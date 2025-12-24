@@ -73,7 +73,7 @@ const EasterEgg: React.FC<EasterEggProps> = ({ onClose }) => {
                 ✕
               </button>
             </div>
-            <div className="game-modal-body">
+            <div className={`game-modal-body ${selectedGame.id === 'Snake' ? 'no-scroll' : ''}`}>
               <GameComponent />
             </div>
           </div>

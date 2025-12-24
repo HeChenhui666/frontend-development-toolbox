@@ -1,0 +1,234 @@
+.snake-game {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.snake-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.snake-control-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #bae6fd;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  letter-spacing: 1px;
+}
+
+.snake-control-hint::before {
+  content: '🎮';
+  font-size: 14px;
+  margin-right: 2px;
+}
+
+.snake-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.score-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #667eea;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-align: center;
+  min-width: 70px;
+}
+
+.score-label {
+  font-size: 9px;
+  opacity: 0.9;
+  margin-bottom: 1px;
+}
+
+.score-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.restart-button {
+  background: #f8f9fa;
+  border: 1px solid #667eea;
+  color: #64748b;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  margin: 0;
+}
+
+.restart-button:hover {
+  background: #e8ecf0;
+  color: #475569;
+}
+
+.snake-board-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.snake-board {
+  display: grid;
+  border: 2px solid #334155;
+  background: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+  gap: 1px;
+  padding: 1px;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+}
+
+.snake-cell {
+  width: 100%;
+  height: 100%;
+  background: #0f172a;
+  box-sizing: border-box;
+  transition: background-color 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.snake-cell.snake-head {
+  background: #10b981;
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+}
+
+.snake-head-arrow {
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1;
+}
+
+.snake-cell.snake-body {
+  background: #34d399;
+  border-radius: 1px;
+}
+
+.snake-cell.snake-food {
+  background: transparent;
+  border-radius: 50%;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+.snake-food-icon {
+  font-size: 16px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+.game-over {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 4px;
+}
+
+.game-over-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.game-over-content h3 {
+  margin: 0 0 10px 0;
+  color: #334155;
+  font-size: 18px;
+}
+
+.game-over-content p {
+  margin: 8px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.game-over-content button {
+  margin-top: 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.game-over-content button:hover {
+  background: #5568d3;
+}
+
+.pause-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  border-radius: 4px;
+}
+
+.pause-content {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+

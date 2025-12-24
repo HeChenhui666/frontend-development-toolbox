@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "工具箱",
+  "name": "小火火工具箱",
   "version": "1.0.0",
   "description": "实用工具集合：二维码生成/解码、URL参数编辑等",
   "permissions": [

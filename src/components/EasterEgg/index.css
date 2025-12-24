@@ -302,6 +302,14 @@
   background: #f8f9fa;
 }
 
+/* 贪吃蛇游戏特殊样式 - 防止滚动 */
+.game-modal-body.no-scroll {
+  overflow: hidden;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
 .easter-egg-features {
   display: flex;
   flex-direction: column;

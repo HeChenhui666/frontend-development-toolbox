@@ -1,6 +1,7 @@
 import React from 'react';
 import Game2048 from './Game2048';
 import Tetris from './Tetris';
+import Snake from './Snake';
 
 export interface GameConfig {
   id: string;
@@ -24,6 +25,13 @@ export const games: GameConfig[] = [
     icon: '🇷🇺',
     description: '经典消除游戏',
     component: Tetris,
+  },
+  {
+    id: 'Snake',
+    name: '贪吃蛇',
+    icon: '🐍',
+    description: '经典贪吃蛇游戏',
+    component: Snake,
   },
   // 可以在这里添加更多游戏
 ];

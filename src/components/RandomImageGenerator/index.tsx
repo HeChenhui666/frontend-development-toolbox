@@ -143,6 +143,12 @@ const RandomImageGenerator: React.FC = () => {
               </button>
             </div>
           </div>
+          <div className="image-url-display">
+            <div className="url-label">图片URL：</div>
+            <div className="url-value" title={imageUrl}>
+              {imageUrl}
+            </div>
+          </div>
           <div className="image-container">
             <img
               src={imageUrl}
@@ -152,12 +158,6 @@ const RandomImageGenerator: React.FC = () => {
                 showMessage.error('图片加载失败，请重试');
               }}
             />
-          </div>
-          <div className="image-url-display">
-            <div className="url-label">图片URL：</div>
-            <div className="url-value" title={imageUrl}>
-              {imageUrl}
-            </div>
           </div>
         </div>
       )}
