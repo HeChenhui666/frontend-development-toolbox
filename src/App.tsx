@@ -2,6 +2,8 @@ import React, { useState, useMemo, lazy, Suspense, useEffect, useRef } from 'rea
 import { ConfigProvider } from 'antd';
 import './App.css';
 import EasterEgg from './components/EasterEgg';
+import ThemeSettings from './components/ThemeSettings';
+import { getSavedTheme, applyTheme } from './utils/theme';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -11,9 +13,19 @@ const TimestampConverter = lazy(() => import('./components/TimestampConverter'))
 const GradientGenerator = lazy(() => import('./components/GradientGenerator'));
 const JSONTools = lazy(() => import('./components/JSONTools'));
 const RegexTester = lazy(() => import('./components/RegexTester'));
+const RandomImageGenerator = lazy(() => import('./components/RandomImageGenerator'));
 
 // 定义功能模块类型
-type FeatureTab = 'qrcode' | 'urlparams' | 'timestamp' | 'gradient' | 'json' | 'regex' | 'future1' | 'future2';
+type FeatureTab =
+  | 'qrcode'
+  | 'urlparams'
+  | 'timestamp'
+  | 'gradient'
+  | 'json'
+  | 'regex'
+  | 'randomimage'
+  | 'future1'
+  | 'future2';
 
 // 定义功能配置
 interface FeatureConfig {
@@ -28,74 +40,91 @@ const App: React.FC = () => {
   const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode'>('generate');
   const [clickCount, setClickCount] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const [showThemeSettings, setShowThemeSettings] = useState(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 初始化主题
+  useEffect(() => {
+    const savedTheme = getSavedTheme();
+    applyTheme(savedTheme);
+  }, []);
+
   // 功能模块配置 - 使用useMemo缓存，避免每次渲染都重新创建
-  const features: FeatureConfig[] = useMemo(() => [
-    {
-      id: 'qrcode',
-      name: '二维码',
-      icon: '🔲',
-      component: (
-        <div className='feature-content'>
-          <div className='sub-tabs'>
-            <button
-              className={`sub-tab ${qrSubTab === 'generate' ? 'active' : ''}`}
-              onClick={() => setQrSubTab('generate')}
-            >
-              <span className='sub-tab-icon'>📱</span>
-              <span>生成</span>
-            </button>
-            <button
-              className={`sub-tab ${qrSubTab === 'decode' ? 'active' : ''}`}
-              onClick={() => setQrSubTab('decode')}
-            >
-              <span className='sub-tab-icon'>🔍</span>
-              <span>解码</span>
-            </button>
+  const features: FeatureConfig[] = useMemo(
+    () => [
+      {
+        id: 'qrcode',
+        name: '二维码',
+        icon: '🔲',
+        component: (
+          <div className='feature-content'>
+            <div className='sub-tabs'>
+              <button
+                className={`sub-tab ${qrSubTab === 'generate' ? 'active' : ''}`}
+                onClick={() => setQrSubTab('generate')}
+              >
+                <span className='sub-tab-icon'>📱</span>
+                <span>生成</span>
+              </button>
+              <button
+                className={`sub-tab ${qrSubTab === 'decode' ? 'active' : ''}`}
+                onClick={() => setQrSubTab('decode')}
+              >
+                <span className='sub-tab-icon'>🔍</span>
+                <span>解码</span>
+              </button>
+            </div>
+            <div className='sub-content'>{qrSubTab === 'generate' ? <QRCodeGenerator /> : <QRCodeDecoder />}</div>
           </div>
-          <div className='sub-content'>{qrSubTab === 'generate' ? <QRCodeGenerator /> : <QRCodeDecoder />}</div>
-        </div>
-      ),
-    },
-    {
-      id: 'urlparams',
-      name: 'URL参数',
-      icon: '🔗',
-      component: <URLParamsEditor />,
-    },
-    {
-      id: 'timestamp',
-      name: '时间戳',
-      icon: '⏰',
-      component: <TimestampConverter />,
-    },
-    {
-      id: 'json',
-      name: 'JSON',
-      icon: '📄',
-      component: <JSONTools />,
-    },
-    {
-      id: 'gradient',
-      name: '渐变背景',
-      icon: '🎨',
-      component: <GradientGenerator />,
-    },
-    {
-      id: 'regex',
-      name: '正则',
-      icon: '🔤',
-      component: <RegexTester />,
-    },
-    // 预留位置，方便后续添加新功能
-    // {
-    //   id: 'future1',
-    //   name: '新功能1',
-    //   icon: '✨',
-    //   component: <FutureFeature1 />,
-    // },
-  ], [qrSubTab]);
+        ),
+      },
+      {
+        id: 'urlparams',
+        name: 'URL参数',
+        icon: '🔗',
+        component: <URLParamsEditor />,
+      },
+      {
+        id: 'timestamp',
+        name: '时间戳',
+        icon: '⏰',
+        component: <TimestampConverter />,
+      },
+      {
+        id: 'randomimage',
+        name: '随机图片',
+        icon: '🖼️',
+        component: <RandomImageGenerator />,
+      },
+      {
+        id: 'json',
+        name: 'JSON',
+        icon: '📄',
+        component: <JSONTools />,
+      },
+      {
+        id: 'gradient',
+        name: '渐变背景',
+        icon: '🎨',
+        component: <GradientGenerator />,
+      },
+      {
+        id: 'regex',
+        name: '正则',
+        icon: '🔤',
+        component: <RegexTester />,
+      },
+
+      // 预留位置，方便后续添加新功能
+      // {
+      //   id: 'future1',
+      //   name: '新功能1',
+      //   icon: '✨',
+      //   component: <FutureFeature1 />,
+      // },
+    ],
+    [qrSubTab]
+  );
 
   const currentFeature = features.find((f) => f.id === activeTab);
 
@@ -140,11 +169,17 @@ const App: React.FC = () => {
       <div className='app'>
         <div className='header'>
           <div className='header-content'>
-            <h1 className='header-title' onClick={handleTitleClick}>🇨🇳工具箱🇨🇳</h1>
+            <h1 className='header-title' onClick={handleTitleClick}>
+              🇨🇳工具箱🇨🇳
+            </h1>
             <p className='header-subtitle'>实用工具集合</p>
           </div>
+          <button className='header-settings-btn' onClick={() => setShowThemeSettings(true)} title='主题设置'>
+            ⚙️
+          </button>
         </div>
         {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
+        {showThemeSettings && <ThemeSettings onClose={() => setShowThemeSettings(false)} />}
         <div className='tabs-container'>
           <div className='tabs'>
             {features.map((feature) => (
@@ -161,9 +196,7 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className='content'>
-          <Suspense fallback={<div className="loading">加载中...</div>}>
-            {currentFeature?.component}
-          </Suspense>
+          <Suspense fallback={<div className='loading'>加载中...</div>}>{currentFeature?.component}</Suspense>
         </div>
       </div>
     </ConfigProvider>

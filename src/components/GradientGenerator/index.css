@@ -13,7 +13,7 @@
   width: 100%;
   height: 120px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--theme-border, #e2e8f0);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
@@ -28,7 +28,7 @@
   width: 100%;
   height: 30px;
   border-radius: 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
   cursor: pointer;
 }
 
@@ -56,8 +56,8 @@
 }
 
 .gradient-stop-marker.selected .stop-color-preview {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-color: var(--theme-primary, #667eea);
+  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.3)), 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .gradient-stop-marker::after {
@@ -67,7 +67,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 10px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   white-space: nowrap;
 }
 
@@ -88,7 +88,7 @@
   width: 100%;
   height: 120px;
   border-radius: 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
   cursor: crosshair;
   position: relative;
 }
@@ -102,7 +102,7 @@
 .color-code-label {
   font-size: 10px;
   font-weight: 600;
-  color: #475569;
+  color: var(--theme-textSecondary, #475569);
   text-transform: uppercase;
 }
 
@@ -121,30 +121,31 @@
 
 .code-label {
   font-weight: 500;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   min-width: 25px;
 }
 
 .code-value {
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: #334155;
+  color: var(--theme-text, #334155);
   font-weight: 600;
 }
 
 .color-code-input {
   flex: 1;
   padding: 4px 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-inputBorder, #cbd5e1);
   border-radius: 4px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  background: #ffffff;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
 }
 
 .color-code-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
 }
 
 .slider-control {
@@ -170,8 +171,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #667eea;
+  background: var(--theme-background, #ffffff);
+  border: 2px solid var(--theme-primary, #667eea);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -181,8 +182,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #667eea;
+  background: var(--theme-background, #ffffff);
+  border: 2px solid var(--theme-primary, #667eea);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -200,17 +201,17 @@
   align-items: center;
   font-size: 10px;
   font-weight: 600;
-  color: #475569;
+  color: var(--theme-textSecondary, #475569);
   text-transform: uppercase;
   padding: 4px 0;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--theme-border, #e2e8f0);
 }
 
 .add-stop-btn {
   padding: 2px 6px;
   border: none;
-  background: #667eea;
-  color: white;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
@@ -218,7 +219,7 @@
 }
 
 .add-stop-btn:hover {
-  background: #5568d3;
+  background: var(--theme-buttonPrimaryHover, #5568d3);
 }
 
 .stop-item {
@@ -226,55 +227,58 @@
   align-items: center;
   gap: 6px;
   padding: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--theme-border, #e2e8f0);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: var(--theme-background, transparent);
 }
 
 .stop-item:hover {
-  background: #f8f9fa;
+  background: var(--theme-surface, #f8f9fa);
 }
 
 .stop-item.selected {
-  border-color: #667eea;
-  background: #f0f7ff;
+  border-color: var(--theme-primary, #667eea);
+  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08));
 }
 
 .stop-color-box {
   width: 20px;
   height: 20px;
   border-radius: 3px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
   flex-shrink: 0;
 }
 
 .stop-hex-input {
   flex: 1;
   padding: 3px 5px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-inputBorder, #cbd5e1);
   border-radius: 3px;
   font-size: 10px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  background: #ffffff;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
   min-width: 0;
 }
 
 .stop-position-input {
   width: 45px;
   padding: 3px 5px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-inputBorder, #cbd5e1);
   border-radius: 3px;
   font-size: 10px;
   text-align: center;
-  background: #ffffff;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
 }
 
 .remove-stop-btn {
   padding: 2px 6px;
   border: none;
-  background: #ef4444;
-  color: white;
+  background: var(--theme-error, #ef4444);
+  color: var(--theme-buttonText, white);
   border-radius: 3px;
   font-size: 14px;
   cursor: pointer;
@@ -283,7 +287,7 @@
 }
 
 .remove-stop-btn:hover {
-  background: #dc2626;
+  background: var(--theme-error, #dc2626);
 }
 
 .gradient-controls {
@@ -291,7 +295,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px;
-  background: #f8f9fa;
+  background: var(--theme-surface, #f8f9fa);
   border-radius: 6px;
   flex-shrink: 0;
   flex-wrap: wrap;
@@ -304,10 +308,10 @@
 
 .type-btn {
   padding: 5px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
   border-radius: 4px;
-  background: #ffffff;
-  color: #64748b;
+  background: var(--theme-background, #ffffff);
+  color: var(--theme-textSecondary, #64748b);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -315,13 +319,13 @@
 }
 
 .type-btn:hover {
-  background: #f1f5f9;
+  background: var(--theme-surfaceHover, #f1f5f9);
 }
 
 .type-btn.active {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border-color: var(--theme-primary, #667eea);
 }
 
 .angle-control {
@@ -329,23 +333,24 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #475569;
+  color: var(--theme-textSecondary, #475569);
 }
 
 .angle-input {
   width: 50px;
   padding: 4px 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-inputBorder, #cbd5e1);
   border-radius: 4px;
   font-size: 11px;
   text-align: center;
-  background: #ffffff;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
 }
 
 .copy-css-btn {
   padding: 6px 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
+  color: var(--theme-buttonText, white);
   border: none;
   border-radius: 6px;
   font-size: 11px;
@@ -357,40 +362,40 @@
 
 .copy-css-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px var(--theme-activeHover, rgba(102, 126, 234, 0.3));
 }
 
 .css-preview {
   padding: 8px;
-  background: #f8f9fa;
+  background: var(--theme-surface, #f8f9fa);
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
 }
 
 .css-preview-label {
   font-size: 11px;
   font-weight: 600;
-  color: #475569;
+  color: var(--theme-textSecondary, #475569);
   margin-bottom: 6px;
 }
 
 .css-code {
   padding: 6px;
-  background: #ffffff;
+  background: var(--theme-background, #ffffff);
   border-radius: 4px;
   font-size: 10px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: #1e40af;
+  color: var(--theme-primary, #1e40af);
   word-break: break-all;
   margin-bottom: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--theme-border, #e2e8f0);
 }
 
 .copy-css-btn-small {
   padding: 4px 10px;
-  background: #667eea;
-  color: white;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
   border: none;
   border-radius: 4px;
   font-size: 10px;
@@ -400,6 +405,6 @@
 }
 
 .copy-css-btn-small:hover {
-  background: #5568d3;
+  background: var(--theme-buttonPrimaryHover, #5568d3);
 }
 

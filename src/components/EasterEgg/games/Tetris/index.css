@@ -16,13 +16,13 @@
 .tetris-title h2 {
   font-size: 18px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   margin: 0 0 2px 0;
 }
 
 .tetris-hint {
   font-size: 9px;
-  color: #94a3b8;
+  color: var(--theme-textMuted, #94a3b8);
   margin: 0;
 }
 
@@ -41,21 +41,21 @@
 }
 
 .info-label {
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   font-weight: 500;
 }
 
 .info-value {
-  color: #334155;
+  color: var(--theme-text, #334155);
   font-weight: 700;
   min-width: 40px;
   text-align: right;
 }
 
 .restart-button {
-  background: #f8f9fa;
-  border: 1px solid #e8ecf0;
-  color: #64748b;
+  background: var(--theme-surface, #f8f9fa);
+  border: 1px solid var(--theme-border, #e8ecf0);
+  color: var(--theme-textSecondary, #64748b);
   padding: 5px 10px;
   border-radius: 6px;
   font-size: 10px;
@@ -66,8 +66,8 @@
 }
 
 .restart-button:hover {
-  background: #e8ecf0;
-  color: #475569;
+  background: var(--theme-surfaceHover, #e8ecf0);
+  color: var(--theme-text, #475569);
 }
 
 .tetris-board-container {
@@ -97,8 +97,8 @@
 }
 
 .tetris-cell.filled {
-  background: #667eea;
-  border-color: #5568d3;
+  background: var(--theme-primary, #667eea);
+  border-color: var(--theme-buttonPrimaryHover, #5568d3);
 }
 
 .tetris-cell.current {
@@ -123,7 +123,7 @@
 
 .game-over-content,
 .pause-content {
-  background: white;
+  background: var(--theme-background, white);
   padding: 16px;
   border-radius: 10px;
   text-align: center;
@@ -132,19 +132,19 @@
 
 .game-over-content h3 {
   font-size: 16px;
-  color: #334155;
+  color: var(--theme-text, #334155);
   margin: 0 0 8px 0;
 }
 
 .game-over-content p {
   font-size: 12px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   margin: 0 0 12px 0;
 }
 
 .game-over-content button {
-  background: #667eea;
-  color: white;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
   border: none;
   padding: 6px 14px;
   border-radius: 6px;
@@ -155,13 +155,13 @@
 }
 
 .game-over-content button:hover {
-  background: #5568d3;
+  background: var(--theme-buttonPrimaryHover, #5568d3);
 }
 
 .pause-content {
   font-size: 20px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   padding: 12px 20px;
 }
 

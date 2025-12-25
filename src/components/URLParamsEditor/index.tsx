@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
 import { showMessage } from '../../utils/message';
+import {
+  getPresetParams,
+  addPresetParam,
+  updatePresetParam,
+  deletePresetParam,
+  resetPresetParams,
+  type PresetParam,
+} from '../../utils/presetParams';
 
 interface URLParam {
   key: string;
@@ -12,6 +20,16 @@ const URLParamsEditor: React.FC = () => {
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [params, setParams] = useState<URLParam[]>([]);
   const [error, setError] = useState<string>('');
+  const [presetParams, setPresetParams] = useState<PresetParam[]>([]);
+  const [showPresetManager, setShowPresetManager] = useState<boolean>(false);
+  const [editingPreset, setEditingPreset] = useState<{ index: number; preset: PresetParam } | null>(null);
+  const [newPresetName, setNewPresetName] = useState<string>('');
+  const [newPresetParams, setNewPresetParams] = useState<URLParam[]>([]);
+
+  // 加载预设参数
+  useEffect(() => {
+    setPresetParams(getPresetParams());
+  }, []);
 
   // 获取当前标签页URL并解析参数
   useEffect(() => {
@@ -149,8 +167,121 @@ const URLParamsEditor: React.FC = () => {
     });
   };
 
-  // 预设参数列表
-  const presetParams = [];
+  // 打开预设管理器
+  const openPresetManager = () => {
+    setShowPresetManager(true);
+    setEditingPreset(null);
+    setNewPresetName('');
+    setNewPresetParams([{ key: '', value: '' }]);
+  };
+
+  // 关闭预设管理器
+  const closePresetManager = () => {
+    setShowPresetManager(false);
+    setEditingPreset(null);
+    setNewPresetName('');
+    setNewPresetParams([{ key: '', value: '' }]);
+  };
+
+  // 开始编辑预设
+  const startEditPreset = (index: number) => {
+    const preset = presetParams[index];
+    setEditingPreset({ index, preset: { ...preset } });
+    setNewPresetName(preset.name);
+    setNewPresetParams(
+      preset.params.length > 0 ? [...preset.params] : [{ key: '', value: '' }]
+    );
+  };
+
+  // 取消编辑
+  const cancelEdit = () => {
+    setEditingPreset(null);
+    setNewPresetName('');
+    setNewPresetParams([{ key: '', value: '' }]);
+  };
+
+  // 保存预设（新增或编辑）
+  const savePreset = () => {
+    if (!newPresetName.trim()) {
+      showMessage.warning('请输入预设名称');
+      return;
+    }
+
+    const validParams = newPresetParams.filter((p) => p.key.trim() && p.value.trim());
+    if (validParams.length === 0) {
+      showMessage.warning('请至少添加一个有效的参数');
+      return;
+    }
+
+    try {
+      if (editingPreset && editingPreset.index >= 0) {
+        // 编辑现有预设
+        updatePresetParam(editingPreset.index, {
+          name: newPresetName.trim(),
+          params: validParams,
+        });
+        showMessage.success('预设已更新');
+      } else {
+        // 添加新预设
+        addPresetParam({
+          name: newPresetName.trim(),
+          params: validParams,
+        });
+        showMessage.success('预设已添加');
+      }
+      setPresetParams(getPresetParams());
+      cancelEdit();
+    } catch (error: any) {
+      showMessage.error(error.message || '保存失败');
+    }
+  };
+
+  // 删除预设
+  const handleDeletePreset = (index: number) => {
+    if (window.confirm(`确定要删除预设 "${presetParams[index].name}" 吗？`)) {
+      try {
+        deletePresetParam(index);
+        setPresetParams(getPresetParams());
+        showMessage.success('预设已删除');
+        if (editingPreset && editingPreset.index === index) {
+          cancelEdit();
+        }
+      } catch (error: any) {
+        showMessage.error(error.message || '删除失败');
+      }
+    }
+  };
+
+  // 重置预设
+  const handleResetPresets = () => {
+    if (window.confirm('确定要重置为默认预设吗？这将删除所有自定义预设。')) {
+      resetPresetParams();
+      setPresetParams(getPresetParams());
+      showMessage.success('已重置为默认预设');
+      cancelEdit();
+    }
+  };
+
+  // 更新新预设的参数
+  const updateNewPresetParam = (index: number, field: 'key' | 'value', newValue: string) => {
+    const newParams = [...newPresetParams];
+    newParams[index] = { ...newParams[index], [field]: newValue };
+    setNewPresetParams(newParams);
+  };
+
+  // 添加新预设的参数行
+  const addNewPresetParam = () => {
+    setNewPresetParams([...newPresetParams, { key: '', value: '' }]);
+  };
+
+  // 删除新预设的参数行
+  const removeNewPresetParam = (index: number) => {
+    const newParams = newPresetParams.filter((_, i) => i !== index);
+    if (newParams.length === 0) {
+      newParams.push({ key: '', value: '' });
+    }
+    setNewPresetParams(newParams);
+  };
 
   // 添加预设参数
   const addPresetParams = (preset: (typeof presetParams)[0]) => {
@@ -233,7 +364,12 @@ const URLParamsEditor: React.FC = () => {
       </div>
 
       <div className='preset-params-section'>
-        <label>预设参数：</label>
+        <div className='preset-params-header'>
+          <label>预设参数：</label>
+          <button onClick={openPresetManager} className='manage-presets-btn' title='管理预设'>
+            ⚙️ 管理
+          </button>
+        </div>
         <div className='preset-params-list'>
           {presetParams.map((preset, index) => (
             <button
@@ -247,6 +383,128 @@ const URLParamsEditor: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* 预设管理器弹窗 */}
+      {showPresetManager && (
+        <div className='preset-manager-overlay' onClick={closePresetManager}>
+          <div className='preset-manager-modal' onClick={(e) => e.stopPropagation()}>
+            <div className='preset-manager-header'>
+              <h3>{editingPreset ? '编辑预设' : '管理预设参数'}</h3>
+              <button onClick={closePresetManager} className='close-modal-btn'>
+                ×
+              </button>
+            </div>
+
+            <div className='preset-manager-content'>
+              {editingPreset ? (
+                // 编辑模式
+                <div className='preset-editor'>
+                  <div className='preset-name-input-group'>
+                    <label>预设名称：</label>
+                    <input
+                      type='text'
+                      value={newPresetName}
+                      onChange={(e) => setNewPresetName(e.target.value)}
+                      className='preset-name-input'
+                      placeholder='输入预设名称'
+                    />
+                  </div>
+
+                  <div className='preset-params-editor'>
+                    <div className='preset-params-editor-header'>
+                      <label>参数列表：</label>
+                      <button onClick={addNewPresetParam} className='add-preset-param-btn'>
+                        + 添加参数
+                      </button>
+                    </div>
+                    <div className='preset-params-editor-list'>
+                      {newPresetParams.map((param, index) => (
+                        <div key={index} className='preset-param-row'>
+                          <input
+                            type='text'
+                            value={param.key}
+                            onChange={(e) => updateNewPresetParam(index, 'key', e.target.value)}
+                            placeholder='参数名'
+                            className='preset-param-key-input'
+                          />
+                          <span className='preset-param-equals'>=</span>
+                          <input
+                            type='text'
+                            value={param.value}
+                            onChange={(e) => updateNewPresetParam(index, 'value', e.target.value)}
+                            placeholder='参数值'
+                            className='preset-param-value-input'
+                          />
+                          <button
+                            onClick={() => removeNewPresetParam(index)}
+                            className='remove-preset-param-btn'
+                            title='删除参数'
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className='preset-editor-actions'>
+                    <button onClick={cancelEdit} className='cancel-btn'>
+                      取消
+                    </button>
+                    <button onClick={savePreset} className='save-preset-btn'>
+                      保存
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // 列表模式
+                <div className='preset-list'>
+                  <div className='preset-list-header'>
+                    <button onClick={() => setEditingPreset({ index: -1, preset: { name: '', params: [] } })} className='add-preset-btn'>
+                      + 添加预设
+                    </button>
+                    <button onClick={handleResetPresets} className='reset-presets-btn'>
+                      重置为默认
+                    </button>
+                  </div>
+                  <div className='preset-list-items'>
+                    {presetParams.map((preset, index) => (
+                      <div key={index} className='preset-list-item'>
+                        <div className='preset-item-info'>
+                          <div className='preset-item-name'>{preset.name}</div>
+                          <div className='preset-item-params'>
+                            {preset.params.map((p, i) => (
+                              <span key={i} className='preset-item-param'>
+                                {p.key}={p.value}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className='preset-item-actions'>
+                          <button
+                            onClick={() => startEditPreset(index)}
+                            className='edit-preset-btn'
+                            title='编辑'
+                          >
+                            编辑
+                          </button>
+                          <button
+                            onClick={() => handleDeletePreset(index)}
+                            className='delete-preset-btn'
+                            title='删除'
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className='params-section'>
         <div className='params-header'>
