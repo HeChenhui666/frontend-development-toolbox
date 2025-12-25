@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './index.css';
+import { getHighScore, updateHighScore } from '../../../../utils/gameScore';
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
@@ -134,6 +135,7 @@ const Tetris: React.FC = () => {
   );
   const [currentPiece, setCurrentPiece] = useState(() => getRandomTetromino());
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => getHighScore('tetris'));
   const [level, setLevel] = useState(1);
   const [lines, setLines] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -148,6 +150,14 @@ const Tetris: React.FC = () => {
     boardRef.current = board;
     currentPieceRef.current = currentPiece;
   }, [board, currentPiece]);
+
+  // 游戏结束时更新最高分
+  useEffect(() => {
+    if (gameOver && score > 0) {
+      const newHighScore = updateHighScore('tetris', score);
+      setHighScore(newHighScore);
+    }
+  }, [gameOver, score]);
 
   // 游戏循环
   useEffect(() => {
@@ -184,7 +194,13 @@ const Tetris: React.FC = () => {
           gameLoopRef.current = setInterval(dropPiece, dropTimeRef.current);
           
           // 计算分数
-          setScore(prevScore => prevScore + linesCleared * 100 * newLevel);
+          setScore(prevScore => {
+            const newScore = prevScore + linesCleared * 100 * newLevel;
+            // 更新最高分
+            const newHighScore = updateHighScore('tetris', newScore);
+            setHighScore(newHighScore);
+            return newScore;
+          });
           
           return newLines;
         });
@@ -266,7 +282,13 @@ const Tetris: React.FC = () => {
         dropTimeRef.current = Math.max(100, 1000 - (newLevel - 1) * 100);
         return newLines;
       });
-      setScore(prev => prev + linesCleared * 100 * level);
+      setScore(prev => {
+        const newScore = prev + linesCleared * 100 * level;
+        // 更新最高分
+        const newHighScore = updateHighScore('tetris', newScore);
+        setHighScore(newHighScore);
+        return newScore;
+      });
       
       const newPiece = getRandomTetromino();
       if (checkCollision(clearedBoard, newPiece.shape, newPiece.x, newPiece.y)) {
@@ -364,6 +386,10 @@ const Tetris: React.FC = () => {
             <div className="info-value">{score}</div>
           </div>
           <div className="info-item">
+            <div className="info-label">最高分</div>
+            <div className="info-value">{highScore}</div>
+          </div>
+          <div className="info-item">
             <div className="info-label">等级</div>
             <div className="info-value">{level}</div>
           </div>
@@ -383,6 +409,8 @@ const Tetris: React.FC = () => {
             <div className="game-over-content">
               <h3>游戏结束！</h3>
               <p>最终分数: {score}</p>
+              <p>历史最高: {highScore}</p>
+              {score === highScore && score > 0 && <p style={{ color: 'var(--theme-primary, #667eea)', fontWeight: 600 }}>🎉 新纪录！</p>}
               <button onClick={handleRestart}>再玩一次</button>
             </div>
           </div>

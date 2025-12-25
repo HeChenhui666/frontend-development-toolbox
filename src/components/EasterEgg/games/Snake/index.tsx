@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './index.css';
+import { getHighScore, updateHighScore } from '../../../../utils/gameScore';
 
 const GRID_SIZE = 20;
 const INITIAL_SNAKE = [{ x: 10, y: 10 }];
@@ -44,6 +45,7 @@ const Snake: React.FC = () => {
   const [food, setFood] = useState<Position>(() => generateFood(INITIAL_SNAKE));
   const [direction, setDirection] = useState<Direction>(INITIAL_DIRECTION);
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => getHighScore('snake'));
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const directionRef = useRef<Direction>(INITIAL_DIRECTION);
@@ -59,6 +61,14 @@ const Snake: React.FC = () => {
     foodRef.current = food;
     scoreRef.current = score;
   }, [direction, snake, food, score]);
+
+  // 游戏结束时更新最高分
+  useEffect(() => {
+    if (gameOver && score > 0) {
+      const newHighScore = updateHighScore('snake', score);
+      setHighScore(newHighScore);
+    }
+  }, [gameOver, score]);
 
   // 游戏循环
   useEffect(() => {
@@ -97,6 +107,9 @@ const Snake: React.FC = () => {
         setFood(newFood);
         const newScore = scoreRef.current + 10;
         setScore(newScore);
+        // 更新最高分
+        const newHighScore = updateHighScore('snake', newScore);
+        setHighScore(newHighScore);
       } else {
         // 没吃到食物，删除尾部
         newSnake.pop();
@@ -235,6 +248,10 @@ const Snake: React.FC = () => {
             <div className='score-value'>{score}</div>
           </div>
           <div className='score-container'>
+            <div className='score-label'>最高分：</div>
+            <div className='score-value'>{highScore}</div>
+          </div>
+          <div className='score-container'>
             <div className='score-label'>长度：</div>
             <div className='score-value'>{snake.length}</div>
           </div>
@@ -250,6 +267,8 @@ const Snake: React.FC = () => {
             <div className='game-over-content'>
               <h3>游戏结束！</h3>
               <p>最终分数: {score}</p>
+              <p>历史最高: {highScore}</p>
+              {score === highScore && score > 0 && <p style={{ color: 'var(--theme-primary, #667eea)', fontWeight: 600 }}>🎉 新纪录！</p>}
               <p>蛇的长度: {snake.length}</p>
               <button onClick={handleRestart}>再玩一次</button>
             </div>

@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 50%, var(--theme-primary, #f093fb) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,7 +45,7 @@
 .easter-egg-content {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--theme-background, rgba(255, 255, 255, 0.95));
   border-radius: 20px;
   padding: 30px;
   max-width: 420px;
@@ -74,13 +74,13 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 2px solid #e8ecf0;
+  border-bottom: 2px solid var(--theme-border, #e8ecf0);
 }
 
 .easter-egg-header h1 {
   font-size: 20px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   margin: 0;
   letter-spacing: -0.3px;
 }
@@ -89,7 +89,7 @@
   background: transparent;
   border: none;
   font-size: 24px;
-  color: #94a3b8;
+  color: var(--theme-textMuted, #94a3b8);
   cursor: pointer;
   padding: 0;
   width: 30px;
@@ -102,8 +102,8 @@
 }
 
 .close-button:hover {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--theme-surfaceHover, #f1f5f9);
+  color: var(--theme-textSecondary, #64748b);
 }
 
 .easter-egg-body {
@@ -128,13 +128,13 @@
 .easter-egg-body h2 {
   font-size: 18px;
   font-weight: 600;
-  color: #334155;
+  color: var(--theme-text, #334155);
   margin-bottom: 12px;
 }
 
 .easter-egg-body > p {
   font-size: 13px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   line-height: 1.6;
   margin-bottom: 20px;
 }
@@ -146,7 +146,7 @@
 .games-list-title {
   font-size: 16px;
   font-weight: 600;
-  color: #334155;
+  color: var(--theme-text, #334155);
   margin: 0 0 12px 0;
   text-align: left;
 }
@@ -162,8 +162,8 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #f8f9fa;
-  border: 1px solid #e8ecf0;
+  background: var(--theme-surface, #f8f9fa);
+  border: 1px solid var(--theme-border, #e8ecf0);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -172,8 +172,8 @@
 }
 
 .game-card:hover {
-  background: #f1f5f9;
-  border-color: #667eea;
+  background: var(--theme-surfaceHover, #f1f5f9);
+  border-color: var(--theme-primary, #667eea);
   transform: translateX(4px);
 }
 
@@ -190,25 +190,25 @@
 .game-card-name {
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--theme-text, #334155);
   margin-bottom: 4px;
 }
 
 .game-card-description {
   font-size: 11px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
 }
 
 .game-card-arrow {
   font-size: 18px;
-  color: #94a3b8;
+  color: var(--theme-textMuted, #94a3b8);
   flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
 .game-card:hover .game-card-arrow {
   transform: translateX(4px);
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
 }
 
 /* 游戏弹窗样式 */
@@ -228,7 +228,7 @@
 }
 
 .game-modal-content {
-  background: white;
+  background: var(--theme-background, white);
   border-radius: 16px;
   max-width: 90vw;
   max-height: 85vh;
@@ -257,9 +257,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #e8ecf0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  border-bottom: 1px solid var(--theme-border, #e8ecf0);
+  background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
+  color: var(--theme-buttonText, white);
 }
 
 .game-modal-header h3 {
@@ -299,7 +299,7 @@
   padding: 16px;
   overflow-y: auto;
   max-height: calc(85vh - 70px);
-  background: #f8f9fa;
+  background: var(--theme-surface, #f8f9fa);
 }
 
 /* 贪吃蛇游戏特殊样式 - 防止滚动 */
@@ -316,7 +316,7 @@
   gap: 12px;
   margin-bottom: 25px;
   padding: 20px;
-  background: #f8f9fa;
+  background: var(--theme-surface, #f8f9fa);
   border-radius: 12px;
 }
 
@@ -326,7 +326,7 @@
   justify-content: center;
   gap: 10px;
   font-size: 13px;
-  color: #475569;
+  color: var(--theme-textSecondary, #475569);
   font-weight: 500;
 }
 
@@ -337,19 +337,19 @@
 .easter-egg-footer {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e8ecf0;
+  border-top: 1px solid var(--theme-border, #e8ecf0);
 }
 
 .footer-text {
   font-size: 14px;
   font-weight: 600;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   margin-bottom: 6px;
 }
 
 .footer-subtext {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--theme-textMuted, #94a3b8);
   font-style: italic;
 }
 

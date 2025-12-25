@@ -12,9 +12,9 @@
 /* 参数设置区域 */
 .image-config-section {
   padding: 12px;
-  background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+  background: var(--theme-surface, #f8f9fa);
   border-radius: 8px;
-  border: 1.5px solid #667eea;
+  border: 1.5px solid var(--theme-primary, #667eea);
   flex-shrink: 0;
 }
 
@@ -25,7 +25,7 @@
 .config-header label {
   font-size: 12px;
   font-weight: 600;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
 }
 
 .config-inputs {
@@ -46,25 +46,26 @@
 .input-label {
   font-size: 11px;
   font-weight: 500;
-  color: #475569;
+  color: var(--theme-textSecondary, #475569);
 }
 
 .config-input,
 .config-select {
   padding: 7px 10px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
   border-radius: 6px;
   font-size: 11px;
   transition: all 0.25s ease;
-  background: #ffffff;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
 }
 
 .config-input:focus,
 .config-select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
 }
 
 .config-select {
@@ -74,20 +75,20 @@
 .generate-btn {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
+  color: var(--theme-buttonText, white);
   border: none;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 2px 4px var(--theme-activeHover, rgba(102, 126, 234, 0.2));
 }
 
 .generate-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 8px var(--theme-activeHover, rgba(102, 126, 234, 0.3));
 }
 
 .generate-btn:active {
@@ -97,9 +98,9 @@
 /* 图片预览区域 */
 .image-preview-section {
   padding: 12px;
-  background: #f8f9fa;
+  background: var(--theme-surface, #f8f9fa);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
 }
 
@@ -113,7 +114,7 @@
 .preview-header label {
   font-size: 12px;
   font-weight: 600;
-  color: #334155;
+  color: var(--theme-text, #334155);
 }
 
 .preview-actions {
@@ -123,11 +124,11 @@
 
 .action-btn {
   padding: 6px 12px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--theme-background, #ffffff);
+  border: 1px solid var(--theme-border, #e2e8f0);
   border-radius: 5px;
   font-size: 11px;
-  color: #334155;
+  color: var(--theme-text, #334155);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -139,8 +140,8 @@
 }
 
 .action-btn:hover {
-  background: #f1f5f9;
-  border-color: #667eea;
+  background: var(--theme-surfaceHover, #f1f5f9);
+  border-color: var(--theme-primary, #667eea);
   transform: translateY(-1px);
 }
 
@@ -149,8 +150,8 @@
   margin-bottom: 12px;
   border-radius: 6px;
   overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--theme-background, #ffffff);
+  border: 1px solid var(--theme-border, #e2e8f0);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,25 +171,25 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px;
-  background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+  background: var(--theme-surface, #f8f9fa);
   border-radius: 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
 }
 
 .url-label {
   font-size: 11px;
   font-weight: 600;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
 }
 
 .url-value {
   font-size: 10px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: #1e40af;
+  color: var(--theme-primary, #1e40af);
   word-break: break-all;
   line-height: 1.4;
   padding: 4px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--theme-background, rgba(255, 255, 255, 0.7));
   border-radius: 4px;
 }
 

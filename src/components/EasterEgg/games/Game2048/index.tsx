@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './index.css';
+import { getHighScore, updateHighScore } from '../../../../utils/gameScore';
 
 type Grid = number[][];
 
@@ -122,6 +123,7 @@ const gridsEqual = (grid1: Grid, grid2: Grid): boolean => {
 const Game2048: React.FC = () => {
   const [grid, setGrid] = useState<Grid>(initializeGame());
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => getHighScore('2048'));
   const [gameOver, setGameOver] = useState(false);
   const gameOverRef = useRef(gameOver);
 
@@ -129,6 +131,14 @@ const Game2048: React.FC = () => {
   useEffect(() => {
     gameOverRef.current = gameOver;
   }, [gameOver]);
+
+  // 游戏结束时更新最高分
+  useEffect(() => {
+    if (gameOver && score > 0) {
+      const newHighScore = updateHighScore('2048', score);
+      setHighScore(newHighScore);
+    }
+  }, [gameOver, score]);
 
   // 处理移动
   const handleMove = useCallback(
@@ -169,7 +179,13 @@ const Game2048: React.FC = () => {
         }
 
         // 更新分数
-        setScore(prev => prev + moveScore);
+        setScore(prev => {
+          const newScore = prev + moveScore;
+          // 更新最高分
+          const newHighScore = updateHighScore('2048', newScore);
+          setHighScore(newHighScore);
+          return newScore;
+        });
 
         // 检查游戏是否结束
         if (!canMove(finalGrid)) {
@@ -246,6 +262,10 @@ const Game2048: React.FC = () => {
             <div className="score-label">分数</div>
             <div className="score-value">{score}</div>
           </div>
+          <div className="score-container">
+            <div className="score-label">最高分</div>
+            <div className="score-value">{highScore}</div>
+          </div>
           <button className="restart-button" onClick={handleRestart}>
             重新开始
           </button>
@@ -258,6 +278,8 @@ const Game2048: React.FC = () => {
             <div className="game-over-content">
               <h3>游戏结束！</h3>
               <p>最终分数: {score}</p>
+              <p>历史最高: {highScore}</p>
+              {score === highScore && score > 0 && <p style={{ color: 'var(--theme-primary, #667eea)', fontWeight: 600 }}>🎉 新纪录！</p>}
               <button onClick={handleRestart}>再玩一次</button>
             </div>
           </div>
