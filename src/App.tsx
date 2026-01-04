@@ -2,7 +2,7 @@ import React, { useState, useMemo, lazy, Suspense, useEffect, useRef } from 'rea
 import { ConfigProvider } from 'antd';
 import './App.css';
 import EasterEgg from './components/EasterEgg';
-import ThemeSettings from './components/ThemeSettings';
+import Settings from './components/Settings';
 import { getSavedTheme, applyTheme } from './utils/theme';
 
 // 懒加载组件，按需加载
@@ -40,7 +40,7 @@ const App: React.FC = () => {
   const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode'>('generate');
   const [clickCount, setClickCount] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
-  const [showThemeSettings, setShowThemeSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 初始化主题
@@ -174,12 +174,12 @@ const App: React.FC = () => {
             </h1>
             <p className='header-subtitle'>实用工具集合</p>
           </div>
-          <button className='header-settings-btn' onClick={() => setShowThemeSettings(true)} title='主题设置'>
+          <button className='header-settings-btn' onClick={() => setShowSettings(true)} title='设置'>
             ⚙️
           </button>
         </div>
         {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
-        {showThemeSettings && <ThemeSettings onClose={() => setShowThemeSettings(false)} />}
+        {showSettings && <Settings onClose={() => setShowSettings(false)} />}
         <div className='tabs-container'>
           <div className='tabs'>
             {features.map((feature) => (

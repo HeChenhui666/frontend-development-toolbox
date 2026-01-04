@@ -82,6 +82,15 @@
   max-height: calc(80vh - 60px);
 }
 
+.theme-settings-embedded {
+  width: 100%;
+}
+
+.theme-settings-embedded .theme-settings-content {
+  padding: 0;
+  max-height: none;
+}
+
 .theme-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

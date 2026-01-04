@@ -4,9 +4,10 @@ import './index.css';
 
 interface ThemeSettingsProps {
   onClose: () => void;
+  embedded?: boolean;
 }
 
-const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
+const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false }) => {
   const [currentTheme, setCurrentTheme] = useState<ThemeName>(getSavedTheme());
 
   useEffect(() => {
@@ -26,57 +27,69 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
     }
   };
 
-  return (
-    <div className="theme-settings-overlay" onClick={handleOverlayClick}>
-      <div className="theme-settings-modal" onClick={(e) => e.stopPropagation()}>
+  const content = (
+    <>
+      {!embedded && (
         <div className="theme-settings-header">
           <h3>主题设置</h3>
           <button className="theme-settings-close" onClick={onClose}>
             ✕
           </button>
         </div>
-        <div className="theme-settings-content">
-          <div className="theme-options">
-            {Object.values(themes).map((theme) => (
-              <div
-                key={theme.name}
-                className={`theme-option ${currentTheme === theme.name ? 'active' : ''}`}
-                onClick={() => handleThemeChange(theme.name)}
-              >
-                <div className="theme-preview">
+      )}
+      <div className="theme-settings-content">
+        <div className="theme-options">
+          {Object.values(themes).map((theme) => (
+            <div
+              key={theme.name}
+              className={`theme-option ${currentTheme === theme.name ? 'active' : ''}`}
+              onClick={() => handleThemeChange(theme.name)}
+            >
+              <div className="theme-preview">
+                <div
+                  className="theme-preview-gradient"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.colors.primaryGradient} 0%, ${theme.colors.primaryGradientEnd} 100%)`,
+                  }}
+                />
+                <div
+                  className="theme-preview-surface"
+                  style={{
+                    background: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  }}
+                >
                   <div
-                    className="theme-preview-gradient"
+                    className="theme-preview-active"
                     style={{
-                      background: `linear-gradient(135deg, ${theme.colors.primaryGradient} 0%, ${theme.colors.primaryGradientEnd} 100%)`,
-                    }}
-                  />
-                  <div
-                    className="theme-preview-surface"
-                    style={{
-                      background: theme.colors.surface,
-                      borderColor: theme.colors.border,
+                      background: theme.colors.activeBackground,
+                      color: theme.colors.active,
+                      boxShadow: `0 2px 8px ${theme.colors.active}40`,
                     }}
                   >
-                    <div
-                      className="theme-preview-active"
-                      style={{
-                        background: theme.colors.activeBackground,
-                        color: theme.colors.active,
-                        boxShadow: `0 2px 8px ${theme.colors.active}40`,
-                      }}
-                    >
-                      <span style={{ fontSize: '10px' }}>示例</span>
-                    </div>
+                    <span style={{ fontSize: '10px' }}>示例</span>
                   </div>
                 </div>
-                <div className="theme-name">{theme.displayName}</div>
-                {currentTheme === theme.name && (
-                  <div className="theme-checkmark">✓</div>
-                )}
               </div>
-            ))}
-          </div>
+              <div className="theme-name">{theme.displayName}</div>
+              {currentTheme === theme.name && (
+                <div className="theme-checkmark">✓</div>
+              )}
+            </div>
+          ))}
         </div>
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="theme-settings-embedded">{content}</div>;
+  }
+
+  return (
+    <div className="theme-settings-overlay" onClick={handleOverlayClick}>
+      <div className="theme-settings-modal" onClick={(e) => e.stopPropagation()}>
+        {content}
       </div>
     </div>
   );
