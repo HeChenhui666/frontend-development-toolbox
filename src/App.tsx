@@ -2,8 +2,9 @@ import React, { useState, useMemo, lazy, Suspense, useEffect, useRef } from 'rea
 import { ConfigProvider } from 'antd';
 import './App.css';
 import EasterEgg from './components/EasterEgg';
-import ThemeSettings from './components/ThemeSettings';
+import Settings from './components/Settings';
 import { getSavedTheme, applyTheme } from './utils/theme';
+import { getDefaultTab, getTabOrder } from './utils/userPreferences';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -36,23 +37,47 @@ interface FeatureConfig {
 }
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<FeatureTab>('qrcode');
+  const [activeTab, setActiveTab] = useState<FeatureTab>(getDefaultTab() as FeatureTab);
   const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode'>('generate');
   const [clickCount, setClickCount] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
-  const [showThemeSettings, setShowThemeSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [tabOrderVersion, setTabOrderVersion] = useState(0); // 用于触发重新计算
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 初始化主题
+  // 初始化主题和默认标签页
   useEffect(() => {
     const savedTheme = getSavedTheme();
     applyTheme(savedTheme);
+    const defaultTab = getDefaultTab();
+    setActiveTab(defaultTab as FeatureTab);
   }, []);
 
-  // 功能模块配置 - 使用useMemo缓存，避免每次渲染都重新创建
-  const features: FeatureConfig[] = useMemo(
-    () => [
-      {
+  // 监听标签页顺序变化事件
+  useEffect(() => {
+    const handleTabOrderChange = () => {
+      console.log('Tab order changed event received');
+      setTabOrderVersion((prev) => prev + 1);
+    };
+    
+    window.addEventListener('tabOrderChanged', handleTabOrderChange);
+    // 也监听 storage 事件，以防跨标签页同步
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'app-tab-order') {
+        console.log('Tab order changed via storage event');
+        setTabOrderVersion((prev) => prev + 1);
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('tabOrderChanged', handleTabOrderChange);
+    };
+  }, []);
+
+  // 所有功能模块定义
+  const allFeatures: Partial<Record<FeatureTab, FeatureConfig>> = useMemo(
+    () => ({
+      qrcode: {
         id: 'qrcode',
         name: '二维码',
         icon: '🔲',
@@ -78,53 +103,56 @@ const App: React.FC = () => {
           </div>
         ),
       },
-      {
+      urlparams: {
         id: 'urlparams',
         name: 'URL参数',
         icon: '🔗',
         component: <URLParamsEditor />,
       },
-      {
+      timestamp: {
         id: 'timestamp',
         name: '时间戳',
         icon: '⏰',
         component: <TimestampConverter />,
       },
-      {
+      randomimage: {
         id: 'randomimage',
         name: '随机图片',
         icon: '🖼️',
         component: <RandomImageGenerator />,
       },
-      {
+      json: {
         id: 'json',
         name: 'JSON',
         icon: '📄',
         component: <JSONTools />,
       },
-      {
+      gradient: {
         id: 'gradient',
         name: '渐变背景',
         icon: '🎨',
         component: <GradientGenerator />,
       },
-      {
+      regex: {
         id: 'regex',
         name: '正则',
         icon: '🔤',
         component: <RegexTester />,
       },
-
-      // 预留位置，方便后续添加新功能
-      // {
-      //   id: 'future1',
-      //   name: '新功能1',
-      //   icon: '✨',
-      //   component: <FutureFeature1 />,
-      // },
-    ],
+    }),
     [qrSubTab]
   );
+
+  // 根据用户设置的顺序排列功能模块
+  const features: FeatureConfig[] = useMemo(() => {
+    const tabOrder = getTabOrder();
+    console.log('Computing features with tab order:', tabOrder, 'version:', tabOrderVersion);
+    const orderedFeatures = tabOrder
+      .map((tab) => allFeatures[tab])
+      .filter((feature): feature is FeatureConfig => feature !== undefined);
+    console.log('Ordered features:', orderedFeatures.map(f => f.id));
+    return orderedFeatures;
+  }, [allFeatures, tabOrderVersion]); // 添加 tabOrderVersion 作为依赖
 
   const currentFeature = features.find((f) => f.id === activeTab);
 
@@ -174,12 +202,12 @@ const App: React.FC = () => {
             </h1>
             <p className='header-subtitle'>实用工具集合</p>
           </div>
-          <button className='header-settings-btn' onClick={() => setShowThemeSettings(true)} title='主题设置'>
+          <button className='header-settings-btn' onClick={() => setShowSettings(true)} title='设置'>
             ⚙️
           </button>
         </div>
         {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
-        {showThemeSettings && <ThemeSettings onClose={() => setShowThemeSettings(false)} />}
+        {showSettings && <Settings onClose={() => setShowSettings(false)} />}
         <div className='tabs-container'>
           <div className='tabs'>
             {features.map((feature) => (

@@ -1,6 +1,6 @@
 {
   "name": "frontend-development-toolbox",
-  "version": "1.0.1",
+  "version": "1.5.1",
   "description": "一个功能强大的Chrome浏览器扩展，集成了多种实用的前端开发工具：二维码生成/解码、URL参数编辑、时间戳转换、JSON工具、渐变背景生成器、正则表达式测试等",
   "type": "module",
   "main": "dist/index.html",
