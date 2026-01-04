@@ -92,6 +92,65 @@ export const clearAllCache = (): void => {
   }
 };
 
+export type CacheType = 'theme' | 'presets' | 'games' | 'preferences';
+
+export const clearCacheByType = (type: CacheType): void => {
+  try {
+    switch (type) {
+      case 'theme':
+        localStorage.removeItem('app-theme');
+        break;
+      case 'presets':
+        localStorage.removeItem('url-preset-params');
+        break;
+      case 'games':
+        const gameIds = ['tetris', 'snake', '2048'];
+        gameIds.forEach((gameId) => {
+          localStorage.removeItem(`game-high-score-${gameId}`);
+        });
+        break;
+      case 'preferences':
+        localStorage.removeItem(DEFAULT_TAB_KEY);
+        localStorage.removeItem(TAB_ORDER_KEY);
+        break;
+    }
+    console.log(`Cache type "${type}" cleared successfully`);
+  } catch (error) {
+    console.error(`Failed to clear cache type "${type}":`, error);
+    throw error;
+  }
+};
+
+export const getCacheTypeInfo = (): Record<CacheType, { name: string; keys: string[]; size: number }> => {
+  const info: Record<CacheType, { name: string; keys: string[]; size: number }> = {
+    theme: { name: '主题设置', keys: ['app-theme'], size: 0 },
+    presets: { name: 'URL预设参数', keys: ['url-preset-params'], size: 0 },
+    games: { name: '游戏积分', keys: ['game-high-score-tetris', 'game-high-score-snake', 'game-high-score-2048'], size: 0 },
+    preferences: { name: '用户偏好', keys: [DEFAULT_TAB_KEY, TAB_ORDER_KEY], size: 0 },
+  };
+
+  try {
+    Object.keys(info).forEach((type) => {
+      const cacheType = type as CacheType;
+      const keys = info[cacheType].keys;
+      let totalSize = 0;
+      
+      keys.forEach((key) => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          totalSize += new Blob([value]).size;
+        }
+      });
+      
+      info[cacheType].size = totalSize;
+    });
+  } catch (error) {
+    console.error('Failed to get cache type info:', error);
+  }
+
+  return info;
+};
+
 export const getStorageInfo = (): { used: number; total: number; items: Array<{ key: string; size: number }> } => {
   const items: Array<{ key: string; size: number }> = [];
   let totalSize = 0;

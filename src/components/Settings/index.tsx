@@ -5,12 +5,15 @@ import {
   getDefaultTab,
   saveDefaultTab,
   clearAllCache,
+  clearCacheByType,
   getStorageInfo,
+  getCacheTypeInfo,
   getTabOrder,
   saveTabOrder,
   resetTabOrder,
   type DefaultTab,
   type FeatureTab,
+  type CacheType,
 } from '../../utils/userPreferences';
 import { showMessage } from '../../utils/message';
 import './index.css';
@@ -39,14 +42,17 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [defaultTab, setDefaultTab] = useState<DefaultTab>(getDefaultTab());
   const [storageInfo, setStorageInfo] = useState(getStorageInfo());
+  const [cacheTypeInfo, setCacheTypeInfo] = useState(getCacheTypeInfo());
   const [tabOrder, setTabOrder] = useState<FeatureTab[]>(getTabOrder());
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showTabOrderManager, setShowTabOrderManager] = useState(false);
+  const [showStorageDetails, setShowStorageDetails] = useState(false);
 
   // 更新存储信息
   useEffect(() => {
     setStorageInfo(getStorageInfo());
+    setCacheTypeInfo(getCacheTypeInfo());
   }, [activeTab]);
 
   const handleDefaultTabChange = (tab: DefaultTab) => {
@@ -65,6 +71,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
         try {
           clearAllCache();
           setStorageInfo(getStorageInfo());
+          setCacheTypeInfo(getCacheTypeInfo());
           showMessage.success('缓存已清除');
           // 重新加载页面以应用默认设置
           setTimeout(() => {
@@ -72,6 +79,38 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
           }, 1000);
         } catch (error) {
           showMessage.error('清除缓存失败');
+        }
+      },
+    });
+  };
+
+  const handleClearCacheByType = (type: CacheType) => {
+    const typeNames: Record<CacheType, string> = {
+      theme: '主题设置',
+      presets: 'URL预设参数',
+      games: '游戏积分',
+      preferences: '用户偏好',
+    };
+
+    Modal.confirm({
+      title: `清除${typeNames[type]}`,
+      content: `确定要清除${typeNames[type]}吗？此操作不可恢复。`,
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => {
+        try {
+          clearCacheByType(type);
+          setStorageInfo(getStorageInfo());
+          setCacheTypeInfo(getCacheTypeInfo());
+          showMessage.success(`${typeNames[type]}已清除`);
+          if (type === 'theme' || type === 'preferences') {
+            // 如果清除主题或偏好，需要刷新页面
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
+        } catch (error) {
+          showMessage.error('清除失败');
         }
       },
     });
@@ -277,9 +316,47 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                         />
                       </div>
                     </div>
-                    <Button onClick={handleClearCache} danger size="small">
-                      清除所有缓存
-                    </Button>
+                    
+                    {/* 详细存储信息 */}
+                    <div className="storage-details">
+                      <Button
+                        type="text"
+                        size="small"
+                        onClick={() => setShowStorageDetails(!showStorageDetails)}
+                        style={{ padding: 0, height: 'auto', fontSize: '12px' }}
+                      >
+                        {showStorageDetails ? '▼ 隐藏详情' : '▶ 查看详情'}
+                      </Button>
+                      
+                      {showStorageDetails && (
+                        <div className="storage-details-list">
+                          {Object.entries(cacheTypeInfo).map(([type, info]) => (
+                            <div key={type} className="storage-detail-item">
+                              <div className="storage-detail-header">
+                                <span className="storage-detail-name">{info.name}</span>
+                                <span className="storage-detail-size">{formatBytes(info.size)}</span>
+                              </div>
+                              <Button
+                                type="text"
+                                danger
+                                size="small"
+                                onClick={() => handleClearCacheByType(type as CacheType)}
+                                disabled={info.size === 0}
+                                style={{ padding: '2px 8px', height: '24px', fontSize: '11px' }}
+                              >
+                                清除
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="storage-actions">
+                      <Button onClick={handleClearCache} danger size="small">
+                        清除所有缓存
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
