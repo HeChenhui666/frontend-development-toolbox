@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './index.css';
+import { showMessage } from '../../../utils/message';
 
 interface DiffResult {
   path: string;

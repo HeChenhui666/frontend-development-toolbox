@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import jsQR from 'jsqr';
 import './index.css';
+import { showMessage } from '../../utils/message';
 
 const QRCodeDecoder: React.FC = () => {
   const [decodedText, setDecodedText] = useState<string>('');
