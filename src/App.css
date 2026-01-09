@@ -158,26 +158,13 @@ body {
   background: var(--theme-surface, #f8f9fa);
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--theme-scrollbarThumb, #cbd5e1) var(--theme-scrollbarTrack, #f8f9fa);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
   -webkit-overflow-scrolling: touch;
 }
 
 .tabs::-webkit-scrollbar {
-  height: 6px;
-}
-
-.tabs::-webkit-scrollbar-track {
-  background: var(--theme-scrollbarTrack, #f8f9fa);
-}
-
-.tabs::-webkit-scrollbar-thumb {
-  background: var(--theme-scrollbarThumb, #cbd5e1);
-  border-radius: 3px;
-}
-
-.tabs::-webkit-scrollbar-thumb:hover {
-  background: var(--theme-scrollbarThumbHover, #94a3b8);
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .tab {

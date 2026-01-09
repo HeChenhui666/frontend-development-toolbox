@@ -32,10 +32,11 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   qrcode: '二维码',
   urlparams: 'URL参数',
   timestamp: '时间戳',
-  randomimage: '随机图片',
+  randomimage: '图片工具',
   json: 'JSON',
-  gradient: '渐变背景',
+  gradient: '颜色工具',
   regex: '正则',
+  css: 'CSS预设',
 };
 
 const Settings: React.FC<SettingsProps> = ({ onClose }) => {

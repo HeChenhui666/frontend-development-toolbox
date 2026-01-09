@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './index.css';
+import { showMessage } from '../../../utils/message';
 
 interface GradientStop {
   id: string;

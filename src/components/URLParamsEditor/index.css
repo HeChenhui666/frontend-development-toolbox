@@ -282,12 +282,14 @@
   border-radius: 6px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   flex-shrink: 0;
-  max-height: 80px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .preview-header {
   margin-bottom: 5px;
+  flex-shrink: 0;
 }
 
 .preview-header label {
@@ -301,15 +303,18 @@
   color: var(--theme-primary, #1e40af);
   word-break: break-all;
   overflow-wrap: break-word;
-  line-height: 1.4;
+  line-height: 1.5;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  padding: 6px;
+  padding: 8px;
   background: var(--theme-background, rgba(255, 255, 255, 0.7));
   border-radius: 5px;
-  max-height: 60px;
+  min-height: 32px;
+  max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  resize: none;
 }
 
 .actions {

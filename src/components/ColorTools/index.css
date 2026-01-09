@@ -1,4 +1,4 @@
-.json-tools {
+.color-tools {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -10,7 +10,7 @@
   flex-shrink: 0;
 }
 
-.json-tool-select {
+.color-tool-select {
   width: 100%;
 }
 
@@ -29,31 +29,31 @@
 }
 
 /* Antd Select 主题色覆盖 */
-.json-tool-select .ant-select-selector {
+.color-tool-select .ant-select-selector {
   background: var(--theme-inputBackground, #ffffff) !important;
   border-color: var(--theme-inputBorder, #e2e8f0) !important;
   color: var(--theme-inputText, #334155) !important;
 }
 
-.json-tool-select:not(:hover):not(.ant-select-focused) .ant-select-selector {
+.color-tool-select:not(:hover):not(.ant-select-focused) .ant-select-selector {
   border-color: var(--theme-inputBorder, #e2e8f0) !important;
 }
 
-.json-tool-select:hover:not(.ant-select-focused) .ant-select-selector {
+.color-tool-select:hover:not(.ant-select-focused) .ant-select-selector {
   border-color: var(--theme-active, #667eea) !important;
 }
 
-.json-tool-select.ant-select-focused .ant-select-selector,
-.json-tool-select.ant-select-focused:hover .ant-select-selector {
+.color-tool-select.ant-select-focused .ant-select-selector,
+.color-tool-select.ant-select-focused:hover .ant-select-selector {
   border-color: var(--theme-active, #667eea) !important;
   box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.2)) !important;
 }
 
-.json-tool-select .ant-select-selection-item {
+.color-tool-select .ant-select-selection-item {
   color: var(--theme-inputText, #334155) !important;
 }
 
-.json-tool-select .ant-select-arrow {
+.color-tool-select .ant-select-arrow {
   color: var(--theme-textSecondary, #64748b) !important;
 }
 

@@ -27,35 +27,12 @@
   color: #334155;
 }
 
-.preset-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.preset-select {
+  width: 100%;
 }
 
-.preset-btn {
-  padding: 5px 10px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-  border-radius: 5px;
-  font-size: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.preset-btn:hover {
-  background: #e2e8f0;
-  border-color: #667eea;
-  color: #667eea;
-}
-
-.preset-btn.active {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
+.preset-select .ant-select-selector {
+  font-size: 11px;
 }
 
 .preset-description {

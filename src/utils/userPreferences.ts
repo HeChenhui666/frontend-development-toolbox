@@ -1,4 +1,4 @@
-export type DefaultTab = 'qrcode' | 'urlparams' | 'timestamp' | 'gradient' | 'json' | 'regex' | 'randomimage';
+export type DefaultTab = 'qrcode' | 'urlparams' | 'timestamp' | 'gradient' | 'json' | 'regex' | 'randomimage' | 'css';
 export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab for consistency
 
 const DEFAULT_TAB_KEY = 'app-default-tab';
@@ -12,6 +12,7 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'json',
   'gradient',
   'regex',
+  'css',
 ];
 
 export const getDefaultTab = (): DefaultTab => {
@@ -42,13 +43,21 @@ export const getTabOrder = (): FeatureTab[] => {
       if (Array.isArray(parsed) && parsed.length > 0) {
         // 验证所有项都是有效的标签页
         const validParsed = parsed.filter((item: any) => DEFAULT_TAB_ORDER.includes(item));
+        // 检查是否有新的标签页需要添加（即使当前顺序看起来完整）
+        const missingTabs = DEFAULT_TAB_ORDER.filter(tab => !validParsed.includes(tab));
+        if (missingTabs.length > 0) {
+          // 如果有缺失的标签页，补充到末尾并保存
+          const newOrder = [...validParsed, ...missingTabs] as FeatureTab[];
+          saveTabOrder(newOrder);
+          return newOrder;
+        }
+        // 如果顺序完整且包含所有默认标签页，直接返回
         if (validParsed.length === DEFAULT_TAB_ORDER.length) {
-          // 如果解析出的顺序包含了所有默认标签页，直接返回
           return validParsed as FeatureTab[];
         }
-        // 如果有缺失的标签页，补充到末尾
-        const missingTabs = DEFAULT_TAB_ORDER.filter(tab => !validParsed.includes(tab));
-        return [...validParsed, ...missingTabs] as FeatureTab[];
+        // 如果顺序不完整，补充缺失的标签页
+        const missing = DEFAULT_TAB_ORDER.filter(tab => !validParsed.includes(tab));
+        return [...validParsed, ...missing] as FeatureTab[];
       }
     }
   } catch (error) {

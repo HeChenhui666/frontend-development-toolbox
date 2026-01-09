@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import './index.css';
+import { showMessage } from '../../utils/message';
 
 const QRCodeGenerator: React.FC = () => {
   const [url, setUrl] = useState('');

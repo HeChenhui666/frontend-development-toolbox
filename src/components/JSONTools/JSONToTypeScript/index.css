@@ -1,0 +1,152 @@
+.json-to-typescript {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.generator-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.interface-name-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.interface-name-input label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text, #334155);
+}
+
+.name-input {
+  padding: 5px 10px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 5px;
+  font-size: 11px;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  width: 120px;
+  transition: all 0.25s ease;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.process-btn {
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+}
+
+.process-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.clear-btn {
+  background: var(--theme-error, #ef4444);
+  color: var(--theme-buttonText, white);
+}
+
+.clear-btn:hover {
+  background: var(--theme-error, #dc2626);
+}
+
+.json-input-section,
+.json-output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.section-header label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text, #334155);
+}
+
+.copy-btn {
+  padding: 3px 8px;
+  border: none;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.json-textarea {
+  flex: 1;
+  min-height: 150px;
+  padding: 8px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  resize: vertical;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  transition: all 0.25s ease;
+}
+
+.json-textarea:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+.json-textarea.output {
+  background: var(--theme-surface, #f8f9fa);
+  cursor: default;
+}
+
+.error {
+  padding: 8px 10px;
+  background: var(--theme-errorBackground, #fff5f5);
+  color: var(--theme-error, #c62828);
+  border-radius: 6px;
+  font-size: 11px;
+  border-left: 3px solid var(--theme-error, #c62828);
+  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  flex-shrink: 0;
+}
+

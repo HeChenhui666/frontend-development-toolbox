@@ -11,10 +11,11 @@ const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
 const QRCodeDecoder = lazy(() => import('./components/QRCodeDecoder'));
 const URLParamsEditor = lazy(() => import('./components/URLParamsEditor'));
 const TimestampConverter = lazy(() => import('./components/TimestampConverter'));
-const GradientGenerator = lazy(() => import('./components/GradientGenerator'));
+const ColorTools = lazy(() => import('./components/ColorTools'));
 const JSONTools = lazy(() => import('./components/JSONTools'));
 const RegexTester = lazy(() => import('./components/RegexTester'));
-const RandomImageGenerator = lazy(() => import('./components/RandomImageGenerator'));
+const ImageTools = lazy(() => import('./components/ImageTools'));
+const CSSTools = lazy(() => import('./components/CSSTools'));
 
 // 定义功能模块类型
 type FeatureTab =
@@ -25,6 +26,7 @@ type FeatureTab =
   | 'json'
   | 'regex'
   | 'randomimage'
+  | 'css'
   | 'future1'
   | 'future2';
 
@@ -117,9 +119,9 @@ const App: React.FC = () => {
       },
       randomimage: {
         id: 'randomimage',
-        name: '随机图片',
+        name: '图片工具',
         icon: '🖼️',
-        component: <RandomImageGenerator />,
+        component: <ImageTools />,
       },
       json: {
         id: 'json',
@@ -129,15 +131,21 @@ const App: React.FC = () => {
       },
       gradient: {
         id: 'gradient',
-        name: '渐变背景',
+        name: '颜色工具',
         icon: '🎨',
-        component: <GradientGenerator />,
+        component: <ColorTools />,
       },
       regex: {
         id: 'regex',
         name: '正则',
         icon: '🔤',
         component: <RegexTester />,
+      },
+      css: {
+        id: 'css',
+        name: 'CSS预设',
+        icon: '🎨',
+        component: <CSSTools />,
       },
     }),
     [qrSubTab]
