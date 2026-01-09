@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import './index.css';
-import { showMessage } from '../../utils/message';
+import { showMessage } from '../../../utils/message';
 
 const RandomImageGenerator: React.FC = () => {
   const [width, setWidth] = useState<string>('200');

@@ -1,0 +1,199 @@
+.color-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.palette-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--theme-surface, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.color-input-section,
+.palette-type-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.color-input-section label,
+.palette-type-section label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text, #334155);
+}
+
+.color-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.color-picker-input {
+  width: 50px;
+  height: 40px;
+  border: 1px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+.color-text-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  transition: all 0.25s ease;
+}
+
+.color-text-input:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+.palette-type-select {
+  padding: 8px;
+  border: 1px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.palette-type-select:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+.generate-btn {
+  padding: 8px 16px;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.generate-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.palette-result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--theme-surface, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-text, #334155);
+}
+
+.copy-all-btn {
+  padding: 4px 10px;
+  border: none;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-all-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.color-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.color-swatch {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--theme-background, #ffffff);
+}
+
+.swatch-preview {
+  width: 100%;
+  height: 80px;
+  border-bottom: 1px solid var(--theme-border, #e2e8f0);
+}
+
+.swatch-info {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.swatch-hex {
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  color: var(--theme-text, #334155);
+  font-weight: 500;
+}
+
+.swatch-copy-btn {
+  padding: 4px 8px;
+  border: none;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.swatch-copy-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.palette-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--theme-textSecondary, #64748b);
+  font-size: 12px;
+  background: var(--theme-surface, #f8f9fa);
+  border-radius: 8px;
+  border: 1px dashed var(--theme-border, #e2e8f0);
+}
+

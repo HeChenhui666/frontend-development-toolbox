@@ -1,0 +1,226 @@
+.css-compatibility {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.browser-info {
+  display: flex;
+  gap: 16px;
+  padding: 10px;
+  background: var(--theme-surface, #f8f9fa);
+  border-radius: 6px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.info-label {
+  color: var(--theme-textSecondary, #64748b);
+  font-weight: 500;
+}
+
+.info-value {
+  color: var(--theme-text, #334155);
+  font-weight: 600;
+}
+
+.input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text, #334155);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.check-btn {
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+}
+
+.check-btn:hover:not(:disabled) {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.clear-btn {
+  background: var(--theme-error, #ef4444);
+  color: var(--theme-buttonText, white);
+}
+
+.clear-btn:hover {
+  background: var(--theme-error, #dc2626);
+}
+
+.css-input {
+  flex: 1;
+  min-height: 150px;
+  padding: 8px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  resize: vertical;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  transition: all 0.25s ease;
+}
+
+.css-input:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.copy-btn {
+  padding: 3px 8px;
+  border: none;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+}
+
+.results-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-item {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  background: var(--theme-background, #ffffff);
+}
+
+.result-item.supported {
+  border-left: 3px solid var(--theme-success, #10b981);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.result-item.unsupported {
+  border-left: 3px solid var(--theme-error, #ef4444);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.result-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.result-property {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text, #334155);
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  flex: 1;
+}
+
+.result-prefix {
+  font-size: 10px;
+  color: var(--theme-textSecondary, #64748b);
+  background: var(--theme-surface, #f8f9fa);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.result-notes {
+  font-size: 10px;
+  color: var(--theme-textSecondary, #64748b);
+  margin-top: 4px;
+  padding-left: 22px;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-textSecondary, #64748b);
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.empty-hint {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
