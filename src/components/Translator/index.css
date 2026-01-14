@@ -1,0 +1,208 @@
+.translator {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.language-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.section-header label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.language-select {
+  width: 100%;
+}
+
+.language-select .ant-select-selector {
+  font-size: 11px;
+}
+
+/* 主内容区域：左中右布局 */
+.main-content {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.input-textarea {
+  flex: 1;
+  min-height: 200px;
+  padding: 8px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  resize: none;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  transition: all 0.25s ease;
+}
+
+.input-textarea:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+/* 中间按钮区域 */
+.button-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 0 10px;
+}
+
+.translate-btn {
+  width: 80px;
+  background: var(--theme-buttonPrimary, #667eea);
+  color: var(--theme-buttonText, white);
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.translate-btn:hover {
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+  transform: translateY(-1px);
+}
+
+.secondary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.swap-btn {
+  width: 100%;
+  background: var(--theme-buttonSecondary, #64748b);
+  color: white;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.swap-btn:hover:not(:disabled) {
+  background: #475569;
+}
+
+.swap-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clear-btn {
+  width: 100%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  background: #dc2626;
+}
+
+.error {
+  padding: 8px 10px;
+  background: var(--theme-errorBackground, #fff5f5);
+  color: var(--theme-error, #c62828);
+  border-radius: 6px;
+  font-size: 11px;
+  border-left: 3px solid var(--theme-error, #c62828);
+  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  flex-shrink: 0;
+}
+
+.output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.copy-btn {
+  background: var(--theme-buttonSecondary, #64748b);
+  color: white;
+  border: none;
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  height: auto;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.copy-btn:hover:not(:disabled) {
+  background: #475569;
+}
+
+.copy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copy-btn-text {
+  display: inline-block;
+  min-width: 54px;
+  text-align: center;
+}
+
+.output-textarea {
+  flex: 1;
+  min-height: 200px;
+  padding: 8px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  transition: all 0.25s ease;
+}
+
+.placeholder-text {
+  color: #94a3b8;
+  font-style: italic;
+}

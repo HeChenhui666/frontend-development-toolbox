@@ -16,6 +16,7 @@ const JSONTools = lazy(() => import('./components/JSONTools'));
 const RegexTester = lazy(() => import('./components/RegexTester'));
 const ImageTools = lazy(() => import('./components/ImageTools'));
 const CSSTools = lazy(() => import('./components/CSSTools'));
+const Translator = lazy(() => import('./components/Translator'));
 
 // 定义功能模块类型
 type FeatureTab =
@@ -27,6 +28,7 @@ type FeatureTab =
   | 'regex'
   | 'randomimage'
   | 'css'
+  | 'translator'
   | 'future1'
   | 'future2';
 
@@ -146,6 +148,12 @@ const App: React.FC = () => {
         name: 'CSS预设',
         icon: '🎨',
         component: <CSSTools />,
+      },
+      translator: {
+        id: 'translator',
+        name: '在线翻译',
+        icon: '🌐',
+        component: <Translator />,
       },
     }),
     [qrSubTab]
