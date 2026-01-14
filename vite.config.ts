@@ -1,10 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { readFileSync } from 'fs';
+
+// 读取 package.json 获取版本号
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
+const APP_VERSION = packageJson.version;
 
 export default defineConfig({
   plugins: [react()],
   base: './', // Chrome 扩展需要使用相对路径
+  define: {
+    'import.meta.env.APP_VERSION': JSON.stringify(APP_VERSION),
+  },
   build: {
     outDir: 'dist',
     rollupOptions: {

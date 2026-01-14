@@ -18,7 +18,7 @@ import {
 import { showMessage } from '../../utils/message';
 import './index.css';
 
-const APP_VERSION = '1.5.1';
+const APP_VERSION = import.meta.env.APP_VERSION || '1.6.1';
 const GITHUB_URL = 'https://github.com/HeChenhui666/frontend-development-toolbox';
 
 interface SettingsProps {
@@ -37,6 +37,7 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   gradient: '颜色工具',
   regex: '正则',
   css: 'CSS预设',
+  translator: '在线翻译',
 };
 
 const Settings: React.FC<SettingsProps> = ({ onClose }) => {
