@@ -3044,6 +3044,68 @@ html {
 }`,
     },
     {
+      id: 'hide-scrollbar',
+      title: '隐藏滚动条',
+      description: '隐藏滚动条但保持滚动功能，兼容所有主流浏览器',
+      code: `.hide-scrollbar {
+  /* 确保滚动功能正常 */
+  overflow-x: auto;
+  overflow-y: auto;
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE 和 Edge */
+  -ms-overflow-style: none;
+  /* 旧版 Firefox */
+  overflow: -moz-scrollbars-none;
+}
+
+/* Chrome, Safari, Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* 仅隐藏水平滚动条 */
+.hide-scrollbar-x {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 和 Edge */
+}
+
+.hide-scrollbar-x::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+/* 仅隐藏垂直滚动条 */
+.hide-scrollbar-y {
+  overflow-x: visible;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 和 Edge */
+}
+
+.hide-scrollbar-y::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
+/* 兼容性说明 */
+/* 
+ * 浏览器支持情况：
+ * - Chrome/Edge: 完全支持（使用 ::-webkit-scrollbar）
+ * - Firefox: 完全支持（使用 scrollbar-width）
+ * - Safari: 完全支持（使用 ::-webkit-scrollbar）
+ * - IE 10+: 支持（使用 -ms-overflow-style）
+ * - Opera: 完全支持（使用 ::-webkit-scrollbar）
+ * 
+ * 注意：隐藏滚动条后，用户仍可通过鼠标滚轮、触摸板、键盘方向键等方式滚动
+ */`,
+      example: '<style>.hide-scrollbar-demo { width: 300px; height: 150px; overflow: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 10px; background: #f0f0f0; border-radius: 4px; } .hide-scrollbar-demo::-webkit-scrollbar { display: none; width: 0; height: 0; }</style><div class="hide-scrollbar-demo"><div style="width: 500px; height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; padding: 20px; color: white; font-weight: 600; display: flex; align-items: center; justify-content: center; text-align: center; box-sizing: border-box;">这是一个可以滚动的内容区域，但滚动条已被隐藏。<br><br>你可以使用鼠标滚轮或触摸板来滚动查看内容。<br><br>滚动条已完全隐藏，但滚动功能正常。</div></div>',
+    },
+    {
       id: 'truncate',
       title: '文本截断工具类',
       description: '快速应用文本截断的工具类集合',

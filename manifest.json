@@ -1,11 +1,14 @@
 {
   "manifest_version": 3,
   "name": "小火火工具箱",
-  "version": "1.0.0",
+  "version": "1.6.1",
   "description": "实用工具集合：二维码生成/解码、URL参数编辑等",
   "permissions": [
     "activeTab",
     "scripting"
+  ],
+  "host_permissions": [
+    "https://translate.googleapis.com/*"
   ],
   "action": {
     "default_popup": "index.html",
@@ -22,6 +25,14 @@
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/translator.js"],
+      "css": ["content/translator.css"],
+      "run_at": "document_idle"
+    }
+  ]
 }
 

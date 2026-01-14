@@ -46,6 +46,19 @@ if (existsSync(indexPath)) {
   writeFileSync(indexPath, html, 'utf-8');
 }
 
+// 复制 content script 的 CSS 文件
+const contentDir = join(rootDir, 'src', 'content');
+const distContentDir = join(distDir, 'content');
+const translatorCss = join(contentDir, 'translator.css');
+const distTranslatorCss = join(distContentDir, 'translator.css');
+
+if (existsSync(translatorCss)) {
+  if (!existsSync(distContentDir)) {
+    mkdirSync(distContentDir, { recursive: true });
+  }
+  copyFileSync(translatorCss, distTranslatorCss);
+  console.log('Content script CSS copied to dist/content/translator.css');
+}
 
 console.log('Assets copied to dist directory');
 
