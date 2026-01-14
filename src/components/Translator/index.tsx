@@ -133,6 +133,9 @@ const Translator: React.FC = () => {
             label: lang.name,
           }))}
         />
+        <div className="service-notice">
+          <span className="service-notice-text">使用免费版 Google 翻译服务</span>
+        </div>
       </div>
 
       {/* 错误提示 */}

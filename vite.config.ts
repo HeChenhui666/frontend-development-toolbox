@@ -10,15 +10,35 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        'content/translator': resolve(__dirname, 'src/content/translator.ts'),
       },
       output: {
         // 对于 Chrome 扩展，使用 IIFE 格式可能更兼容
         // 但 React 需要 ES 模块，所以我们保持 ES 格式
         format: 'es',
         // 确保资源路径正确
-        assetFileNames: 'assets/[name].[ext]',
+        assetFileNames: (assetInfo) => {
+          // content script的CSS文件放在content目录，使用固定名称
+          const name = assetInfo.name || '';
+          if (name.endsWith('.css')) {
+            // 检查是否是translator相关的CSS（通过检查chunk信息）
+            const chunkNames = assetInfo.names || [];
+            if (chunkNames.some(n => n.includes('translator')) || 
+                name.includes('translator') ||
+                (assetInfo.source && assetInfo.source.toString().includes('translate-bubble'))) {
+              return 'content/translator.css';
+            }
+          }
+          return 'assets/[name].[ext]';
+        },
         chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: (chunkInfo) => {
+          // content script文件放在content目录，不使用hash
+          if (chunkInfo.name === 'content/translator') {
+            return 'content/translator.js';
+          }
+          return 'assets/[name]-[hash].js';
+        },
         // 确保文件扩展名正确
         preserveModules: false,
         // 确保模块导出方式正确
