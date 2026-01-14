@@ -50,7 +50,7 @@ class TranslateBubble {
   }
 
   private init() {
-    console.log('[翻译扩展] 初始化事件监听器');
+    // console.log('[翻译扩展] 初始化事件监听器');
     // 监听文本选择
     document.addEventListener('mouseup', this.handleTextSelection.bind(this), true);
     // 点击其他地方时隐藏气泡
@@ -110,7 +110,7 @@ class TranslateBubble {
         }
       }
 
-      console.log('[翻译扩展] 显示触发按钮，位置:', x, y);
+      // console.log('[翻译扩展] 显示触发按钮，位置:', x, y);
       this.showTriggerButton(x, y);
     }, 10);
   }
@@ -125,7 +125,7 @@ class TranslateBubble {
   }
 
   private showTriggerButton(x: number, y: number) {
-    console.log('[翻译扩展] showTriggerButton 被调用，位置:', x, y);
+    // console.log('[翻译扩展] showTriggerButton 被调用，位置:', x, y);
 
     // 如果触发按钮已存在，先移除
     if (this.triggerButton) {
@@ -199,7 +199,7 @@ class TranslateBubble {
   }
 
   private showBubble(x: number, y: number) {
-    console.log('[翻译扩展] showBubble 被调用，位置:', x, y);
+    // console.log('[翻译扩展] showBubble 被调用，位置:', x, y);
 
     // 如果气泡已存在，先移除
     if (this.bubble) {
