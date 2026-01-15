@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Select, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Select, Button, Switch } from 'antd';
 import './index.css';
 
 // 支持的语言列表
@@ -37,6 +37,49 @@ async function translateText(text: string, targetLang: string = 'zh'): Promise<s
   }
 }
 
+// 页面内翻译开关的storage key
+const PAGE_TRANSLATE_ENABLED_KEY = 'translator-page-translate-enabled';
+
+// 获取页面内翻译开关状态
+const getPageTranslateEnabled = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get([PAGE_TRANSLATE_ENABLED_KEY], (result) => {
+        const enabled = result[PAGE_TRANSLATE_ENABLED_KEY] !== false; // 默认开启
+        resolve(enabled);
+      });
+    } else {
+      // 降级到localStorage
+      try {
+        const saved = localStorage.getItem(PAGE_TRANSLATE_ENABLED_KEY);
+        resolve(saved !== null ? saved === 'true' : true);
+      } catch (error) {
+        console.error('获取页面内翻译开关状态失败:', error);
+        resolve(true);
+      }
+    }
+  });
+};
+
+// 保存页面内翻译开关状态
+const setPageTranslateEnabled = (enabled: boolean): Promise<void> => {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ [PAGE_TRANSLATE_ENABLED_KEY]: enabled }, () => {
+        resolve();
+      });
+    } else {
+      // 降级到localStorage
+      try {
+        localStorage.setItem(PAGE_TRANSLATE_ENABLED_KEY, enabled.toString());
+      } catch (error) {
+        console.error('保存页面内翻译开关状态失败:', error);
+      }
+      resolve();
+    }
+  });
+};
+
 const Translator: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
   const [targetLang, setTargetLang] = useState<string>('en');
@@ -44,6 +87,36 @@ const Translator: React.FC = () => {
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const [pageTranslateEnabled, setPageTranslateEnabledState] = useState<boolean>(true);
+
+  // 初始化时读取开关状态
+  useEffect(() => {
+    getPageTranslateEnabled().then((enabled) => {
+      setPageTranslateEnabledState(enabled);
+    });
+  }, []);
+
+  // 处理开关变化
+  const handlePageTranslateToggle = async (checked: boolean) => {
+    setPageTranslateEnabledState(checked);
+    await setPageTranslateEnabled(checked);
+    
+    // 通知所有标签页的content script
+    if (typeof chrome !== 'undefined' && chrome.tabs) {
+      chrome.tabs.query({}, (tabs) => {
+        tabs.forEach((tab) => {
+          if (tab.id) {
+            chrome.tabs.sendMessage(tab.id, {
+              type: 'TOGGLE_PAGE_TRANSLATE',
+              enabled: checked,
+            }).catch(() => {
+              // 忽略错误（可能是content script未加载）
+            });
+          }
+        });
+      });
+    }
+  };
 
   // 执行翻译
   const handleTranslate = async () => {
@@ -135,6 +208,21 @@ const Translator: React.FC = () => {
         />
         <div className="service-notice">
           <span className="service-notice-text">使用免费版 Google 翻译服务</span>
+        </div>
+      </div>
+
+      {/* 页面内翻译开关 */}
+      <div className="page-translate-switch-section">
+        <div className="switch-header">
+          <label>页面内翻译：</label>
+          <Switch
+            checked={pageTranslateEnabled}
+            onChange={handlePageTranslateToggle}
+            size="small"
+          />
+        </div>
+        <div className="switch-desc">
+          <span className="switch-desc-text">开启后，在网页上选中文本时会显示翻译按钮</span>
         </div>
       </div>
 

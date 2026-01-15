@@ -37,6 +37,30 @@ const languages = [
   { code: 'hi', name: '印地语' },
 ];
 
+// 页面内翻译开关的storage key
+const PAGE_TRANSLATE_ENABLED_KEY = 'translator-page-translate-enabled';
+
+// 获取页面内翻译开关状态
+const getPageTranslateEnabled = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get([PAGE_TRANSLATE_ENABLED_KEY], (result) => {
+        const enabled = result[PAGE_TRANSLATE_ENABLED_KEY] !== false; // 默认开启
+        resolve(enabled);
+      });
+    } else {
+      // 降级到localStorage
+      try {
+        const saved = localStorage.getItem(PAGE_TRANSLATE_ENABLED_KEY);
+        resolve(saved !== null ? saved === 'true' : true);
+      } catch (error) {
+        console.error('[翻译扩展] 获取页面内翻译开关状态失败:', error);
+        resolve(true);
+      }
+    }
+  });
+};
+
 // 翻译气泡类
 class TranslateBubble {
   private bubble: HTMLElement | null = null;
@@ -44,21 +68,82 @@ class TranslateBubble {
   private selectedText: string = '';
   private targetLang: string = 'en';
   private isTranslating: boolean = false;
+  private enabled: boolean = true;
+  private textSelectionHandler: ((e: MouseEvent) => void) | null = null;
+  private documentClickHandler: ((e: MouseEvent) => void) | null = null;
 
   constructor() {
     this.init();
   }
 
-  private init() {
-    // console.log('[翻译扩展] 初始化事件监听器');
-    // 监听文本选择
-    document.addEventListener('mouseup', this.handleTextSelection.bind(this), true);
-    // 点击其他地方时隐藏气泡
-    document.addEventListener('click', this.handleDocumentClick.bind(this), true);
-    console.log('[翻译扩展] 事件监听器已绑定');
+  private async init() {
+    // 初始化时读取开关状态
+    this.enabled = await getPageTranslateEnabled();
+    
+    // 创建绑定的事件处理器
+    this.textSelectionHandler = this.handleTextSelection.bind(this);
+    this.documentClickHandler = this.handleDocumentClick.bind(this);
+    
+    if (this.enabled) {
+      // 监听文本选择
+      document.addEventListener('mouseup', this.textSelectionHandler, true);
+      // 点击其他地方时隐藏气泡
+      document.addEventListener('click', this.documentClickHandler, true);
+    }
+    
+    // 监听chrome.storage变化（当开关状态改变时触发）
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === 'local' && changes[PAGE_TRANSLATE_ENABLED_KEY]) {
+          const enabled = changes[PAGE_TRANSLATE_ENABLED_KEY].newValue !== false;
+          this.setEnabled(enabled);
+        }
+      });
+    }
+    
+    // 监听来自popup的消息
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener((message) => {
+        if (message.type === 'TOGGLE_PAGE_TRANSLATE') {
+          this.setEnabled(message.enabled);
+        }
+        return true; // 保持消息通道开放
+      });
+    }
+    
+    console.log('[翻译扩展] 事件监听器已绑定，页面内翻译:', this.enabled ? '已开启' : '已关闭');
+  }
+
+  private setEnabled(enabled: boolean) {
+    if (this.enabled === enabled) return;
+    
+    this.enabled = enabled;
+    
+    if (enabled) {
+      // 开启：添加事件监听器
+      if (this.textSelectionHandler && this.documentClickHandler) {
+        document.addEventListener('mouseup', this.textSelectionHandler, true);
+        document.addEventListener('click', this.documentClickHandler, true);
+      }
+      console.log('[翻译扩展] 页面内翻译已开启');
+    } else {
+      // 关闭：移除事件监听器，隐藏所有UI
+      if (this.textSelectionHandler && this.documentClickHandler) {
+        document.removeEventListener('mouseup', this.textSelectionHandler, true);
+        document.removeEventListener('click', this.documentClickHandler, true);
+      }
+      this.hideTriggerButton();
+      this.hideBubble();
+      console.log('[翻译扩展] 页面内翻译已关闭');
+    }
   }
 
   private handleTextSelection(e: MouseEvent) {
+    // 如果功能未启用，不处理
+    if (!this.enabled) {
+      return;
+    }
+    
     // 如果点击的是气泡或触发按钮本身，不处理
     const target = e.target as HTMLElement;
     if (target && (target.closest('.translate-bubble') || target.closest('.translate-trigger-btn'))) {
@@ -90,28 +175,31 @@ class TranslateBubble {
       }
 
       this.selectedText = selectedText;
-      // 使用鼠标位置，如果没有则使用选择范围的边界框
-      let x = e.pageX;
-      let y = e.pageY;
-
-      if (!x || !y || x === 0 || y === 0) {
-        try {
-          const range = selection.getRangeAt(0);
-          if (range) {
-            const rect = range.getBoundingClientRect();
-            x = rect.right + window.scrollX;
-            y = rect.top + window.scrollY;
-          }
-        } catch (err) {
-          console.error('[翻译扩展] 获取选择范围失败:', err);
-          // 如果获取范围失败，使用鼠标位置
-          x = e.clientX + window.scrollX;
-          y = e.clientY + window.scrollY;
+      
+      // 获取选中文本的位置，将按钮显示在选中文本的上方中间
+      try {
+        const range = selection.getRangeAt(0);
+        if (range) {
+          const rect = range.getBoundingClientRect();
+          // 计算选中文本的中心位置
+          const centerX = rect.left + rect.width / 2;
+          const topY = rect.top;
+          
+          // 转换为页面坐标（考虑滚动）
+          const x = centerX + window.scrollX;
+          const y = topY + window.scrollY;
+          
+          // console.log('[翻译扩展] 显示触发按钮，位置:', x, y);
+          this.showTriggerButton(x, y);
+        } else {
+          // 如果无法获取范围，使用鼠标位置作为后备
+          this.showTriggerButton(e.pageX, e.pageY - 40);
         }
+      } catch (err) {
+        console.error('[翻译扩展] 获取选择范围失败:', err);
+        // 如果获取范围失败，使用鼠标位置作为后备
+        this.showTriggerButton(e.pageX, e.pageY - 40);
       }
-
-      // console.log('[翻译扩展] 显示触发按钮，位置:', x, y);
-      this.showTriggerButton(x, y);
     }, 10);
   }
 
@@ -138,12 +226,20 @@ class TranslateBubble {
     this.triggerButton.textContent = '在线翻译';
     this.triggerButton.title = '点击翻译选中的文本';
 
-    // 设置位置
-    this.triggerButton.style.left = `${x}px`;
-    this.triggerButton.style.top = `${y - 10}px`;
-
-    // 添加到页面
+    // 添加到页面（先添加才能获取尺寸）
     document.body.appendChild(this.triggerButton);
+
+    // 获取按钮尺寸
+    const buttonRect = this.triggerButton.getBoundingClientRect();
+    
+    // 设置位置：按钮中心对齐选中文本中心，显示在选中文本上方
+    // x 是选中文本的中心，需要减去按钮宽度的一半，然后向右偏移20px
+    const buttonX = x - buttonRect.width / 2 + 20;
+    // y 是选中文本的顶部，按钮显示在上方，需要减去按钮高度、间距和向上偏移20px
+    const buttonY = y - buttonRect.height - 8 - 20;
+
+    this.triggerButton.style.left = `${buttonX}px`;
+    this.triggerButton.style.top = `${buttonY}px`;
 
     // 调整位置，确保不超出视窗
     this.adjustTriggerButtonPosition();
