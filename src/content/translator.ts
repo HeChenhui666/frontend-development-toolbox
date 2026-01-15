@@ -181,24 +181,23 @@ class TranslateBubble {
         const range = selection.getRangeAt(0);
         if (range) {
           const rect = range.getBoundingClientRect();
-          // 计算选中文本的中心位置
+          // getBoundingClientRect() 返回的是相对于视口的坐标（fixed定位需要）
+          // 计算选中文本的中心位置（视窗坐标）
           const centerX = rect.left + rect.width / 2;
           const topY = rect.top;
           
-          // 转换为页面坐标（考虑滚动）
-          const x = centerX + window.scrollX;
-          const y = topY + window.scrollY;
-          
-          // console.log('[翻译扩展] 显示触发按钮，位置:', x, y);
-          this.showTriggerButton(x, y);
+          // console.log('[翻译扩展] 选中文本位置 - left:', rect.left, 'top:', rect.top, 'width:', rect.width, 'height:', rect.height);
+          // console.log('[翻译扩展] 显示触发按钮，位置:', centerX, topY);
+          const bottomY = rect.bottom;
+          this.showTriggerButton(centerX, topY, bottomY);
         } else {
-          // 如果无法获取范围，使用鼠标位置作为后备
-          this.showTriggerButton(e.pageX, e.pageY - 40);
+          // 如果无法获取范围，使用鼠标位置作为后备（视窗坐标）
+          this.showTriggerButton(e.clientX, e.clientY - 40, e.clientY);
         }
       } catch (err) {
         console.error('[翻译扩展] 获取选择范围失败:', err);
-        // 如果获取范围失败，使用鼠标位置作为后备
-        this.showTriggerButton(e.pageX, e.pageY - 40);
+        // 如果获取范围失败，使用鼠标位置作为后备（视窗坐标）
+        this.showTriggerButton(e.clientX, e.clientY - 40, e.clientY);
       }
     }, 10);
   }
@@ -212,8 +211,11 @@ class TranslateBubble {
     }
   }
 
-  private showTriggerButton(x: number, y: number) {
-    // console.log('[翻译扩展] showTriggerButton 被调用，位置:', x, y);
+  private showTriggerButton(x: number, topY: number, bottomY: number) {
+    // console.log('[翻译扩展] showTriggerButton 被调用，位置:', x, topY, bottomY);
+    // x 是选中文本的中心（视窗坐标）
+    // topY 是选中文本的顶部（视窗坐标）
+    // bottomY 是选中文本的底部（视窗坐标）
 
     // 如果触发按钮已存在，先移除
     if (this.triggerButton) {
@@ -225,30 +227,74 @@ class TranslateBubble {
     this.triggerButton.className = 'translate-trigger-btn';
     this.triggerButton.textContent = '在线翻译';
     this.triggerButton.title = '点击翻译选中的文本';
+    this.triggerButton.style.position = 'fixed'; // 使用fixed定位
 
     // 添加到页面（先添加才能获取尺寸）
     document.body.appendChild(this.triggerButton);
 
-    // 获取按钮尺寸
-    const buttonRect = this.triggerButton.getBoundingClientRect();
-    
-    // 设置位置：按钮中心对齐选中文本中心，显示在选中文本上方
-    // x 是选中文本的中心，需要减去按钮宽度的一半，然后向右偏移20px
-    const buttonX = x - buttonRect.width / 2 + 20;
-    // y 是选中文本的顶部，按钮显示在上方，需要减去按钮高度、间距和向上偏移20px
-    const buttonY = y - buttonRect.height - 8 - 20;
+    // 获取按钮尺寸（需要等待一帧以确保尺寸正确）
+    // 使用 requestAnimationFrame 确保按钮已渲染
+    requestAnimationFrame(() => {
+      if (!this.triggerButton) return;
+      
+      const buttonRect = this.triggerButton.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // 设置位置：按钮中心对齐选中文本中心，优先显示在选中文本上方
+      // x 是选中文本的中心（视窗坐标），按钮中心对齐
+      let buttonX = x - buttonRect.width / 2;
+      // y 是选中文本的顶部（视窗坐标），按钮显示在上方
+      let buttonY = topY - buttonRect.height - 8;
 
-    this.triggerButton.style.left = `${buttonX}px`;
-    this.triggerButton.style.top = `${buttonY}px`;
+      // 调整水平位置
+      if (buttonX + buttonRect.width > viewportWidth) {
+        buttonX = viewportWidth - buttonRect.width - 10;
+      }
+      if (buttonX < 10) {
+        buttonX = 10;
+      }
 
-    // 调整位置，确保不超出视窗
-    this.adjustTriggerButtonPosition();
+      // 调整垂直位置
+      // 如果按钮会被推到视口上方（buttonY < 10），改为显示在选中文本下方
+      if (buttonY < 10) {
+        // 显示在选中文本下方（bottomY 是选中文本的底部）
+        buttonY = bottomY + 8;
+        
+        // 如果下方也超出视口，则显示在视口顶部
+        if (buttonY + buttonRect.height > viewportHeight) {
+          buttonY = 10;
+        }
+      }
+      // 如果按钮超出视口底部，调整到视口底部
+      else if (buttonY + buttonRect.height > viewportHeight) {
+        buttonY = viewportHeight - buttonRect.height - 10;
+      }
+
+      // console.log('[翻译扩展] 按钮最终位置 - x:', buttonX, 'y:', buttonY, '按钮尺寸:', buttonRect.width, buttonRect.height);
+      this.triggerButton.style.left = `${buttonX}px`;
+      this.triggerButton.style.top = `${buttonY}px`;
+    });
 
     // 绑定点击事件
     this.triggerButton.addEventListener('click', (e) => {
       e.stopPropagation();
+      const currentButton = this.triggerButton; // 保存引用，因为hideTriggerButton会清空
       this.hideTriggerButton();
-      this.showBubble(x, y);
+      // 获取选中文本的视窗坐标用于显示气泡
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        // 使用视窗坐标（fixed定位）
+        const bubbleX = rect.left + rect.width / 2;
+        const bubbleY = rect.top;
+        this.showBubble(bubbleX, bubbleY);
+      } else if (currentButton) {
+        // 后备方案：使用触发按钮的位置
+        const buttonRect = currentButton.getBoundingClientRect();
+        this.showBubble(buttonRect.left + buttonRect.width / 2, buttonRect.top);
+      }
     });
 
     // 阻止事件冒泡
@@ -257,35 +303,6 @@ class TranslateBubble {
     });
   }
 
-  private adjustTriggerButtonPosition() {
-    if (!this.triggerButton) return;
-
-    const rect = this.triggerButton.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let left = parseFloat(this.triggerButton.style.left);
-    let top = parseFloat(this.triggerButton.style.top);
-
-    // 调整水平位置
-    if (left + rect.width > viewportWidth) {
-      left = viewportWidth - rect.width - 10;
-    }
-    if (left < 10) {
-      left = 10;
-    }
-
-    // 调整垂直位置
-    if (top + rect.height > viewportHeight) {
-      top = viewportHeight - rect.height - 10;
-    }
-    if (top < 10) {
-      top = 10;
-    }
-
-    this.triggerButton.style.left = `${left}px`;
-    this.triggerButton.style.top = `${top}px`;
-  }
 
   private hideTriggerButton() {
     if (this.triggerButton) {
@@ -305,7 +322,7 @@ class TranslateBubble {
     // 创建气泡元素
     this.bubble = document.createElement('div');
     this.bubble.className = 'translate-bubble';
-    this.bubble.style.position = 'absolute';
+    this.bubble.style.position = 'fixed'; // 使用fixed定位
     this.bubble.style.zIndex = '999999';
     this.bubble.innerHTML = `
       <div class="translate-bubble-header">
@@ -329,9 +346,9 @@ class TranslateBubble {
       </div>
     `;
 
-    // 设置位置
+    // 设置位置（x和y已经是视窗坐标）
     this.bubble.style.left = `${x}px`;
-    this.bubble.style.top = `${y - 10}px`;
+    this.bubble.style.top = `${y + 10}px`; // 显示在选中文本下方
 
     // 添加到页面
     document.body.appendChild(this.bubble);
@@ -378,12 +395,16 @@ class TranslateBubble {
     let left = parseFloat(this.bubble.style.left);
     let top = parseFloat(this.bubble.style.top);
 
-    // 调整水平位置
-    if (left + rect.width > viewportWidth) {
-      left = viewportWidth - rect.width - 10;
+    // 调整水平位置（fixed定位，直接使用视窗坐标）
+    // 将气泡中心对齐到x位置，所以需要减去一半宽度
+    const bubbleCenterX = left;
+    const bubbleLeft = bubbleCenterX - rect.width / 2;
+    
+    if (bubbleLeft + rect.width > viewportWidth) {
+      left = viewportWidth - rect.width / 2 - 10;
     }
-    if (left < 10) {
-      left = 10;
+    if (bubbleLeft < 10) {
+      left = rect.width / 2 + 10;
     }
 
     // 调整垂直位置

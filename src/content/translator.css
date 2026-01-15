@@ -1,5 +1,5 @@
 .translate-bubble {
-  position: absolute;
+  position: fixed;
   z-index: 999999;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -145,7 +145,7 @@
 
 /* 触发按钮样式 */
 .translate-trigger-btn {
-  position: absolute;
+  position: fixed;
   z-index: 999998;
   background: #667eea;
   color: #ffffff;
