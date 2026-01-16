@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Select } from 'antd';
 import './index.css';
+
+type ActionType = 'extract' | 'filter' | 'remove' | 'replace' | 'transform';
 
 interface PresetRegex {
   name: string;
   pattern: string;
   description: string;
+  hasAction?: boolean; // 是否有操作意向
+  actionType?: ActionType; // 操作类型
 }
 
 const RegexTester: React.FC = () => {
@@ -16,6 +20,7 @@ const RegexTester: React.FC = () => {
   const [isValid, setIsValid] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [actionResult, setActionResult] = useState<string>('');
 
   // 预设正则表达式
   const presetRegexes: PresetRegex[] = [
@@ -158,6 +163,8 @@ const RegexTester: React.FC = () => {
       name: '过滤特殊字符',
       pattern: '[~`!@#$%^&*()_\\-+=|\\\\[\\]{};\'\\":<>/?]',
       description: '匹配特殊字符（用于过滤）',
+      hasAction: true,
+      actionType: 'filter',
     },
     {
       name: '字母数字下划线',
@@ -168,21 +175,29 @@ const RegexTester: React.FC = () => {
       name: '过滤HTML标签',
       pattern: '<[^>]*>',
       description: '匹配HTML标签（用于过滤）',
+      hasAction: true,
+      actionType: 'filter',
     },
     {
       name: '去除首尾空格',
       pattern: '^\\s+|\\s+$',
       description: '匹配首尾空格（用于去除）',
+      hasAction: true,
+      actionType: 'remove',
     },
     {
       name: '去除所有空格',
       pattern: '\\s',
       description: '匹配所有空格（用于去除）',
+      hasAction: true,
+      actionType: 'remove',
     },
     {
       name: '去除多余空格',
       pattern: '\\s+',
       description: '匹配多个连续空格（用于保留一个）',
+      hasAction: true,
+      actionType: 'replace',
     },
     // 文件相关
     {
@@ -221,11 +236,15 @@ const RegexTester: React.FC = () => {
       name: '提取数字',
       pattern: '\\d+',
       description: '匹配数字（用于提取）',
+      hasAction: true,
+      actionType: 'extract',
     },
     {
       name: '提取中文',
-      pattern: '[\\u4e00-\\u9fa5]',
+      pattern: '[\\u4e00-\\u9fa5]+',
       description: '匹配中文字符（用于提取）',
+      hasAction: true,
+      actionType: 'extract',
     },
     {
       name: '检测连续重复字符',
@@ -236,11 +255,15 @@ const RegexTester: React.FC = () => {
       name: '驼峰转短横线',
       pattern: '([a-z])([A-Z])',
       description: '匹配驼峰命名中的大小写转换点（用于转换）',
+      hasAction: true,
+      actionType: 'transform',
     },
     {
       name: '短横线转驼峰',
       pattern: '-([a-z])',
       description: '匹配短横线命名中的短横线（用于转换）',
+      hasAction: true,
+      actionType: 'transform',
     },
     {
       name: 'JSON对象结构',
@@ -295,6 +318,113 @@ const RegexTester: React.FC = () => {
 
 
 
+  // 执行操作
+  const performAction = () => {
+    if (!testText.trim()) {
+      setActionResult('');
+      return;
+    }
+
+    const preset = presetRegexes.find(p => p.name === selectedPreset);
+    if (!preset || !preset.hasAction || !preset.actionType) {
+      setActionResult('');
+      return;
+    }
+
+    try {
+      const regex = new RegExp(preset.pattern, flags);
+      let result = '';
+
+      switch (preset.actionType) {
+        case 'extract':
+          // 提取匹配的内容
+          const matches: string[] = [];
+          let match;
+          // 使用全局标志时，需要循环匹配所有结果
+          if (flags.includes('g')) {
+            const globalRegex = new RegExp(preset.pattern, flags);
+            while ((match = globalRegex.exec(testText)) !== null) {
+              matches.push(match[0]);
+              // 避免无限循环（如果正则表达式匹配空字符串）
+              if (match[0].length === 0) {
+                globalRegex.lastIndex++;
+              }
+            }
+          } else {
+            match = testText.match(regex);
+            if (match) {
+              matches.push(match[0]);
+            }
+          }
+          if (matches.length > 0) {
+            result = matches.join('\n');
+          } else {
+            result = '未找到匹配内容';
+          }
+          break;
+
+        case 'filter':
+          // 过滤掉匹配的内容
+          result = testText.replace(regex, '');
+          break;
+
+        case 'remove':
+          // 移除匹配的内容
+          result = testText.replace(regex, '');
+          break;
+
+        case 'replace':
+          // 替换匹配的内容
+          if (preset.name === '去除多余空格') {
+            result = testText.replace(/\s+/g, ' ');
+          } else {
+            result = testText.replace(regex, '');
+          }
+          break;
+
+        case 'transform':
+          // 转换格式
+          if (preset.name === '驼峰转短横线') {
+            result = testText.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+          } else if (preset.name === '短横线转驼峰') {
+            result = testText.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+          } else {
+            result = testText;
+          }
+          break;
+
+        default:
+          result = testText;
+      }
+
+      setActionResult(result);
+    } catch (err) {
+      setActionResult(`操作失败: ${err instanceof Error ? err.message : '未知错误'}`);
+    }
+  };
+
+  // 当测试文本或预设改变时，自动执行操作
+  useEffect(() => {
+    const preset = presetRegexes.find(p => p.name === selectedPreset);
+    if (preset && preset.hasAction && testText.trim()) {
+      performAction();
+    } else {
+      setActionResult('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testText, selectedPreset, flags]);
+
+  // 复制操作结果
+  const copyActionResult = async () => {
+    if (!actionResult) return;
+    try {
+      await navigator.clipboard.writeText(actionResult);
+      // 可以添加一个提示
+    } catch (err) {
+      console.error('复制失败:', err);
+    }
+  };
+
   // 清空
   const clearAll = () => {
     setRegexPattern('');
@@ -303,6 +433,7 @@ const RegexTester: React.FC = () => {
     setError('');
     setIsValid(true);
     setSelectedPreset('');
+    setActionResult('');
   };
 
   return (
@@ -429,6 +560,27 @@ const RegexTester: React.FC = () => {
 
       {/* 错误提示 */}
       {error && <div className="error">{error}</div>}
+
+      {/* 操作区域 */}
+      {selectedPreset && presetRegexes.find(p => p.name === selectedPreset)?.hasAction && (
+        <div className="action-section">
+          <div className="section-header">
+            <label>操作结果：</label>
+            {actionResult && (
+              <button onClick={copyActionResult} className="copy-action-btn" title="复制结果">
+                📋 复制
+              </button>
+            )}
+          </div>
+          <div className="action-result">
+            {actionResult ? (
+              <div className="action-result-content">{actionResult}</div>
+            ) : (
+              <div className="action-result-placeholder">操作结果将显示在这里...</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 匹配结果 */}
       {isMatch !== null && (

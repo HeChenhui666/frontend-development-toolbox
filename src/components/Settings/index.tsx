@@ -11,6 +11,8 @@ import {
   getTabOrder,
   saveTabOrder,
   resetTabOrder,
+  exportUserConfig,
+  importUserConfig,
   type DefaultTab,
   type FeatureTab,
   type CacheType,
@@ -61,6 +63,258 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     setDefaultTab(tab);
     saveDefaultTab(tab);
     showMessage.success('默认标签页已更新');
+  };
+
+  // 导出配置（下载文件）
+  const handleExportConfig = () => {
+    try {
+      const configJson = exportUserConfig();
+      const blob = new Blob([configJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `toolbox-config-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showMessage.success('配置已导出');
+    } catch (error) {
+      showMessage.error('导出配置失败');
+      console.error('Export failed:', error);
+    }
+  };
+
+  // 复制配置到剪贴板
+  const handleCopyConfig = async () => {
+    try {
+      const configJson = exportUserConfig();
+      await navigator.clipboard.writeText(configJson);
+      showMessage.success('配置已复制到剪贴板');
+    } catch (error) {
+      showMessage.error('复制配置失败');
+      console.error('Copy failed:', error);
+      // 降级方案：使用传统方法
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = exportUserConfig();
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showMessage.success('配置已复制到剪贴板');
+      } catch (fallbackError) {
+        showMessage.error('复制配置失败');
+        console.error('Fallback copy failed:', fallbackError);
+      }
+    }
+  };
+
+  // 导入配置（从文件）
+  const handleImportConfig = () => {
+    Modal.confirm({
+      title: '导入配置',
+      content: '导入配置将覆盖现有的用户设置（主题、预设参数、游戏积分等）。确定要继续吗？',
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const jsonString = event.target?.result as string;
+              const result = importUserConfig(jsonString);
+              
+              if (result.success) {
+                showMessage.success(result.message);
+                // 更新存储信息
+                setStorageInfo(getStorageInfo());
+                setCacheTypeInfo(getCacheTypeInfo());
+                // 更新默认标签页和标签页顺序
+                setDefaultTab(getDefaultTab());
+                setTabOrder(getTabOrder());
+                // 重新加载页面以应用新设置
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1000);
+              } else {
+                showMessage.error(result.message);
+              }
+            } catch (error) {
+              showMessage.error('读取文件失败');
+              console.error('Import failed:', error);
+            }
+          };
+          reader.onerror = () => {
+            showMessage.error('读取文件失败');
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      },
+    });
+  };
+
+  // 从剪贴板导入配置
+  const handleImportFromClipboard = () => {
+    // 先尝试读取剪贴板
+    const tryReadClipboard = async () => {
+      try {
+        // 检查是否支持clipboard API
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+          throw new Error('浏览器不支持剪贴板API');
+        }
+        
+        const clipboardText = await navigator.clipboard.readText();
+        
+        if (!clipboardText || !clipboardText.trim()) {
+          throw new Error('剪贴板为空');
+        }
+        
+        // 验证是否为有效的JSON
+        try {
+          JSON.parse(clipboardText);
+        } catch {
+          throw new Error('剪贴板内容不是有效的JSON格式');
+        }
+        
+        return clipboardText;
+      } catch (error) {
+        console.error('读取剪贴板失败:', error);
+        throw error;
+      }
+    };
+
+    // 显示确认对话框，并提供手动输入选项
+    Modal.confirm({
+      title: '从剪贴板导入配置',
+      content: (
+        <div>
+          <p style={{ marginBottom: '12px' }}>
+            导入配置将覆盖现有的用户设置（主题、预设参数、游戏积分等）。
+          </p>
+          <p style={{ fontSize: '12px', color: '#64748b', marginBottom: 0 }}>
+            如果自动读取剪贴板失败，请点击"确定"后手动粘贴配置JSON。
+          </p>
+        </div>
+      ),
+      okText: '确定',
+      cancelText: '取消',
+      width: 400,
+      onOk: async () => {
+        try {
+          // 先尝试自动读取剪贴板
+          let configText: string;
+          try {
+            configText = await tryReadClipboard();
+          } catch (clipboardError) {
+            // 如果自动读取失败，显示输入框让用户手动粘贴
+            return new Promise<void>((resolve) => {
+              let inputValue = '';
+              Modal.confirm({
+                title: '手动粘贴配置',
+                content: (
+                  <div>
+                    <p style={{ marginBottom: '8px', fontSize: '12px', color: '#64748b' }}>
+                      自动读取剪贴板失败，请手动粘贴配置JSON：
+                    </p>
+                    <textarea
+                      id="config-input-textarea"
+                      style={{
+                        width: '100%',
+                        minHeight: '200px',
+                        padding: '8px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '4px',
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                        resize: 'vertical',
+                      }}
+                      placeholder="请粘贴配置JSON..."
+                      onChange={(e) => {
+                        inputValue = e.target.value;
+                      }}
+                      onPaste={() => {
+                        // 自动填充粘贴的内容
+                        setTimeout(() => {
+                          const textarea = document.getElementById('config-input-textarea') as HTMLTextAreaElement;
+                          if (textarea) {
+                            inputValue = textarea.value;
+                          }
+                        }, 0);
+                      }}
+                    />
+                  </div>
+                ),
+                okText: '导入',
+                cancelText: '取消',
+                width: 500,
+                onOk: () => {
+                  if (!inputValue || !inputValue.trim()) {
+                    showMessage.error('请输入配置JSON');
+                    resolve();
+                    return;
+                  }
+                  
+                  const result = importUserConfig(inputValue.trim());
+                  
+                  if (result.success) {
+                    showMessage.success(result.message);
+                    // 更新存储信息
+                    setStorageInfo(getStorageInfo());
+                    setCacheTypeInfo(getCacheTypeInfo());
+                    // 更新默认标签页和标签页顺序
+                    setDefaultTab(getDefaultTab());
+                    setTabOrder(getTabOrder());
+                    // 重新加载页面以应用新设置
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
+                  } else {
+                    showMessage.error(result.message);
+                  }
+                  resolve();
+                },
+                onCancel: () => {
+                  resolve();
+                },
+              });
+            });
+          }
+          
+          // 如果成功读取剪贴板，直接导入
+          const result = importUserConfig(configText);
+          
+          if (result.success) {
+            showMessage.success(result.message);
+            // 更新存储信息
+            setStorageInfo(getStorageInfo());
+            setCacheTypeInfo(getCacheTypeInfo());
+            // 更新默认标签页和标签页顺序
+            setDefaultTab(getDefaultTab());
+            setTabOrder(getTabOrder());
+            // 重新加载页面以应用新设置
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            showMessage.error(result.message);
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : '未知错误';
+          showMessage.error(`导入失败: ${errorMessage}`);
+          console.error('Import from clipboard failed:', error);
+        }
+      },
+    });
   };
 
   const handleClearCache = () => {
@@ -355,9 +609,27 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                     </div>
 
                     <div className="storage-actions">
-                      <Button onClick={handleClearCache} danger size="small">
-                        清除所有缓存
-                      </Button>
+                      <div className="storage-actions-row">
+                        <Button onClick={handleExportConfig} size="small" type="primary">
+                          📥 导出配置
+                        </Button>
+                        <Button onClick={handleCopyConfig} size="small">
+                          📋 复制配置
+                        </Button>
+                      </div>
+                      <div className="storage-actions-row">
+                        <Button onClick={handleImportConfig} size="small">
+                          📤 导入配置
+                        </Button>
+                        <Button onClick={handleImportFromClipboard} size="small">
+                          📋 从剪贴板导入
+                        </Button>
+                      </div>
+                      <div className="storage-actions-row">
+                        <Button onClick={handleClearCache} danger size="small">
+                          清除所有缓存
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

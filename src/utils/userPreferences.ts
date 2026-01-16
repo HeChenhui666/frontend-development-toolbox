@@ -190,3 +190,86 @@ export const getStorageInfo = (): { used: number; total: number; items: Array<{ 
   };
 };
 
+// 导出所有用户配置
+export const exportUserConfig = (): string => {
+  const config: Record<string, string | null> = {};
+  
+  try {
+    // 收集所有相关的localStorage项
+    const keysToExport = [
+      'app-theme',
+      'url-preset-params',
+      DEFAULT_TAB_KEY,
+      TAB_ORDER_KEY,
+      'game-high-score-tetris',
+      'game-high-score-snake',
+      'game-high-score-2048',
+      'translator-page-translate-enabled', // 翻译功能开关
+    ];
+    
+    keysToExport.forEach((key) => {
+      const value = localStorage.getItem(key);
+      if (value !== null) {
+        config[key] = value;
+      }
+    });
+    
+    // 添加元数据
+    const exportData = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      config,
+    };
+    
+    return JSON.stringify(exportData, null, 2);
+  } catch (error) {
+    console.error('Failed to export user config:', error);
+    throw error;
+  }
+};
+
+// 导入用户配置
+export const importUserConfig = (jsonString: string): { success: boolean; message: string } => {
+  try {
+    const data = JSON.parse(jsonString);
+    
+    // 验证数据格式
+    if (!data.config || typeof data.config !== 'object') {
+      return { success: false, message: '配置文件格式无效' };
+    }
+    
+    // 导入配置
+    let importedCount = 0;
+    const validKeys = [
+      'app-theme',
+      'url-preset-params',
+      DEFAULT_TAB_KEY,
+      TAB_ORDER_KEY,
+      'game-high-score-tetris',
+      'game-high-score-snake',
+      'game-high-score-2048',
+      'translator-page-translate-enabled',
+    ];
+    
+    Object.entries(data.config).forEach(([key, value]) => {
+      // 只导入有效的key
+      if (validKeys.includes(key) && value !== null && typeof value === 'string') {
+        try {
+          localStorage.setItem(key, value);
+          importedCount++;
+        } catch (error) {
+          console.error(`Failed to import key "${key}":`, error);
+        }
+      }
+    });
+    
+    if (importedCount === 0) {
+      return { success: false, message: '没有有效的配置项可导入' };
+    }
+    
+    return { success: true, message: `成功导入 ${importedCount} 项配置` };
+  } catch (error) {
+    console.error('Failed to import user config:', error);
+    return { success: false, message: `导入失败: ${error instanceof Error ? error.message : '未知错误'}` };
+  }
+};

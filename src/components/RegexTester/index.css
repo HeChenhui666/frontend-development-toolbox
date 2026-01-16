@@ -122,13 +122,13 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
-  min-height: 150px;
+  flex-shrink: 0;
 }
 
 .test-textarea {
-  flex: 1;
-  min-height: 150px;
+  height: 100px;
+  min-height: 100px;
+  max-height: 200px;
   padding: 8px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
   border-radius: 6px;
@@ -218,3 +218,50 @@
   background: #dc2626;
 }
 
+/* 操作区域样式 */
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.copy-action-btn {
+  padding: 4px 8px;
+  background: var(--theme-buttonSecondary, #64748b);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-action-btn:hover {
+  background: #475569;
+}
+
+.action-result {
+  min-height: 100px;
+  max-height: 200px;
+  padding: 8px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 6px;
+  background: var(--theme-inputBackground, #ffffff);
+  overflow-y: auto;
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  color: var(--theme-inputText, #334155);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.action-result-content {
+  color: var(--theme-inputText, #334155);
+}
+
+.action-result-placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
