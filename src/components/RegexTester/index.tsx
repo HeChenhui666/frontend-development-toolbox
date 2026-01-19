@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Select } from 'antd';
+import RandExp from 'randexp';
 import './index.css';
 
 type ActionType = 'extract' | 'filter' | 'remove' | 'replace' | 'transform';
@@ -49,7 +50,7 @@ const RegexTester: React.FC = () => {
     // 身份证相关
     {
       name: '中国身份证号码',
-      pattern: '(^\\d{15}$)|(^\\d{18}$)|(^\\d{17}(\\d|X|x)$)',
+      pattern: '^(\\d{15}|\\d{17}[\\dXx])$',
       description: '匹配15位或18位中国身份证号码（支持X结尾）',
     },
     // 密码相关
@@ -76,8 +77,8 @@ const RegexTester: React.FC = () => {
     },
     {
       name: '浮点数',
-      pattern: '^(-?\\d+)(\\.\\d+)?$',
-      description: '匹配浮点数（可正可负）',
+      pattern: '^-?(\\d+(\\.\\d+)?|\\.\\d+)$',
+      description: '匹配浮点数（可正可负，支持.5格式）',
     },
     {
       name: '最多两位小数',
@@ -86,19 +87,20 @@ const RegexTester: React.FC = () => {
     },
     {
       name: '百分比（0-100）',
-      pattern: '^(100|[1-9]?\\d(\\.\\d+)?)$',
-      description: '匹配0-100的百分比数值',
+      pattern: '^(100(\\.0+)?|[0-9]?\\d(\\.\\d+)?)$',
+      description: '匹配0-100的百分比数值（不包括100.5等）',
     },
     // URL相关
     {
       name: 'URL链接',
-      pattern: '^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$',
+      pattern: '^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z]{2,6})(?:\\/([\\w\\.-]+(?:\\/[\\w\\.-]*)*))?\\/?$',
       description: '匹配URL链接格式',
     },
     {
       name: '包含端口的URL',
-      pattern: '^https?:\\/\\/(?:[-\\w.])+(?::[0-9]+)?(?:\\/(?:[\\w\\/_.])*(?:\\?(?:[\\w&=%.])*)?(?:\\#(?:[\\w.])*)?)?$',
-      description: '匹配包含端口的URL链接',
+      pattern:
+        '^https?:\\/\\/(?:[-\\w.])+(?::[0-9]{1,5})?(?:\\/(?:[\\w\\/_.-])*(?:\\?(?:[\\w&=%.])*)?(?:\\#(?:[\\w.-])*)?)?$',
+      description: '匹配包含端口的URL链接（端口号1-5位数字）',
     },
     {
       name: 'IP地址',
@@ -113,13 +115,13 @@ const RegexTester: React.FC = () => {
     },
     {
       name: 'RGB颜色',
-      pattern: '^rgb\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*\\)$',
-      description: '匹配RGB颜色格式 rgb(r, g, b)',
+      pattern: '^rgb\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*\\)$',
+      description: '匹配RGB颜色格式 rgb(r, g, b)，r/g/b值范围0-255',
     },
     {
       name: 'RGBA颜色',
-      pattern: '^rgba\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(0|1|0\\.\\d+)\\s*\\)$',
-      description: '匹配RGBA颜色格式 rgba(r, g, b, a)',
+      pattern: '^rgba\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:0|1|0\\.\\d+|1\\.0+))\\s*\\)$',
+      description: '匹配RGBA颜色格式 rgba(r, g, b, a)，r/g/b值范围0-255，a值范围0-1',
     },
     // 时间日期相关
     {
@@ -134,13 +136,13 @@ const RegexTester: React.FC = () => {
     },
     {
       name: '日期格式（YYYY-MM-DD）',
-      pattern: '^\\d{4}-\\d{2}-\\d{2}$',
-      description: '匹配日期格式 YYYY-MM-DD',
+      pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$',
+      description: '匹配日期格式 YYYY-MM-DD（验证月份1-12，日期1-31）',
     },
     {
       name: '日期时间格式',
-      pattern: '^\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}$',
-      description: '匹配日期时间格式 YYYY-MM-DD HH:MM:SS',
+      pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])\\s+([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$',
+      description: '匹配日期时间格式 YYYY-MM-DD HH:MM:SS（验证日期和时间有效性）',
     },
     // 中文相关
     {
@@ -207,24 +209,25 @@ const RegexTester: React.FC = () => {
     },
     {
       name: 'Windows文件名',
-      pattern: '^[^<>:"/\\\\|?*]*$',
-      description: '匹配Windows合法文件名（不包含非法字符）',
+      pattern: '^[^<>:"/\\\\|?*\\x00-\\x1f]*$',
+      description: '匹配Windows合法文件名（不包含非法字符和控制字符）',
     },
     // 金额相关
     {
       name: '人民币金额',
-      pattern: '^¥?(\\d{1,3},?)*(\\.\\d{2})?$',
-      description: '匹配人民币金额格式',
+      pattern: '^¥?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$',
+      description: '匹配人民币金额格式（支持千分位，小数部分必须是两位）',
     },
     {
       name: '美元金额',
-      pattern: '^\\$?(\\d{1,3},?)*(\\.\\d{2})?$',
-      description: '匹配美元金额格式',
+      pattern: '^[\\$]?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$',
+      description: '匹配美元金额格式（支持千分位，小数部分必须是两位）',
     },
     // 其他
     {
       name: '中国车牌号',
-      pattern: '^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]$',
+      pattern:
+        '^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]$',
       description: '匹配中国车牌号格式',
     },
     {
@@ -274,7 +277,7 @@ const RegexTester: React.FC = () => {
 
   // 应用预设正则表达式
   const applyPreset = (presetName: string) => {
-    const preset = presetRegexes.find(p => p.name === presetName);
+    const preset = presetRegexes.find((p) => p.name === presetName);
     if (preset) {
       setRegexPattern(preset.pattern);
       setSelectedPreset(preset.name);
@@ -285,6 +288,50 @@ const RegexTester: React.FC = () => {
   // 处理预设选择变化
   const handlePresetChange = (value: string) => {
     applyPreset(value);
+  };
+
+  // 生成符合正则表达式的随机文本
+  const handleGenerateText = () => {
+    if (!regexPattern.trim()) {
+      setError('请输入正则表达式');
+      setIsMatch(null);
+      setIsValid(true);
+      return;
+    }
+
+    try {
+      setError('');
+      setIsValid(true);
+
+      // 使用 randexp 生成符合正则表达式的文本
+      const regex = new RegExp(regexPattern, flags);
+      const randexp = new RandExp(regex);
+
+      // 设置最大重复次数，避免生成过长的文本
+      randexp.max = 10;
+
+      // 生成文本
+      const generated = randexp.gen();
+
+      if (generated) {
+        setTestText(generated);
+      } else {
+        setError('无法生成匹配的文本');
+      }
+    } catch (err) {
+      setIsValid(false);
+      const errorMessage = err instanceof Error ? err.message : '未知错误';
+
+      // 提供更友好的错误提示
+      if (errorMessage.includes('lookbehind') || errorMessage.includes('lookahead')) {
+        setError('该正则表达式包含不支持的语法（如 lookbehind/lookahead），无法生成示例文本');
+      } else if (errorMessage.includes('backreference')) {
+        setError('该正则表达式包含反向引用，生成功能可能无法正常工作');
+      } else {
+        setError(`生成失败: ${errorMessage}`);
+      }
+      console.error('Generate text failed:', err);
+    }
   };
 
   // 测试正则表达式
@@ -316,8 +363,6 @@ const RegexTester: React.FC = () => {
     }
   };
 
-
-
   // 执行操作
   const performAction = () => {
     if (!testText.trim()) {
@@ -325,7 +370,7 @@ const RegexTester: React.FC = () => {
       return;
     }
 
-    const preset = presetRegexes.find(p => p.name === selectedPreset);
+    const preset = presetRegexes.find((p) => p.name === selectedPreset);
     if (!preset || !preset.hasAction || !preset.actionType) {
       setActionResult('');
       return;
@@ -405,7 +450,7 @@ const RegexTester: React.FC = () => {
 
   // 当测试文本或预设改变时，自动执行操作
   useEffect(() => {
-    const preset = presetRegexes.find(p => p.name === selectedPreset);
+    const preset = presetRegexes.find((p) => p.name === selectedPreset);
     if (preset && preset.hasAction && testText.trim()) {
       performAction();
     } else {
@@ -437,14 +482,14 @@ const RegexTester: React.FC = () => {
   };
 
   return (
-    <div className="regex-tester">
+    <div className='regex-tester'>
       {/* 预设正则表达式 */}
-      <div className="preset-section">
-        <div className="section-header">
+      <div className='preset-section'>
+        <div className='section-header'>
           <label>预设正则表达式：</label>
         </div>
         <Select
-          placeholder="选择预设正则表达式"
+          placeholder='选择预设正则表达式'
           value={selectedPreset || undefined}
           onChange={handlePresetChange}
           onClear={() => {
@@ -454,34 +499,32 @@ const RegexTester: React.FC = () => {
           allowClear
           showSearch
           filterOption={(input, option) => {
-            const preset = presetRegexes.find(p => p.name === option?.value);
+            const preset = presetRegexes.find((p) => p.name === option?.value);
             const label = (option?.label ?? '').toLowerCase();
             const description = preset?.description?.toLowerCase() ?? '';
             const searchText = input.toLowerCase();
             return label.includes(searchText) || description.includes(searchText);
           }}
-          className="preset-select"
-          size="small"
+          className='preset-select'
+          size='small'
           options={presetRegexes.map((preset) => ({
             value: preset.name,
             label: preset.name,
           }))}
         />
         {selectedPreset && (
-          <div className="preset-description">
-            {presetRegexes.find(p => p.name === selectedPreset)?.description}
-          </div>
+          <div className='preset-description'>{presetRegexes.find((p) => p.name === selectedPreset)?.description}</div>
         )}
       </div>
 
       {/* 正则表达式输入 */}
-      <div className="regex-input-section">
-        <div className="section-header">
+      <div className='regex-input-section'>
+        <div className='section-header'>
           <label>正则表达式：</label>
-          <div className="flags-control">
-            <label className="flag-label">
+          <div className='flags-control'>
+            <label className='flag-label'>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={flags.includes('g')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -493,9 +536,9 @@ const RegexTester: React.FC = () => {
               />
               <span>全局(g)</span>
             </label>
-            <label className="flag-label">
+            <label className='flag-label'>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={flags.includes('i')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -507,9 +550,9 @@ const RegexTester: React.FC = () => {
               />
               <span>忽略大小写(i)</span>
             </label>
-            <label className="flag-label">
+            <label className='flag-label'>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={flags.includes('m')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -523,60 +566,68 @@ const RegexTester: React.FC = () => {
             </label>
           </div>
         </div>
-        <div className="input-wrapper">
+        <div className='input-wrapper'>
           <input
-            type="text"
+            type='text'
             value={regexPattern}
             onChange={(e) => {
               setRegexPattern(e.target.value);
               setSelectedPreset('');
             }}
-            placeholder="输入正则表达式，例如: ^\\d+$"
+            placeholder='输入正则表达式，例如: ^\\d+$'
             className={`regex-input ${!isValid ? 'error' : ''}`}
           />
-          <button onClick={testRegex} className="test-btn">
-            测试
-          </button>
+          <div className='button-group'>
+            <button onClick={testRegex} className='test-btn'>
+              测试
+            </button>
+            <button
+              onClick={handleGenerateText}
+              className='generate-btn'
+              title='生成符合正则表达式的随机文本'
+              disabled={!regexPattern.trim()}
+            >
+              生成
+            </button>
+          </div>
         </div>
         {selectedPreset && (
-          <div className="preset-description">
-            {presetRegexes.find(p => p.name === selectedPreset)?.description}
-          </div>
+          <div className='preset-description'>{presetRegexes.find((p) => p.name === selectedPreset)?.description}</div>
         )}
       </div>
 
       {/* 测试文本输入 */}
-      <div className="test-text-section">
-        <div className="section-header">
+      <div className='test-text-section'>
+        <div className='section-header'>
           <label>测试文本：</label>
         </div>
         <textarea
           value={testText}
           onChange={(e) => setTestText(e.target.value)}
-          placeholder="输入要测试的文本..."
-          className="test-textarea"
+          placeholder='输入要测试的文本...'
+          className='test-textarea'
         />
       </div>
 
       {/* 错误提示 */}
-      {error && <div className="error">{error}</div>}
+      {error && <div className='error'>{error}</div>}
 
       {/* 操作区域 */}
-      {selectedPreset && presetRegexes.find(p => p.name === selectedPreset)?.hasAction && (
-        <div className="action-section">
-          <div className="section-header">
+      {selectedPreset && presetRegexes.find((p) => p.name === selectedPreset)?.hasAction && (
+        <div className='action-section'>
+          <div className='section-header'>
             <label>操作结果：</label>
             {actionResult && (
-              <button onClick={copyActionResult} className="copy-action-btn" title="复制结果">
+              <button onClick={copyActionResult} className='copy-action-btn' title='复制结果'>
                 📋 复制
               </button>
             )}
           </div>
-          <div className="action-result">
+          <div className='action-result'>
             {actionResult ? (
-              <div className="action-result-content">{actionResult}</div>
+              <div className='action-result-content'>{actionResult}</div>
             ) : (
-              <div className="action-result-placeholder">操作结果将显示在这里...</div>
+              <div className='action-result-placeholder'>操作结果将显示在这里...</div>
             )}
           </div>
         </div>
@@ -584,26 +635,17 @@ const RegexTester: React.FC = () => {
 
       {/* 匹配结果 */}
       {isMatch !== null && (
-        <div className="results-section">
+        <div className='results-section'>
           <div className={`match-result ${isMatch ? 'success' : 'failure'}`}>
-            {isMatch ? (
-              <>
-                <span className="result-icon">✅</span>
-                <span className="result-text">测试文本满足正则表达式</span>
-              </>
-            ) : (
-              <>
-                <span className="result-icon">❌</span>
-                <span className="result-text">测试文本不满足正则表达式</span>
-              </>
-            )}
+            <span className='result-icon'>{isMatch ? '✓' : '✗'}</span>
+            <span className='result-text'>{isMatch ? '匹配成功' : '匹配失败'}</span>
           </div>
         </div>
       )}
 
       {/* 操作按钮 */}
-      <div className="actions">
-        <button onClick={clearAll} className="clear-btn">
+      <div className='actions'>
+        <button onClick={clearAll} className='clear-btn'>
           清空
         </button>
       </div>
@@ -612,4 +654,3 @@ const RegexTester: React.FC = () => {
 };
 
 export default RegexTester;
-

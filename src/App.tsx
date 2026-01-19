@@ -4,7 +4,7 @@ import './App.css';
 import EasterEgg from './components/EasterEgg';
 import Settings from './components/Settings';
 import { getSavedTheme, applyTheme } from './utils/theme';
-import { getDefaultTab, getTabOrder } from './utils/userPreferences';
+import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab } from './utils/userPreferences';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -49,12 +49,14 @@ const App: React.FC = () => {
   const [tabOrderVersion, setTabOrderVersion] = useState(0); // 用于触发重新计算
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 初始化主题和默认标签页
+  // 初始化主题和标签页（优先使用上次活动的tab，否则使用默认tab）
   useEffect(() => {
     const savedTheme = getSavedTheme();
     applyTheme(savedTheme);
-    const defaultTab = getDefaultTab();
-    setActiveTab(defaultTab as FeatureTab);
+    // 优先使用上次活动的tab，如果没有则使用默认tab
+    const lastActiveTab = getActiveTab();
+    const initialTab = lastActiveTab || getDefaultTab();
+    setActiveTab(initialTab as FeatureTab);
   }, []);
 
   // 监听标签页顺序变化事件
@@ -198,6 +200,32 @@ const App: React.FC = () => {
   const handleCloseEasterEgg = () => {
     setShowEasterEgg(false);
   };
+
+  // 保存当前活动的tab
+  useEffect(() => {
+    saveActiveTab(activeTab);
+  }, [activeTab]);
+
+  // 页面关闭或隐藏时保存当前tab
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveActiveTab(activeTab);
+    };
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        saveActiveTab(activeTab);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [activeTab]);
 
   // 组件卸载时清理定时器
   useEffect(() => {
