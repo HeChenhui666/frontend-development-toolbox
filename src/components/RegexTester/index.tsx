@@ -1,24 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Select } from 'antd';
+import RandExp from 'randexp';
 import './index.css';
+
+type ActionType = 'extract' | 'filter' | 'remove' | 'replace' | 'transform';
 
 interface PresetRegex {
   name: string;
   pattern: string;
   description: string;
+  hasAction?: boolean; // 是否有操作意向
+  actionType?: ActionType; // 操作类型
 }
 
-const RegexTester: React.FC = () => {
-  const [regexPattern, setRegexPattern] = useState<string>('');
-  const [testText, setTestText] = useState<string>('');
-  const [flags, setFlags] = useState<string>('g');
-  const [isMatch, setIsMatch] = useState<boolean | null>(null);
-  const [isValid, setIsValid] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
-  const [selectedPreset, setSelectedPreset] = useState<string>('');
-
-  // 预设正则表达式
-  const presetRegexes: PresetRegex[] = [
+// 预设正则表达式 - 移到组件外部，避免每次渲染重新创建
+const PRESET_REGEXES: PresetRegex[] = [
     // 手机号相关
     {
       name: '中国大陆手机号',
@@ -44,7 +40,7 @@ const RegexTester: React.FC = () => {
     // 身份证相关
     {
       name: '中国身份证号码',
-      pattern: '(^\\d{15}$)|(^\\d{18}$)|(^\\d{17}(\\d|X|x)$)',
+      pattern: '^(\\d{15}|\\d{17}[\\dXx])$',
       description: '匹配15位或18位中国身份证号码（支持X结尾）',
     },
     // 密码相关
@@ -71,8 +67,8 @@ const RegexTester: React.FC = () => {
     },
     {
       name: '浮点数',
-      pattern: '^(-?\\d+)(\\.\\d+)?$',
-      description: '匹配浮点数（可正可负）',
+      pattern: '^-?(\\d+(\\.\\d+)?|\\.\\d+)$',
+      description: '匹配浮点数（可正可负，支持.5格式）',
     },
     {
       name: '最多两位小数',
@@ -81,19 +77,20 @@ const RegexTester: React.FC = () => {
     },
     {
       name: '百分比（0-100）',
-      pattern: '^(100|[1-9]?\\d(\\.\\d+)?)$',
-      description: '匹配0-100的百分比数值',
+      pattern: '^(100(\\.0+)?|[0-9]?\\d(\\.\\d+)?)$',
+      description: '匹配0-100的百分比数值（不包括100.5等）',
     },
     // URL相关
     {
       name: 'URL链接',
-      pattern: '^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$',
+      pattern: '^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z]{2,6})(?:\\/([\\w\\.-]+(?:\\/[\\w\\.-]*)*))?\\/?$',
       description: '匹配URL链接格式',
     },
     {
       name: '包含端口的URL',
-      pattern: '^https?:\\/\\/(?:[-\\w.])+(?::[0-9]+)?(?:\\/(?:[\\w\\/_.])*(?:\\?(?:[\\w&=%.])*)?(?:\\#(?:[\\w.])*)?)?$',
-      description: '匹配包含端口的URL链接',
+      pattern:
+        '^https?:\\/\\/(?:[-\\w.])+(?::[0-9]{1,5})?(?:\\/(?:[\\w\\/_.-])*(?:\\?(?:[\\w&=%.])*)?(?:\\#(?:[\\w.-])*)?)?$',
+      description: '匹配包含端口的URL链接（端口号1-5位数字）',
     },
     {
       name: 'IP地址',
@@ -108,13 +105,13 @@ const RegexTester: React.FC = () => {
     },
     {
       name: 'RGB颜色',
-      pattern: '^rgb\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*\\)$',
-      description: '匹配RGB颜色格式 rgb(r, g, b)',
+      pattern: '^rgb\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*\\)$',
+      description: '匹配RGB颜色格式 rgb(r, g, b)，r/g/b值范围0-255',
     },
     {
       name: 'RGBA颜色',
-      pattern: '^rgba\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(0|1|0\\.\\d+)\\s*\\)$',
-      description: '匹配RGBA颜色格式 rgba(r, g, b, a)',
+      pattern: '^rgba\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:0|1|0\\.\\d+|1\\.0+))\\s*\\)$',
+      description: '匹配RGBA颜色格式 rgba(r, g, b, a)，r/g/b值范围0-255，a值范围0-1',
     },
     // 时间日期相关
     {
@@ -129,13 +126,13 @@ const RegexTester: React.FC = () => {
     },
     {
       name: '日期格式（YYYY-MM-DD）',
-      pattern: '^\\d{4}-\\d{2}-\\d{2}$',
-      description: '匹配日期格式 YYYY-MM-DD',
+      pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$',
+      description: '匹配日期格式 YYYY-MM-DD（验证月份1-12，日期1-31）',
     },
     {
       name: '日期时间格式',
-      pattern: '^\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}$',
-      description: '匹配日期时间格式 YYYY-MM-DD HH:MM:SS',
+      pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])\\s+([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$',
+      description: '匹配日期时间格式 YYYY-MM-DD HH:MM:SS（验证日期和时间有效性）',
     },
     // 中文相关
     {
@@ -158,6 +155,8 @@ const RegexTester: React.FC = () => {
       name: '过滤特殊字符',
       pattern: '[~`!@#$%^&*()_\\-+=|\\\\[\\]{};\'\\":<>/?]',
       description: '匹配特殊字符（用于过滤）',
+      hasAction: true,
+      actionType: 'filter',
     },
     {
       name: '字母数字下划线',
@@ -168,21 +167,29 @@ const RegexTester: React.FC = () => {
       name: '过滤HTML标签',
       pattern: '<[^>]*>',
       description: '匹配HTML标签（用于过滤）',
+      hasAction: true,
+      actionType: 'filter',
     },
     {
       name: '去除首尾空格',
       pattern: '^\\s+|\\s+$',
       description: '匹配首尾空格（用于去除）',
+      hasAction: true,
+      actionType: 'remove',
     },
     {
       name: '去除所有空格',
       pattern: '\\s',
       description: '匹配所有空格（用于去除）',
+      hasAction: true,
+      actionType: 'remove',
     },
     {
       name: '去除多余空格',
       pattern: '\\s+',
       description: '匹配多个连续空格（用于保留一个）',
+      hasAction: true,
+      actionType: 'replace',
     },
     // 文件相关
     {
@@ -192,24 +199,25 @@ const RegexTester: React.FC = () => {
     },
     {
       name: 'Windows文件名',
-      pattern: '^[^<>:"/\\\\|?*]*$',
-      description: '匹配Windows合法文件名（不包含非法字符）',
+      pattern: '^[^<>:"/\\\\|?*\\x00-\\x1f]*$',
+      description: '匹配Windows合法文件名（不包含非法字符和控制字符）',
     },
     // 金额相关
     {
       name: '人民币金额',
-      pattern: '^¥?(\\d{1,3},?)*(\\.\\d{2})?$',
-      description: '匹配人民币金额格式',
+      pattern: '^¥?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$',
+      description: '匹配人民币金额格式（支持千分位，小数部分必须是两位）',
     },
     {
       name: '美元金额',
-      pattern: '^\\$?(\\d{1,3},?)*(\\.\\d{2})?$',
-      description: '匹配美元金额格式',
+      pattern: '^[\\$]?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$',
+      description: '匹配美元金额格式（支持千分位，小数部分必须是两位）',
     },
     // 其他
     {
       name: '中国车牌号',
-      pattern: '^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]$',
+      pattern:
+        '^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]$',
       description: '匹配中国车牌号格式',
     },
     {
@@ -221,11 +229,15 @@ const RegexTester: React.FC = () => {
       name: '提取数字',
       pattern: '\\d+',
       description: '匹配数字（用于提取）',
+      hasAction: true,
+      actionType: 'extract',
     },
     {
       name: '提取中文',
-      pattern: '[\\u4e00-\\u9fa5]',
+      pattern: '[\\u4e00-\\u9fa5]+',
       description: '匹配中文字符（用于提取）',
+      hasAction: true,
+      actionType: 'extract',
     },
     {
       name: '检测连续重复字符',
@@ -236,36 +248,94 @@ const RegexTester: React.FC = () => {
       name: '驼峰转短横线',
       pattern: '([a-z])([A-Z])',
       description: '匹配驼峰命名中的大小写转换点（用于转换）',
+      hasAction: true,
+      actionType: 'transform',
     },
     {
       name: '短横线转驼峰',
       pattern: '-([a-z])',
       description: '匹配短横线命名中的短横线（用于转换）',
+      hasAction: true,
+      actionType: 'transform',
     },
     {
       name: 'JSON对象结构',
       pattern: '^\\s*\\{.*\\}\\s*$',
       description: '简单JSON对象结构验证',
     },
-  ];
+];
 
-  // 应用预设正则表达式
-  const applyPreset = (presetName: string) => {
-    const preset = presetRegexes.find(p => p.name === presetName);
+const RegexTester: React.FC = () => {
+  const [regexPattern, setRegexPattern] = useState<string>('');
+  const [testText, setTestText] = useState<string>('');
+  const [flags, setFlags] = useState<string>('g');
+  const [isMatch, setIsMatch] = useState<boolean | null>(null);
+  const [isValid, setIsValid] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [actionResult, setActionResult] = useState<string>('');
+
+  // 应用预设正则表达式 - 使用 useCallback 优化
+  const applyPreset = useCallback((presetName: string) => {
+    const preset = PRESET_REGEXES.find((p) => p.name === presetName);
     if (preset) {
       setRegexPattern(preset.pattern);
       setSelectedPreset(preset.name);
       setFlags('g');
     }
-  };
+  }, []);
 
-  // 处理预设选择变化
-  const handlePresetChange = (value: string) => {
+  // 处理预设选择变化 - 使用 useCallback 优化
+  const handlePresetChange = useCallback((value: string) => {
     applyPreset(value);
-  };
+  }, [applyPreset]);
 
-  // 测试正则表达式
-  const testRegex = () => {
+  // 生成符合正则表达式的随机文本 - 使用 useCallback 优化
+  const handleGenerateText = useCallback(() => {
+    if (!regexPattern.trim()) {
+      setError('请输入正则表达式');
+      setIsMatch(null);
+      setIsValid(true);
+      return;
+    }
+
+    try {
+      setError('');
+      setIsValid(true);
+
+      // 使用 randexp 生成符合正则表达式的文本
+      const regex = new RegExp(regexPattern, flags);
+      const randexp = new RandExp(regex);
+
+      // 设置最大重复次数，避免生成过长的文本
+      randexp.max = 10;
+
+      // 生成文本
+      const generated = randexp.gen();
+
+      if (generated) {
+        setTestText(generated);
+      } else {
+        setError('无法生成匹配的文本');
+      }
+    } catch (err) {
+      setIsValid(false);
+      const errorMessage = err instanceof Error ? err.message : '未知错误';
+
+      // 提供更友好的错误提示
+      if (errorMessage.includes('lookbehind') || errorMessage.includes('lookahead')) {
+        setError('该正则表达式包含不支持的语法（如 lookbehind/lookahead），无法生成示例文本');
+      } else if (errorMessage.includes('backreference')) {
+        setError('该正则表达式包含反向引用，生成功能可能无法正常工作');
+      } else {
+        setError(`生成失败: ${errorMessage}`);
+      }
+      console.error('Generate text failed:', err);
+    }
+  }, [regexPattern, flags]);
+
+  // 测试正则表达式 - 使用 useCallback 优化
+  const testRegex = useCallback(() => {
     if (!regexPattern.trim()) {
       setError('请输入正则表达式');
       setIsMatch(null);
@@ -291,29 +361,154 @@ const RegexTester: React.FC = () => {
       setError(`正则表达式错误: ${err instanceof Error ? err.message : '未知错误'}`);
       setIsMatch(null);
     }
-  };
+  }, [regexPattern, testText, flags]);
 
+  // 执行操作 - 使用 useCallback 优化
+  const performAction = useCallback(() => {
+    if (!testText.trim()) {
+      setActionResult('');
+      return;
+    }
 
+    const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
+    if (!preset || !preset.hasAction || !preset.actionType) {
+      setActionResult('');
+      return;
+    }
 
-  // 清空
-  const clearAll = () => {
+    try {
+      const regex = new RegExp(preset.pattern, flags);
+      let result = '';
+
+      switch (preset.actionType) {
+        case 'extract':
+          // 提取匹配的内容
+          const matches: string[] = [];
+          let match;
+          // 使用全局标志时，需要循环匹配所有结果
+          if (flags.includes('g')) {
+            const globalRegex = new RegExp(preset.pattern, flags);
+            while ((match = globalRegex.exec(testText)) !== null) {
+              matches.push(match[0]);
+              // 避免无限循环（如果正则表达式匹配空字符串）
+              if (match[0].length === 0) {
+                globalRegex.lastIndex++;
+              }
+            }
+          } else {
+            match = testText.match(regex);
+            if (match) {
+              matches.push(match[0]);
+            }
+          }
+          if (matches.length > 0) {
+            result = matches.join('\n');
+          } else {
+            result = '未找到匹配内容';
+          }
+          break;
+
+        case 'filter':
+          // 过滤掉匹配的内容
+          result = testText.replace(regex, '');
+          break;
+
+        case 'remove':
+          // 移除匹配的内容
+          result = testText.replace(regex, '');
+          break;
+
+        case 'replace':
+          // 替换匹配的内容
+          if (preset.name === '去除多余空格') {
+            result = testText.replace(/\s+/g, ' ');
+          } else {
+            result = testText.replace(regex, '');
+          }
+          break;
+
+        case 'transform':
+          // 转换格式
+          if (preset.name === '驼峰转短横线') {
+            result = testText.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+          } else if (preset.name === '短横线转驼峰') {
+            result = testText.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+          } else {
+            result = testText;
+          }
+          break;
+
+        default:
+          result = testText;
+      }
+
+      setActionResult(result);
+    } catch (err) {
+      setActionResult(`操作失败: ${err instanceof Error ? err.message : '未知错误'}`);
+    }
+  }, [testText, selectedPreset, flags]);
+
+  // 当测试文本或预设改变时，自动执行操作
+  useEffect(() => {
+    const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
+    if (preset && preset.hasAction && testText.trim()) {
+      performAction();
+    } else {
+      setActionResult('');
+    }
+  }, [testText, selectedPreset, flags, performAction]);
+
+  // 复制操作结果 - 使用 useCallback 优化
+  const copyActionResult = useCallback(async () => {
+    if (!actionResult) return;
+    try {
+      await navigator.clipboard.writeText(actionResult);
+      // 可以添加一个提示
+    } catch (err) {
+      console.error('复制失败:', err);
+    }
+  }, [actionResult]);
+
+  // 清空 - 使用 useCallback 优化
+  const clearAll = useCallback(() => {
     setRegexPattern('');
     setTestText('');
     setIsMatch(null);
     setError('');
     setIsValid(true);
     setSelectedPreset('');
-  };
+    setActionResult('');
+  }, []);
+
+  // 使用 useMemo 缓存预设选项，避免每次渲染重新计算
+  const presetOptions = useMemo(() => 
+    PRESET_REGEXES.map((preset) => ({
+      value: preset.name,
+      label: preset.name,
+    })), []
+  );
+
+  // 使用 useMemo 缓存当前预设的描述
+  const currentPresetDescription = useMemo(() => {
+    if (!selectedPreset) return null;
+    return PRESET_REGEXES.find((p) => p.name === selectedPreset)?.description;
+  }, [selectedPreset]);
+
+  // 使用 useMemo 缓存当前预设的配置
+  const currentPreset = useMemo(() => {
+    if (!selectedPreset) return null;
+    return PRESET_REGEXES.find((p) => p.name === selectedPreset);
+  }, [selectedPreset]);
 
   return (
-    <div className="regex-tester">
+    <div className='regex-tester'>
       {/* 预设正则表达式 */}
-      <div className="preset-section">
-        <div className="section-header">
+      <div className='preset-section'>
+        <div className='section-header'>
           <label>预设正则表达式：</label>
         </div>
         <Select
-          placeholder="选择预设正则表达式"
+          placeholder='选择预设正则表达式'
           value={selectedPreset || undefined}
           onChange={handlePresetChange}
           onClear={() => {
@@ -323,34 +518,29 @@ const RegexTester: React.FC = () => {
           allowClear
           showSearch
           filterOption={(input, option) => {
-            const preset = presetRegexes.find(p => p.name === option?.value);
+            const preset = PRESET_REGEXES.find((p) => p.name === option?.value);
             const label = (option?.label ?? '').toLowerCase();
             const description = preset?.description?.toLowerCase() ?? '';
             const searchText = input.toLowerCase();
             return label.includes(searchText) || description.includes(searchText);
           }}
-          className="preset-select"
-          size="small"
-          options={presetRegexes.map((preset) => ({
-            value: preset.name,
-            label: preset.name,
-          }))}
+          className='preset-select'
+          size='small'
+          options={presetOptions}
         />
-        {selectedPreset && (
-          <div className="preset-description">
-            {presetRegexes.find(p => p.name === selectedPreset)?.description}
-          </div>
+        {currentPresetDescription && (
+          <div className='preset-description'>{currentPresetDescription}</div>
         )}
       </div>
 
       {/* 正则表达式输入 */}
-      <div className="regex-input-section">
-        <div className="section-header">
+      <div className='regex-input-section'>
+        <div className='section-header'>
           <label>正则表达式：</label>
-          <div className="flags-control">
-            <label className="flag-label">
+          <div className='flags-control'>
+            <label className='flag-label'>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={flags.includes('g')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -362,9 +552,9 @@ const RegexTester: React.FC = () => {
               />
               <span>全局(g)</span>
             </label>
-            <label className="flag-label">
+            <label className='flag-label'>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={flags.includes('i')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -376,9 +566,9 @@ const RegexTester: React.FC = () => {
               />
               <span>忽略大小写(i)</span>
             </label>
-            <label className="flag-label">
+            <label className='flag-label'>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={flags.includes('m')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -392,66 +582,86 @@ const RegexTester: React.FC = () => {
             </label>
           </div>
         </div>
-        <div className="input-wrapper">
+        <div className='input-wrapper'>
           <input
-            type="text"
+            type='text'
             value={regexPattern}
             onChange={(e) => {
               setRegexPattern(e.target.value);
               setSelectedPreset('');
             }}
-            placeholder="输入正则表达式，例如: ^\\d+$"
+            placeholder='输入正则表达式，例如: ^\\d+$'
             className={`regex-input ${!isValid ? 'error' : ''}`}
           />
-          <button onClick={testRegex} className="test-btn">
-            测试
-          </button>
-        </div>
-        {selectedPreset && (
-          <div className="preset-description">
-            {presetRegexes.find(p => p.name === selectedPreset)?.description}
+          <div className='button-group'>
+            <button onClick={testRegex} className='test-btn'>
+              测试
+            </button>
+            <button
+              onClick={handleGenerateText}
+              className='generate-btn'
+              title='生成符合正则表达式的随机文本'
+              disabled={!regexPattern.trim()}
+            >
+              生成
+            </button>
           </div>
+        </div>
+        {currentPresetDescription && (
+          <div className='preset-description'>{currentPresetDescription}</div>
         )}
       </div>
 
       {/* 测试文本输入 */}
-      <div className="test-text-section">
-        <div className="section-header">
+      <div className='test-text-section'>
+        <div className='section-header'>
           <label>测试文本：</label>
         </div>
         <textarea
           value={testText}
           onChange={(e) => setTestText(e.target.value)}
-          placeholder="输入要测试的文本..."
-          className="test-textarea"
+          placeholder='输入要测试的文本...'
+          className='test-textarea'
         />
       </div>
 
       {/* 错误提示 */}
-      {error && <div className="error">{error}</div>}
+      {error && <div className='error'>{error}</div>}
 
-      {/* 匹配结果 */}
-      {isMatch !== null && (
-        <div className="results-section">
-          <div className={`match-result ${isMatch ? 'success' : 'failure'}`}>
-            {isMatch ? (
-              <>
-                <span className="result-icon">✅</span>
-                <span className="result-text">测试文本满足正则表达式</span>
-              </>
+      {/* 操作区域 */}
+      {currentPreset && currentPreset.hasAction && (
+        <div className='action-section'>
+          <div className='section-header'>
+            <label>操作结果：</label>
+            {actionResult && (
+              <button onClick={copyActionResult} className='copy-action-btn' title='复制结果'>
+                📋 复制
+              </button>
+            )}
+          </div>
+          <div className='action-result'>
+            {actionResult ? (
+              <div className='action-result-content'>{actionResult}</div>
             ) : (
-              <>
-                <span className="result-icon">❌</span>
-                <span className="result-text">测试文本不满足正则表达式</span>
-              </>
+              <div className='action-result-placeholder'>操作结果将显示在这里...</div>
             )}
           </div>
         </div>
       )}
 
+      {/* 匹配结果 */}
+      {isMatch !== null && (
+        <div className='results-section'>
+          <div className={`match-result ${isMatch ? 'success' : 'failure'}`}>
+            <span className='result-icon'>{isMatch ? '✓' : '✗'}</span>
+            <span className='result-text'>{isMatch ? '匹配成功' : '匹配失败'}</span>
+          </div>
+        </div>
+      )}
+
       {/* 操作按钮 */}
-      <div className="actions">
-        <button onClick={clearAll} className="clear-btn">
+      <div className='actions'>
+        <button onClick={clearAll} className='clear-btn'>
           清空
         </button>
       </div>
@@ -460,4 +670,3 @@ const RegexTester: React.FC = () => {
 };
 
 export default RegexTester;
-

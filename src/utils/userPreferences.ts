@@ -3,6 +3,7 @@ export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab
 
 const DEFAULT_TAB_KEY = 'app-default-tab';
 const TAB_ORDER_KEY = 'app-tab-order';
+const ACTIVE_TAB_KEY = 'app-active-tab'; // 当前活动的tab（用于恢复上次使用的tab）
 
 const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'qrcode',
@@ -34,6 +35,28 @@ export const saveDefaultTab = (tab: DefaultTab): void => {
   } catch (error) {
     console.error('Failed to save default tab:', error);
   }
+};
+
+// 保存当前活动的tab（用于恢复上次使用的tab）
+export const saveActiveTab = (tab: FeatureTab): void => {
+  try {
+    localStorage.setItem(ACTIVE_TAB_KEY, tab);
+  } catch (error) {
+    console.error('Failed to save active tab:', error);
+  }
+};
+
+// 获取上次使用的活动tab
+export const getActiveTab = (): FeatureTab | null => {
+  try {
+    const saved = localStorage.getItem(ACTIVE_TAB_KEY);
+    if (saved && DEFAULT_TAB_ORDER.includes(saved as FeatureTab)) {
+      return saved as FeatureTab;
+    }
+  } catch (error) {
+    console.error('Failed to get active tab:', error);
+  }
+  return null;
 };
 
 export const getTabOrder = (): FeatureTab[] => {
@@ -89,6 +112,7 @@ export const clearAllCache = (): void => {
     localStorage.removeItem('url-preset-params');
     localStorage.removeItem(DEFAULT_TAB_KEY);
     localStorage.removeItem(TAB_ORDER_KEY);
+    localStorage.removeItem(ACTIVE_TAB_KEY);
 
     const gameIds = ['tetris', 'snake', '2048'];
     gameIds.forEach((gameId) => {
@@ -122,6 +146,7 @@ export const clearCacheByType = (type: CacheType): void => {
       case 'preferences':
         localStorage.removeItem(DEFAULT_TAB_KEY);
         localStorage.removeItem(TAB_ORDER_KEY);
+        localStorage.removeItem(ACTIVE_TAB_KEY);
         break;
     }
     console.log(`Cache type "${type}" cleared successfully`);
@@ -136,7 +161,7 @@ export const getCacheTypeInfo = (): Record<CacheType, { name: string; keys: stri
     theme: { name: '主题设置', keys: ['app-theme'], size: 0 },
     presets: { name: 'URL预设参数', keys: ['url-preset-params'], size: 0 },
     games: { name: '游戏积分', keys: ['game-high-score-tetris', 'game-high-score-snake', 'game-high-score-2048'], size: 0 },
-    preferences: { name: '用户偏好', keys: [DEFAULT_TAB_KEY, TAB_ORDER_KEY], size: 0 },
+    preferences: { name: '用户偏好', keys: [DEFAULT_TAB_KEY, TAB_ORDER_KEY, ACTIVE_TAB_KEY], size: 0 },
   };
 
   try {
@@ -190,3 +215,88 @@ export const getStorageInfo = (): { used: number; total: number; items: Array<{ 
   };
 };
 
+// 导出所有用户配置
+export const exportUserConfig = (): string => {
+  const config: Record<string, string | null> = {};
+  
+  try {
+    // 收集所有相关的localStorage项
+    const keysToExport = [
+      'app-theme',
+      'url-preset-params',
+      DEFAULT_TAB_KEY,
+      TAB_ORDER_KEY,
+      ACTIVE_TAB_KEY,
+      'game-high-score-tetris',
+      'game-high-score-snake',
+      'game-high-score-2048',
+      'translator-page-translate-enabled', // 翻译功能开关
+    ];
+    
+    keysToExport.forEach((key) => {
+      const value = localStorage.getItem(key);
+      if (value !== null) {
+        config[key] = value;
+      }
+    });
+    
+    // 添加元数据
+    const exportData = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      config,
+    };
+    
+    return JSON.stringify(exportData, null, 2);
+  } catch (error) {
+    console.error('Failed to export user config:', error);
+    throw error;
+  }
+};
+
+// 导入用户配置
+export const importUserConfig = (jsonString: string): { success: boolean; message: string } => {
+  try {
+    const data = JSON.parse(jsonString);
+    
+    // 验证数据格式
+    if (!data.config || typeof data.config !== 'object') {
+      return { success: false, message: '配置文件格式无效' };
+    }
+    
+    // 导入配置
+    let importedCount = 0;
+    const validKeys = [
+      'app-theme',
+      'url-preset-params',
+      DEFAULT_TAB_KEY,
+      TAB_ORDER_KEY,
+      ACTIVE_TAB_KEY,
+      'game-high-score-tetris',
+      'game-high-score-snake',
+      'game-high-score-2048',
+      'translator-page-translate-enabled',
+    ];
+    
+    Object.entries(data.config).forEach(([key, value]) => {
+      // 只导入有效的key
+      if (validKeys.includes(key) && value !== null && typeof value === 'string') {
+        try {
+          localStorage.setItem(key, value);
+          importedCount++;
+        } catch (error) {
+          console.error(`Failed to import key "${key}":`, error);
+        }
+      }
+    });
+    
+    if (importedCount === 0) {
+      return { success: false, message: '没有有效的配置项可导入' };
+    }
+    
+    return { success: true, message: `成功导入 ${importedCount} 项配置` };
+  } catch (error) {
+    console.error('Failed to import user config:', error);
+    return { success: false, message: `导入失败: ${error instanceof Error ? error.message : '未知错误'}` };
+  }
+};
