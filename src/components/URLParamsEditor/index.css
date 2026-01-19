@@ -11,7 +11,7 @@
 .url-display {
   padding: 8px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
   max-height: 80px;
@@ -38,7 +38,7 @@
   color: var(--theme-text, #334155);
   cursor: pointer;
   font-size: 14px;
-  border-radius: 4px;
+  border-radius: 8px;
   transition: background 0.2s ease;
 }
 
@@ -70,7 +70,7 @@
 .base-url-input {
   padding: 6px 10px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.25s ease;
@@ -108,7 +108,7 @@
   background: var(--theme-surface, #f1f5f9);
   color: var(--theme-textSecondary, #475569);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -132,7 +132,7 @@
   background: var(--theme-surface, #f1f5f9);
   color: var(--theme-textSecondary, #475569);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -178,7 +178,7 @@
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -207,7 +207,7 @@
   gap: 6px;
   padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-border, #e2e8f0);
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -223,7 +223,7 @@
   flex: 1;
   padding: 5px 8px;
   border: 1px solid var(--theme-inputBorder, #cbd5e1);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.2s ease;
@@ -254,7 +254,7 @@
   border: none;
   background: var(--theme-error, #ef4444);
   color: var(--theme-buttonText, white);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -279,7 +279,7 @@
 .preview-section {
   padding: 8px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   flex-shrink: 0;
   display: flex;
@@ -307,7 +307,7 @@
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   padding: 8px;
   background: var(--theme-background, rgba(255, 255, 255, 0.7));
-  border-radius: 5px;
+  border-radius: 8px;
   min-height: 32px;
   max-height: 200px;
   overflow-y: auto;
@@ -329,7 +329,7 @@
   min-width: 80px;
   padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -357,7 +357,7 @@
   padding: 8px 10px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
@@ -380,7 +380,7 @@
 
 .preset-manager-modal {
   background: var(--theme-background, #ffffff);
-  border-radius: 12px;
+  border-radius: 8px;
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
@@ -416,7 +416,7 @@
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -457,7 +457,7 @@
 .preset-name-input {
   padding: 6px 10px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   transition: all 0.25s ease;
   background: var(--theme-inputBackground, #ffffff);
@@ -493,7 +493,7 @@
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -519,7 +519,7 @@
   gap: 6px;
   padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-border, #e2e8f0);
 }
 
@@ -528,7 +528,7 @@
   flex: 1;
   padding: 5px 8px;
   border: 1px solid var(--theme-inputBorder, #cbd5e1);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.2s ease;
@@ -559,7 +559,7 @@
   border: none;
   background: var(--theme-error, #ef4444);
   color: var(--theme-buttonText, white);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -587,7 +587,7 @@
 .save-preset-btn {
   padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -631,7 +631,7 @@
 .reset-presets-btn {
   padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -674,7 +674,7 @@
   align-items: center;
   padding: 10px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-border, #e2e8f0);
   transition: all 0.2s ease;
 }
@@ -709,7 +709,7 @@
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   padding: 2px 6px;
   background: var(--theme-background, #ffffff);
-  border-radius: 3px;
+  border-radius: 8px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
 }
 
@@ -722,7 +722,7 @@
 .delete-preset-btn {
   padding: 4px 10px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;

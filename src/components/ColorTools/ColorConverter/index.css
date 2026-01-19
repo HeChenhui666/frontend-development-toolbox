@@ -53,7 +53,7 @@
   gap: 8px;
   padding: 10px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
 }
@@ -75,7 +75,7 @@
   border: none;
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 10px;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -89,7 +89,7 @@
   width: 100%;
   padding: 8px;
   border: 1px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   background: var(--theme-inputBackground, #ffffff);
@@ -138,7 +138,7 @@
   flex: 1;
   padding: 6px;
   border: 1px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 11px;
   text-align: center;
   background: var(--theme-inputBackground, #ffffff);

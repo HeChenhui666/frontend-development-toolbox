@@ -21,7 +21,7 @@
   background: var(--theme-surface, #f8f9fa);
   color: var(--theme-primary, #0369a1);
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   border: 1px solid var(--theme-border, #bae6fd);
@@ -52,7 +52,7 @@
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   padding: 4px 6px;
-  border-radius: 5px;
+  border-radius: 8px;
   text-align: center;
   min-width: 50px;
   gap: 1px;
@@ -75,7 +75,7 @@
   border: 1px solid var(--theme-primary, #667eea);
   color: var(--theme-textSecondary, #64748b);
   padding: 4px 8px;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -103,7 +103,7 @@
   display: grid;
   border: 2px solid #334155;
   background: #1e293b;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   gap: 1px;
   padding: 1px;
@@ -126,7 +126,7 @@
 
 .snake-cell.snake-head {
   background: #10b981;
-  border-radius: 2px;
+  border-radius: 8px;
   box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
 }
 
@@ -140,7 +140,7 @@
 
 .snake-cell.snake-body {
   background: #34d399;
-  border-radius: 1px;
+  border-radius: 8px;
 }
 
 .snake-cell.snake-food {
@@ -178,7 +178,7 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .game-over-content {
@@ -207,7 +207,7 @@
   color: var(--theme-buttonText, white);
   border: none;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
   font-weight: 500;
@@ -229,7 +229,7 @@
   align-items: center;
   justify-content: center;
   z-index: 5;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .pause-content {

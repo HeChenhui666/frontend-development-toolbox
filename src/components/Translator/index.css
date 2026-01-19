@@ -39,7 +39,7 @@
   margin-top: 4px;
   padding: 4px 8px;
   background: #f8f9fa;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
 
@@ -71,7 +71,7 @@
   min-height: 200px;
   padding: 8px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   resize: none;
@@ -157,7 +157,7 @@
   padding: 8px 10px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
@@ -205,7 +205,7 @@
   min-height: 200px;
   padding: 8px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   background: var(--theme-inputBackground, #ffffff);
@@ -228,7 +228,7 @@
   gap: 6px;
   padding: 8px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
 }

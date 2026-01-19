@@ -36,7 +36,7 @@
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-align: center;
   min-width: 70px;
 }
@@ -57,7 +57,7 @@
   border: 1px solid var(--theme-border, #e8ecf0);
   color: var(--theme-textSecondary, #64748b);
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -90,7 +90,7 @@
 .game-over-content {
   background: var(--theme-background, white);
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 8px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -112,7 +112,7 @@
   color: var(--theme-buttonText, white);
   border: none;
   padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   cursor: pointer;
   font-weight: 600;
@@ -130,7 +130,7 @@
   gap: 5px;
   background: #bbada0;
   padding: 5px;
-  border-radius: 6px;
+  border-radius: 8px;
   width: 100%;
   max-width: 280px;
   margin: 0 auto;
@@ -140,7 +140,7 @@
 
 .game-cell {
   background: #cdc1b4;
-  border-radius: 3px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +155,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 8px;
   font-weight: 700;
   animation: tileAppear 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
