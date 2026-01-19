@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense, useEffect, useRef } from 'react';
+import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback } from 'react';
 import { ConfigProvider } from 'antd';
 import './App.css';
 import EasterEgg from './components/EasterEgg';
@@ -48,6 +48,8 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [tabOrderVersion, setTabOrderVersion] = useState(0); // 用于触发重新计算
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToActiveTab = useRef<boolean>(false); // 标记是否需要滚动到活动tab
 
   // 初始化主题和标签页（优先使用上次活动的tab，否则使用默认tab）
   useEffect(() => {
@@ -55,8 +57,14 @@ const App: React.FC = () => {
     applyTheme(savedTheme);
     // 优先使用上次活动的tab，如果没有则使用默认tab
     const lastActiveTab = getActiveTab();
-    const initialTab = lastActiveTab || getDefaultTab();
-    setActiveTab(initialTab as FeatureTab);
+    if (lastActiveTab) {
+      // 如果恢复了上次的tab，标记需要滚动
+      shouldScrollToActiveTab.current = true;
+      setActiveTab(lastActiveTab as FeatureTab);
+    } else {
+      const defaultTab = getDefaultTab();
+      setActiveTab(defaultTab as FeatureTab);
+    }
   }, []);
 
   // 监听标签页顺序变化事件
@@ -201,6 +209,41 @@ const App: React.FC = () => {
     setShowEasterEgg(false);
   };
 
+  // 滚动活动tab到容器中间
+  const scrollActiveTabToCenter = useCallback(() => {
+    if (!tabsContainerRef.current) return;
+    
+    const container = tabsContainerRef.current;
+    const activeTabElement = container.querySelector(`.tab.active`) as HTMLElement;
+    
+    if (activeTabElement) {
+      const containerRect = container.getBoundingClientRect();
+      const tabRect = activeTabElement.getBoundingClientRect();
+      
+      // 计算需要滚动的距离，使tab位于容器中间
+      const scrollLeft = 
+        activeTabElement.offsetLeft - 
+        (containerRect.width / 2) + 
+        (tabRect.width / 2);
+      
+      container.scrollTo({
+        left: Math.max(0, scrollLeft),
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // 在恢复tab后滚动到中间
+  useEffect(() => {
+    if (shouldScrollToActiveTab.current) {
+      // 延迟执行，确保DOM已渲染
+      setTimeout(() => {
+        scrollActiveTabToCenter();
+        shouldScrollToActiveTab.current = false;
+      }, 100);
+    }
+  }, [activeTab, features, scrollActiveTabToCenter]);
+
   // 保存当前活动的tab
   useEffect(() => {
     saveActiveTab(activeTab);
@@ -253,7 +296,7 @@ const App: React.FC = () => {
         {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
         {showSettings && <Settings onClose={() => setShowSettings(false)} />}
         <div className='tabs-container'>
-          <div className='tabs'>
+          <div className='tabs' ref={tabsContainerRef}>
             {features.map((feature) => (
               <button
                 key={feature.id}
