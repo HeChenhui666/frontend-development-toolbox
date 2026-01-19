@@ -36,7 +36,7 @@
   gap: 8px;
   padding: 6px;
   background: var(--theme-background, rgba(255, 255, 255, 0.7));
-  border-radius: 5px;
+  border-radius: 8px;
 }
 
 .time-label {
@@ -61,7 +61,7 @@
   color: var(--theme-text, #334155);
   cursor: pointer;
   font-size: 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   transition: background 0.2s ease;
   flex-shrink: 0;
 }
@@ -103,7 +103,7 @@
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -124,7 +124,7 @@
 .converter-input {
   padding: 7px 10px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.25s ease;
@@ -144,7 +144,7 @@
   gap: 8px;
   padding: 8px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
 }
 
@@ -171,7 +171,7 @@
   color: var(--theme-text, #334155);
   cursor: pointer;
   font-size: 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   transition: background 0.2s ease;
   flex-shrink: 0;
 }
@@ -184,7 +184,7 @@
   padding: 8px 10px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));

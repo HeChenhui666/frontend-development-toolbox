@@ -20,7 +20,7 @@
   background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -48,7 +48,7 @@
 .preview-image {
   max-width: 100%;
   max-height: 180px;
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   object-fit: contain;
 }
@@ -71,7 +71,7 @@
 .result-text {
   padding: 8px;
   background: var(--theme-background, white);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   word-break: break-all;
   margin-bottom: 10px;
@@ -92,7 +92,7 @@
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -115,7 +115,7 @@
   padding: 8px 10px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));

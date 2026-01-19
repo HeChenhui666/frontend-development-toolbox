@@ -57,7 +57,7 @@
   border: 1px solid var(--theme-border, #e8ecf0);
   color: var(--theme-textSecondary, #64748b);
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -81,7 +81,7 @@
   flex-direction: column;
   border: 2px solid #334155;
   background: #1e293b;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -118,14 +118,14 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .game-over-content,
 .pause-content {
   background: var(--theme-background, white);
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 8px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -147,7 +147,7 @@
   color: var(--theme-buttonText, white);
   border: none;
   padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 11px;
   cursor: pointer;
   font-weight: 600;
