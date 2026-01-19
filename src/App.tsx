@@ -1,9 +1,6 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo, useDeferredValue } from 'react';
 import { ConfigProvider } from 'antd';
 import './App.css';
-import EasterEgg from './components/EasterEgg';
-import Settings from './components/Settings';
-import { getSavedTheme, applyTheme } from './utils/theme';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab } from './utils/userPreferences';
 
 // 懒加载组件，按需加载
@@ -17,6 +14,8 @@ const RegexTester = lazy(() => import('./components/RegexTester'));
 const ImageTools = lazy(() => import('./components/ImageTools'));
 const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
+const Settings = lazy(() => import('./components/Settings'));
+const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
 // 定义功能模块类型
 type FeatureTab =
@@ -33,15 +32,35 @@ type FeatureTab =
   | 'future2';
 
 // 定义功能配置
-interface FeatureConfig {
+interface FeatureMeta {
   id: FeatureTab;
   name: string;
   icon: string;
-  component: React.ReactNode;
 }
 
+const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
+  qrcode: { id: 'qrcode', name: '二维码', icon: '🔲' },
+  urlparams: { id: 'urlparams', name: 'URL参数', icon: '🔗' },
+  timestamp: { id: 'timestamp', name: '时间戳', icon: '⏰' },
+  randomimage: { id: 'randomimage', name: '图片工具', icon: '🖼️' },
+  json: { id: 'json', name: 'JSON', icon: '📄' },
+  gradient: { id: 'gradient', name: '颜色工具', icon: '🎨' },
+  regex: { id: 'regex', name: '正则', icon: '🔤' },
+  css: { id: 'css', name: 'CSS预设', icon: '🎨' },
+  translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
+  future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
+  future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
+};
+
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<FeatureTab>(getDefaultTab() as FeatureTab);
+  const { initialActiveTab, initialShouldScroll } = useMemo(() => {
+    const lastActiveTab = getActiveTab();
+    if (lastActiveTab) {
+      return { initialActiveTab: lastActiveTab as FeatureTab, initialShouldScroll: true };
+    }
+    return { initialActiveTab: getDefaultTab() as FeatureTab, initialShouldScroll: false };
+  }, []);
+  const [activeTab, setActiveTab] = useState<FeatureTab>(initialActiveTab);
   const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode'>('generate');
   const [clickCount, setClickCount] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
@@ -49,42 +68,11 @@ const App: React.FC = () => {
   const [tabOrderVersion, setTabOrderVersion] = useState(0); // 用于触发重新计算
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
-  const shouldScrollToActiveTab = useRef<boolean>(false); // 标记是否需要滚动到活动tab
-  const hasRestoredActiveTabRef = useRef(false); // 避免初始化时覆盖上次保存的tab
+  const shouldScrollToActiveTab = useRef<boolean>(initialShouldScroll); // 标记是否需要滚动到活动tab
   const [isPending, startTransition] = useTransition(); // React 18 并发特性
   
   // 使用 useDeferredValue 延迟非紧急的标签页更新，提升切换流畅度
   const deferredActiveTab = useDeferredValue(activeTab);
-
-  // 初始化主题和标签页（优先使用上次活动的tab，否则使用默认tab）
-  useEffect(() => {
-    // 主题应用是同步的，必须立即执行
-    const savedTheme = getSavedTheme();
-    applyTheme(savedTheme);
-    
-    // 延迟非关键的标签页恢复，使用 requestIdleCallback 或 setTimeout 避免阻塞初始渲染
-    const initTab = () => {
-      startTransition(() => {
-        const lastActiveTab = getActiveTab();
-        if (lastActiveTab) {
-          // 如果恢复了上次的tab，标记需要滚动
-          shouldScrollToActiveTab.current = true;
-          setActiveTab(lastActiveTab as FeatureTab);
-        } else {
-          const defaultTab = getDefaultTab();
-          setActiveTab(defaultTab as FeatureTab);
-        }
-        hasRestoredActiveTabRef.current = true;
-      });
-    };
-
-    // 使用 requestIdleCallback 延迟非关键操作，如果浏览器不支持则使用 setTimeout
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(initTab, { timeout: 100 });
-    } else {
-      setTimeout(initTab, 0);
-    }
-  }, []);
 
   // 监听标签页顺序变化事件
   useEffect(() => {
@@ -142,79 +130,36 @@ const App: React.FC = () => {
     [qrSubTab, handleQrSubTabChange]
   );
 
-  const allFeatures: Partial<Record<FeatureTab, FeatureConfig>> = useMemo(
+  const featureComponents = useMemo<Record<FeatureTab, React.ReactNode>>(
     () => ({
-      qrcode: {
-        id: 'qrcode',
-        name: '二维码',
-        icon: '🔲',
-        component: qrCodeComponent,
-      },
-      urlparams: {
-        id: 'urlparams',
-        name: 'URL参数',
-        icon: '🔗',
-        component: <URLParamsEditor />,
-      },
-      timestamp: {
-        id: 'timestamp',
-        name: '时间戳',
-        icon: '⏰',
-        component: <TimestampConverter />,
-      },
-      randomimage: {
-        id: 'randomimage',
-        name: '图片工具',
-        icon: '🖼️',
-        component: <ImageTools />,
-      },
-      json: {
-        id: 'json',
-        name: 'JSON',
-        icon: '📄',
-        component: <JSONTools />,
-      },
-      gradient: {
-        id: 'gradient',
-        name: '颜色工具',
-        icon: '🎨',
-        component: <ColorTools />,
-      },
-      regex: {
-        id: 'regex',
-        name: '正则',
-        icon: '🔤',
-        component: <RegexTester />,
-      },
-      css: {
-        id: 'css',
-        name: 'CSS预设',
-        icon: '🎨',
-        component: <CSSTools />,
-      },
-      translator: {
-        id: 'translator',
-        name: '在线翻译',
-        icon: '🌐',
-        component: <Translator />,
-      },
+      qrcode: qrCodeComponent,
+      urlparams: <URLParamsEditor />,
+      timestamp: <TimestampConverter />,
+      randomimage: <ImageTools />,
+      json: <JSONTools />,
+      gradient: <ColorTools />,
+      regex: <RegexTester />,
+      css: <CSSTools />,
+      translator: <Translator />,
+      future1: null,
+      future2: null,
     }),
     [qrCodeComponent]
   );
 
   // 根据用户设置的顺序排列功能模块
-  const features: FeatureConfig[] = useMemo(() => {
+  const features: FeatureMeta[] = useMemo(() => {
     const tabOrder = getTabOrder();
     const orderedFeatures = tabOrder
-      .map((tab) => allFeatures[tab])
-      .filter((feature): feature is FeatureConfig => feature !== undefined);
+      .map((tab) => FEATURE_META_MAP[tab])
+      .filter((feature): feature is FeatureMeta => feature !== undefined);
     return orderedFeatures;
-  }, [allFeatures, tabOrderVersion]);
+  }, [tabOrderVersion]);
 
   // 使用 deferredActiveTab 来延迟非紧急的组件切换，提升切换流畅度
   const currentFeature = useMemo(() => {
-    return features.find((f) => f.id === deferredActiveTab);
-  }, [features, deferredActiveTab]);
+    return featureComponents[deferredActiveTab] ?? null;
+  }, [featureComponents, deferredActiveTab]);
 
   // 处理标题点击事件
   const handleTitleClick = useCallback(() => {
@@ -287,9 +232,6 @@ const App: React.FC = () => {
 
   // 保存当前活动的tab（使用 startTransition 避免阻塞UI）
   useEffect(() => {
-    if (!hasRestoredActiveTabRef.current) {
-      return;
-    }
     startTransition(() => {
       saveActiveTab(activeTab);
     });
@@ -339,8 +281,10 @@ const App: React.FC = () => {
             ⚙️
           </button>
         </div>
-        {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
-        {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+        <Suspense fallback={null}>
+          {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
+          {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+        </Suspense>
         <div className='tabs-container'>
           <div className='tabs' ref={tabsContainerRef}>
             {features.map((feature) => (
@@ -358,7 +302,7 @@ const App: React.FC = () => {
             {isPending && activeTab !== deferredActiveTab ? (
               <div className='loading'>切换中...</div>
             ) : (
-              currentFeature?.component
+              currentFeature
             )}
           </Suspense>
         </div>
