@@ -75,7 +75,7 @@ const JSONTools: React.FC = () => {
         </Select>
       </div>
       <div className="sub-content">
-        {renderContent()}
+        {renderContent}
       </div>
     </div>
   );

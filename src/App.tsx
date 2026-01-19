@@ -50,6 +50,7 @@ const App: React.FC = () => {
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const shouldScrollToActiveTab = useRef<boolean>(false); // 标记是否需要滚动到活动tab
+  const hasRestoredActiveTabRef = useRef(false); // 避免初始化时覆盖上次保存的tab
   const [isPending, startTransition] = useTransition(); // React 18 并发特性
   
   // 使用 useDeferredValue 延迟非紧急的标签页更新，提升切换流畅度
@@ -73,6 +74,7 @@ const App: React.FC = () => {
           const defaultTab = getDefaultTab();
           setActiveTab(defaultTab as FeatureTab);
         }
+        hasRestoredActiveTabRef.current = true;
       });
     };
 
@@ -285,6 +287,9 @@ const App: React.FC = () => {
 
   // 保存当前活动的tab（使用 startTransition 避免阻塞UI）
   useEffect(() => {
+    if (!hasRestoredActiveTabRef.current) {
+      return;
+    }
     startTransition(() => {
       saveActiveTab(activeTab);
     });
