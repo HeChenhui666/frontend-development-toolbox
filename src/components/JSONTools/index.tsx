@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Select } from 'antd';
 import JSONParser from './JSONParser';
 import JSONCompare from './JSONCompare';
@@ -26,7 +26,8 @@ const TOOL_OPTIONS: ToolOption[] = [
 const JSONTools: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<JSONSubTab>('parser');
 
-  const renderContent = () => {
+  // 使用 useMemo 缓存渲染内容，避免每次渲染重新创建组件
+  const renderContent = useMemo(() => {
     switch (activeSubTab) {
       case 'parser':
         return <JSONParser />;
@@ -41,16 +42,24 @@ const JSONTools: React.FC = () => {
       default:
         return <JSONParser />;
     }
-  };
+  }, [activeSubTab]);
 
-  const selectedOption = TOOL_OPTIONS.find(opt => opt.value === activeSubTab);
+  // 使用 useCallback 优化 onChange 处理函数
+  const handleSubTabChange = useCallback((value: JSONSubTab) => {
+    setActiveSubTab(value);
+  }, []);
+
+  const selectedOption = useMemo(() => 
+    TOOL_OPTIONS.find(opt => opt.value === activeSubTab),
+    [activeSubTab]
+  );
 
   return (
     <div className="json-tools">
       <div className="tool-selector">
         <Select
           value={activeSubTab}
-          onChange={(value) => setActiveSubTab(value as JSONSubTab)}
+          onChange={handleSubTabChange}
           style={{ width: '100%' }}
           size="small"
           className="json-tool-select"

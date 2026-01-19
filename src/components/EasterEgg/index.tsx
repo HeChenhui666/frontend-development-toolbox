@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import './index.css';
 import { games, GameConfig } from './games/gamesConfig';
 
@@ -6,16 +6,16 @@ interface EasterEggProps {
   onClose: () => void;
 }
 
-const EasterEgg: React.FC<EasterEggProps> = ({ onClose }) => {
+const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
   const [selectedGame, setSelectedGame] = useState<GameConfig | null>(null);
 
-  const handleGameClick = (game: GameConfig) => {
+  const handleGameClick = useCallback((game: GameConfig) => {
     setSelectedGame(game);
-  };
+  }, []);
 
-  const handleCloseGame = () => {
+  const handleCloseGame = useCallback(() => {
     setSelectedGame(null);
-  };
+  }, []);
 
   const GameComponent = selectedGame?.component;
 
@@ -81,7 +81,9 @@ const EasterEgg: React.FC<EasterEggProps> = ({ onClose }) => {
       )}
     </div>
   );
-};
+});
+
+EasterEgg.displayName = 'EasterEgg';
 
 export default EasterEgg;
 

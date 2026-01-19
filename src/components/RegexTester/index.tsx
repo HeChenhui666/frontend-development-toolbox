@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Select } from 'antd';
 import RandExp from 'randexp';
 import './index.css';
@@ -13,18 +13,8 @@ interface PresetRegex {
   actionType?: ActionType; // 操作类型
 }
 
-const RegexTester: React.FC = () => {
-  const [regexPattern, setRegexPattern] = useState<string>('');
-  const [testText, setTestText] = useState<string>('');
-  const [flags, setFlags] = useState<string>('g');
-  const [isMatch, setIsMatch] = useState<boolean | null>(null);
-  const [isValid, setIsValid] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
-  const [selectedPreset, setSelectedPreset] = useState<string>('');
-  const [actionResult, setActionResult] = useState<string>('');
-
-  // 预设正则表达式
-  const presetRegexes: PresetRegex[] = [
+// 预设正则表达式 - 移到组件外部，避免每次渲染重新创建
+const PRESET_REGEXES: PresetRegex[] = [
     // 手机号相关
     {
       name: '中国大陆手机号',
@@ -273,25 +263,35 @@ const RegexTester: React.FC = () => {
       pattern: '^\\s*\\{.*\\}\\s*$',
       description: '简单JSON对象结构验证',
     },
-  ];
+];
 
-  // 应用预设正则表达式
-  const applyPreset = (presetName: string) => {
-    const preset = presetRegexes.find((p) => p.name === presetName);
+const RegexTester: React.FC = () => {
+  const [regexPattern, setRegexPattern] = useState<string>('');
+  const [testText, setTestText] = useState<string>('');
+  const [flags, setFlags] = useState<string>('g');
+  const [isMatch, setIsMatch] = useState<boolean | null>(null);
+  const [isValid, setIsValid] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [actionResult, setActionResult] = useState<string>('');
+
+  // 应用预设正则表达式 - 使用 useCallback 优化
+  const applyPreset = useCallback((presetName: string) => {
+    const preset = PRESET_REGEXES.find((p) => p.name === presetName);
     if (preset) {
       setRegexPattern(preset.pattern);
       setSelectedPreset(preset.name);
       setFlags('g');
     }
-  };
+  }, []);
 
-  // 处理预设选择变化
-  const handlePresetChange = (value: string) => {
+  // 处理预设选择变化 - 使用 useCallback 优化
+  const handlePresetChange = useCallback((value: string) => {
     applyPreset(value);
-  };
+  }, [applyPreset]);
 
-  // 生成符合正则表达式的随机文本
-  const handleGenerateText = () => {
+  // 生成符合正则表达式的随机文本 - 使用 useCallback 优化
+  const handleGenerateText = useCallback(() => {
     if (!regexPattern.trim()) {
       setError('请输入正则表达式');
       setIsMatch(null);
@@ -332,10 +332,10 @@ const RegexTester: React.FC = () => {
       }
       console.error('Generate text failed:', err);
     }
-  };
+  }, [regexPattern, flags]);
 
-  // 测试正则表达式
-  const testRegex = () => {
+  // 测试正则表达式 - 使用 useCallback 优化
+  const testRegex = useCallback(() => {
     if (!regexPattern.trim()) {
       setError('请输入正则表达式');
       setIsMatch(null);
@@ -361,16 +361,16 @@ const RegexTester: React.FC = () => {
       setError(`正则表达式错误: ${err instanceof Error ? err.message : '未知错误'}`);
       setIsMatch(null);
     }
-  };
+  }, [regexPattern, testText, flags]);
 
-  // 执行操作
-  const performAction = () => {
+  // 执行操作 - 使用 useCallback 优化
+  const performAction = useCallback(() => {
     if (!testText.trim()) {
       setActionResult('');
       return;
     }
 
-    const preset = presetRegexes.find((p) => p.name === selectedPreset);
+    const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
     if (!preset || !preset.hasAction || !preset.actionType) {
       setActionResult('');
       return;
@@ -446,21 +446,20 @@ const RegexTester: React.FC = () => {
     } catch (err) {
       setActionResult(`操作失败: ${err instanceof Error ? err.message : '未知错误'}`);
     }
-  };
+  }, [testText, selectedPreset, flags]);
 
   // 当测试文本或预设改变时，自动执行操作
   useEffect(() => {
-    const preset = presetRegexes.find((p) => p.name === selectedPreset);
+    const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
     if (preset && preset.hasAction && testText.trim()) {
       performAction();
     } else {
       setActionResult('');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testText, selectedPreset, flags]);
+  }, [testText, selectedPreset, flags, performAction]);
 
-  // 复制操作结果
-  const copyActionResult = async () => {
+  // 复制操作结果 - 使用 useCallback 优化
+  const copyActionResult = useCallback(async () => {
     if (!actionResult) return;
     try {
       await navigator.clipboard.writeText(actionResult);
@@ -468,10 +467,10 @@ const RegexTester: React.FC = () => {
     } catch (err) {
       console.error('复制失败:', err);
     }
-  };
+  }, [actionResult]);
 
-  // 清空
-  const clearAll = () => {
+  // 清空 - 使用 useCallback 优化
+  const clearAll = useCallback(() => {
     setRegexPattern('');
     setTestText('');
     setIsMatch(null);
@@ -479,7 +478,27 @@ const RegexTester: React.FC = () => {
     setIsValid(true);
     setSelectedPreset('');
     setActionResult('');
-  };
+  }, []);
+
+  // 使用 useMemo 缓存预设选项，避免每次渲染重新计算
+  const presetOptions = useMemo(() => 
+    PRESET_REGEXES.map((preset) => ({
+      value: preset.name,
+      label: preset.name,
+    })), []
+  );
+
+  // 使用 useMemo 缓存当前预设的描述
+  const currentPresetDescription = useMemo(() => {
+    if (!selectedPreset) return null;
+    return PRESET_REGEXES.find((p) => p.name === selectedPreset)?.description;
+  }, [selectedPreset]);
+
+  // 使用 useMemo 缓存当前预设的配置
+  const currentPreset = useMemo(() => {
+    if (!selectedPreset) return null;
+    return PRESET_REGEXES.find((p) => p.name === selectedPreset);
+  }, [selectedPreset]);
 
   return (
     <div className='regex-tester'>
@@ -499,7 +518,7 @@ const RegexTester: React.FC = () => {
           allowClear
           showSearch
           filterOption={(input, option) => {
-            const preset = presetRegexes.find((p) => p.name === option?.value);
+            const preset = PRESET_REGEXES.find((p) => p.name === option?.value);
             const label = (option?.label ?? '').toLowerCase();
             const description = preset?.description?.toLowerCase() ?? '';
             const searchText = input.toLowerCase();
@@ -507,13 +526,10 @@ const RegexTester: React.FC = () => {
           }}
           className='preset-select'
           size='small'
-          options={presetRegexes.map((preset) => ({
-            value: preset.name,
-            label: preset.name,
-          }))}
+          options={presetOptions}
         />
-        {selectedPreset && (
-          <div className='preset-description'>{presetRegexes.find((p) => p.name === selectedPreset)?.description}</div>
+        {currentPresetDescription && (
+          <div className='preset-description'>{currentPresetDescription}</div>
         )}
       </div>
 
@@ -591,8 +607,8 @@ const RegexTester: React.FC = () => {
             </button>
           </div>
         </div>
-        {selectedPreset && (
-          <div className='preset-description'>{presetRegexes.find((p) => p.name === selectedPreset)?.description}</div>
+        {currentPresetDescription && (
+          <div className='preset-description'>{currentPresetDescription}</div>
         )}
       </div>
 
@@ -613,7 +629,7 @@ const RegexTester: React.FC = () => {
       {error && <div className='error'>{error}</div>}
 
       {/* 操作区域 */}
-      {selectedPreset && presetRegexes.find((p) => p.name === selectedPreset)?.hasAction && (
+      {currentPreset && currentPreset.hasAction && (
         <div className='action-section'>
           <div className='section-header'>
             <label>操作结果：</label>

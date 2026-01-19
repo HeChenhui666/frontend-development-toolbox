@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Select } from 'antd';
 import ColorConverter from './ColorConverter';
 import ColorPalette from './ColorPalette';
@@ -22,7 +22,8 @@ const TOOL_OPTIONS: ToolOption[] = [
 const ColorTools: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ColorToolTab>('converter');
 
-  const renderContent = () => {
+  // 使用 useMemo 缓存渲染内容，避免每次渲染重新创建组件
+  const renderContent = useMemo(() => {
     switch (activeTool) {
       case 'converter':
         return <ColorConverter />;
@@ -33,14 +34,19 @@ const ColorTools: React.FC = () => {
       default:
         return <ColorConverter />;
     }
-  };
+  }, [activeTool]);
+
+  // 使用 useCallback 优化 onChange 处理函数
+  const handleToolChange = useCallback((value: ColorToolTab) => {
+    setActiveTool(value);
+  }, []);
 
   return (
     <div className="color-tools">
       <div className="tool-selector">
         <Select
           value={activeTool}
-          onChange={(value) => setActiveTool(value as ColorToolTab)}
+          onChange={handleToolChange}
           style={{ width: '100%' }}
           size="small"
           className="color-tool-select"
