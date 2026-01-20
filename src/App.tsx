@@ -219,6 +219,18 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // 支持在 tab 区域通过鼠标滚轮横向滚动
+  const handleTabsWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
+    if (!tabsContainerRef.current) return;
+
+    // 阻止默认垂直滚动，让滚轮用于横向滚动 tab
+    event.preventDefault();
+
+    const container = tabsContainerRef.current;
+    const delta = event.deltaY !== 0 ? event.deltaY : event.deltaX;
+    container.scrollLeft += delta;
+  }, []);
+
   // 在恢复tab后滚动到中间
   useEffect(() => {
     if (shouldScrollToActiveTab.current) {
@@ -286,7 +298,7 @@ const App: React.FC = () => {
           {showSettings && <Settings onClose={() => setShowSettings(false)} />}
         </Suspense>
         <div className='tabs-container'>
-          <div className='tabs' ref={tabsContainerRef}>
+          <div className='tabs' ref={tabsContainerRef} onWheel={handleTabsWheel}>
             {features.map((feature) => (
               <TabButton
                 key={feature.id}
