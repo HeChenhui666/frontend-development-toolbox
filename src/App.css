@@ -29,25 +29,35 @@
    个别组件如果需要隐藏滚动条可以单独覆盖 */
 * {
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: var(--theme-scrollbarThumb) var(--theme-scrollbarTrack);
+  scrollbar-color: var(--theme-scrollbarThumb) transparent;
 }
 
 *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--theme-scrollbarTrack);
+  background: transparent;
 }
 
 *::-webkit-scrollbar-thumb {
   background-color: var(--theme-scrollbarThumb);
   border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  opacity: 0.35;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
 *::-webkit-scrollbar-thumb:hover {
   background-color: var(--theme-scrollbarThumbHover);
+  opacity: 0.85;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--theme-scrollbarThumbHover);
+  opacity: 1;
 }
 
 body {
