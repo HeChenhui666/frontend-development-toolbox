@@ -14,6 +14,7 @@ const RegexTester = lazy(() => import('./components/RegexTester'));
 const ImageTools = lazy(() => import('./components/ImageTools'));
 const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
+const APITester = lazy(() => import('./components/APITester'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -28,6 +29,7 @@ type FeatureTab =
   | 'randomimage'
   | 'css'
   | 'translator'
+  | 'apitester'
   | 'future1'
   | 'future2';
 
@@ -48,6 +50,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   regex: { id: 'regex', name: '正则', icon: '🔤' },
   css: { id: 'css', name: 'CSS预设', icon: '🎨' },
   translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
+  apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -162,6 +165,7 @@ const App: React.FC = () => {
       regex: <RegexTester />,
       css: <CSSTools />,
       translator: <Translator />,
+      apitester: <APITester />,
       future1: null,
       future2: null,
     }),
@@ -346,7 +350,7 @@ const App: React.FC = () => {
 
 // 优化：使用 memo 包装 Tab 按钮组件，避免不必要的重渲染
 interface TabButtonProps {
-  feature: FeatureConfig;
+  feature: FeatureMeta;
   isActive: boolean;
   onClick: (tab: FeatureTab) => void;
 }

@@ -1,0 +1,287 @@
+/* API测试器样式 */
+.api-tester {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.api-tester-section {
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--theme-background, #ffffff);
+}
+
+.api-tester-section-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--theme-text, #334155);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--theme-border, #e8ecf0);
+}
+
+.api-tester-section-subtitle {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--theme-textSecondary, #64748b);
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+/* 请求配置行 */
+.api-tester-request-line {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.api-tester-method-select {
+  width: 100px !important;
+  flex-shrink: 0;
+}
+
+.api-tester-url-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.api-tester-send-btn,
+.api-tester-save-btn {
+  flex-shrink: 0;
+}
+
+/* 请求头配置 */
+.api-tester-header-add {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.api-tester-header-key-input,
+.api-tester-header-value-input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.api-tester-header-add-btn {
+  flex-shrink: 0;
+}
+
+.api-tester-headers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.api-tester-header-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.api-tester-header-item .api-tester-header-key-input {
+  flex: 0 0 200px;
+  min-width: 150px;
+  max-width: 250px;
+}
+
+.api-tester-header-item .api-tester-header-value-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.api-tester-header-delete-btn {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  width: auto;
+  min-width: 32px;
+}
+
+/* 请求体配置 */
+.api-tester-body-type-select {
+  width: 120px;
+  margin-bottom: 10px;
+}
+
+.api-tester-body-input {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 模板管理 */
+.api-tester-templates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.api-tester-templates-label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.api-tester-template-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.api-tester-template-btn {
+  padding: 0 4px;
+  height: auto;
+  font-size: 12px;
+}
+
+.api-tester-template-delete-btn {
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 响应展示 */
+.api-tester-response-section {
+  background: var(--theme-surface, #f8f9fa);
+}
+
+.api-tester-status {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--theme-text, #334155);
+}
+
+.api-tester-error {
+  padding: 12px;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #c62828;
+  font-size: 12px;
+}
+
+.api-tester-code-block {
+  background: var(--theme-background, #ffffff);
+  border: 1px solid var(--theme-borderLight, #cbd5e1);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  color: var(--theme-text, #334155);
+}
+
+.api-tester-json {
+  color: #059669;
+}
+
+.api-tester-text {
+  color: var(--theme-text, #334155);
+}
+
+/* 响应式适配 */
+@media screen and (max-width: 576px) {
+  .api-tester-request-line {
+    flex-direction: column;
+  }
+
+  .api-tester-method-select,
+  .api-tester-url-input,
+  .api-tester-send-btn,
+  .api-tester-save-btn,
+  .api-tester-cache-btn {
+    width: 100%;
+  }
+
+  /* 请求头添加表单在移动端也保持横向排列 */
+  .api-tester-header-add {
+    flex-wrap: nowrap;
+  }
+
+  .api-tester-header-add .api-tester-header-key-input {
+    flex: 0 0 120px;
+    min-width: 100px;
+    max-width: 150px;
+  }
+
+  .api-tester-header-add .api-tester-header-value-input {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .api-tester-header-add-btn {
+    flex-shrink: 0;
+    width: auto;
+  }
+
+  /* 请求头项在移动端也保持横向排列 */
+  .api-tester-header-item {
+    flex-wrap: nowrap;
+  }
+
+  .api-tester-header-item .api-tester-header-key-input {
+    flex: 0 0 120px;
+    min-width: 100px;
+    max-width: 150px;
+  }
+
+  .api-tester-header-item .api-tester-header-value-input {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .api-tester-header-delete-btn {
+    flex-shrink: 0;
+    width: auto;
+    min-width: 32px;
+  }
+}
+
+/* 独立页面模式下的样式调整 */
+.app-standalone .api-tester-section {
+  padding: 16px;
+}
+
+.app-standalone .api-tester-section-title {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.app-standalone .api-tester-code-block {
+  font-size: 13px;
+  padding: 16px;
+  max-height: 500px;
+}
+
+.app-standalone .api-tester-body-input {
+  font-size: 13px;
+}
+
+/* 大屏下的样式优化 */
+@media screen and (min-width: 1024px) {
+  .api-tester-section {
+    padding: 16px;
+  }
+
+  .api-tester-code-block {
+    font-size: 13px;
+    padding: 16px;
+    max-height: 600px;
+  }
+}

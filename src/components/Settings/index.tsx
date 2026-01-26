@@ -40,6 +40,7 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   regex: '正则',
   css: 'CSS预设',
   translator: '在线翻译',
+  apitester: 'API调试',
 };
 
 const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
@@ -364,6 +365,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
       presets: 'URL预设参数',
       games: '游戏积分',
       preferences: '用户偏好',
+      apiTemplates: 'API模板',
     };
 
     Modal.confirm({
