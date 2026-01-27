@@ -1,4 +1,4 @@
-export type DefaultTab = 'qrcode' | 'urlparams' | 'timestamp' | 'gradient' | 'json' | 'regex' | 'randomimage' | 'css' | 'translator';
+export type DefaultTab = 'qrcode' | 'urlparams' | 'timestamp' | 'gradient' | 'json' | 'regex' | 'randomimage' | 'css' | 'translator' | 'apitester';
 export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab for consistency
 
 const DEFAULT_TAB_KEY = 'app-default-tab';
@@ -15,6 +15,7 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'regex',
   'css',
   'translator',
+  'apitester',
 ];
 
 export const getDefaultTab = (): DefaultTab => {
@@ -126,7 +127,7 @@ export const clearAllCache = (): void => {
   }
 };
 
-export type CacheType = 'theme' | 'presets' | 'games' | 'preferences';
+export type CacheType = 'theme' | 'presets' | 'games' | 'preferences' | 'apiTemplates';
 
 export const clearCacheByType = (type: CacheType): void => {
   try {
@@ -148,6 +149,23 @@ export const clearCacheByType = (type: CacheType): void => {
         localStorage.removeItem(TAB_ORDER_KEY);
         localStorage.removeItem(ACTIVE_TAB_KEY);
         break;
+      case 'apiTemplates':
+        // 清理API模板时，保留所有系统预设模板（id以preset-开头的）
+        try {
+          const saved = localStorage.getItem('apiTemplates');
+          if (saved) {
+            const templates = JSON.parse(saved);
+            const systemPresets = templates.filter((t: any) => t.id && t.id.startsWith('preset-'));
+            if (systemPresets.length > 0) {
+              localStorage.setItem('apiTemplates', JSON.stringify(systemPresets));
+            } else {
+              localStorage.removeItem('apiTemplates');
+            }
+          }
+        } catch (e) {
+          localStorage.removeItem('apiTemplates');
+        }
+        break;
     }
     console.log(`Cache type "${type}" cleared successfully`);
   } catch (error) {
@@ -162,6 +180,7 @@ export const getCacheTypeInfo = (): Record<CacheType, { name: string; keys: stri
     presets: { name: 'URL预设参数', keys: ['url-preset-params'], size: 0 },
     games: { name: '游戏积分', keys: ['game-high-score-tetris', 'game-high-score-snake', 'game-high-score-2048'], size: 0 },
     preferences: { name: '用户偏好', keys: [DEFAULT_TAB_KEY, TAB_ORDER_KEY, ACTIVE_TAB_KEY], size: 0 },
+    apiTemplates: { name: 'API模板', keys: ['apiTemplates'], size: 0 },
   };
 
   try {
@@ -231,6 +250,7 @@ export const exportUserConfig = (): string => {
       'game-high-score-snake',
       'game-high-score-2048',
       'translator-page-translate-enabled', // 翻译功能开关
+      'apiTemplates', // API模板
     ];
     
     keysToExport.forEach((key) => {
@@ -276,6 +296,7 @@ export const importUserConfig = (jsonString: string): { success: boolean; messag
       'game-high-score-snake',
       'game-high-score-2048',
       'translator-page-translate-enabled',
+      'apiTemplates', // API模板
     ];
     
     Object.entries(data.config).forEach(([key, value]) => {

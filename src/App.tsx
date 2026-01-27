@@ -14,6 +14,7 @@ const RegexTester = lazy(() => import('./components/RegexTester'));
 const ImageTools = lazy(() => import('./components/ImageTools'));
 const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
+const APITester = lazy(() => import('./components/APITester'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -28,6 +29,7 @@ type FeatureTab =
   | 'randomimage'
   | 'css'
   | 'translator'
+  | 'apitester'
   | 'future1'
   | 'future2';
 
@@ -48,6 +50,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   regex: { id: 'regex', name: '正则', icon: '🔤' },
   css: { id: 'css', name: 'CSS预设', icon: '🎨' },
   translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
+  apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -73,6 +76,27 @@ const App: React.FC = () => {
   
   // 使用 useDeferredValue 延迟非紧急的标签页更新，提升切换流畅度
   const deferredActiveTab = useDeferredValue(activeTab);
+
+  // 检测是否为插件popup环境
+  const isPopupMode = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    
+    // 检查URL协议：插件popup的URL是 chrome-extension://
+    const isExtensionProtocol = window.location.protocol === 'chrome-extension:';
+    
+    // 检查是否有chrome.runtime.id（插件环境）
+    const hasChromeRuntime = typeof (window as any).chrome !== 'undefined' && 
+      (window as any).chrome.runtime && 
+      (window as any).chrome.runtime.id;
+    
+    // 检查窗口大小是否接近插件popup的固定尺寸（450x580）
+    // 如果窗口明显大于这个尺寸，说明是独立页面
+    const isSmallWindow = window.innerWidth <= 500 && window.innerHeight <= 650;
+    
+    // 如果是插件协议且窗口大小接近固定尺寸，则认为是popup模式
+    // 或者有chrome.runtime.id且窗口小，也认为是popup模式
+    return (isExtensionProtocol || hasChromeRuntime) && isSmallWindow;
+  }, []);
 
   // 监听标签页顺序变化事件
   useEffect(() => {
@@ -141,6 +165,7 @@ const App: React.FC = () => {
       regex: <RegexTester />,
       css: <CSSTools />,
       translator: <Translator />,
+      apitester: <APITester />,
       future1: null,
       future2: null,
     }),
@@ -281,7 +306,7 @@ const App: React.FC = () => {
 
   return (
     <ConfigProvider>
-      <div className='app'>
+      <div className={`app ${isPopupMode ? 'app-popup' : 'app-standalone'}`}>
         <div className='header'>
           <div className='header-content'>
             <h1 className='header-title' onClick={handleTitleClick}>
@@ -325,7 +350,7 @@ const App: React.FC = () => {
 
 // 优化：使用 memo 包装 Tab 按钮组件，避免不必要的重渲染
 interface TabButtonProps {
-  feature: FeatureConfig;
+  feature: FeatureMeta;
   isActive: boolean;
   onClick: (tab: FeatureTab) => void;
 }
