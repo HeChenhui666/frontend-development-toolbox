@@ -66,7 +66,10 @@ const URLParamsEditor: React.FC = () => {
       const paramsArray: URLParam[] = [];
 
       urlParams.forEach((value, key) => {
-        paramsArray.push({ key, value });
+        // 对参数名和参数值进行URL解码，将编码的字符转换为中文
+        const decodedKey = decodeURIComponent(key);
+        const decodedValue = decodeURIComponent(value);
+        paramsArray.push({ key: decodedKey, value: decodedValue });
       });
 
       // 如果没有参数，添加一个空行方便添加
@@ -349,7 +352,27 @@ const URLParamsEditor: React.FC = () => {
             🔄
           </button>
         </div>
-        <div className='url-text'>{currentUrl || '未获取到URL'}</div>
+        <input
+          type='text'
+          value={currentUrl}
+          onChange={(e) => {
+            setCurrentUrl(e.target.value);
+          }}
+          onBlur={(e) => {
+            // 失去焦点时，如果URL有效则重新解析
+            if (e.target.value.trim()) {
+              parseURL(e.target.value);
+            }
+          }}
+          onKeyDown={(e) => {
+            // 按Enter键时解析URL
+            if (e.key === 'Enter') {
+              e.currentTarget.blur();
+            }
+          }}
+          className='url-input'
+          placeholder='输入或粘贴URL，按Enter或失去焦点时解析'
+        />
       </div>
 
       <div className='base-url-section'>

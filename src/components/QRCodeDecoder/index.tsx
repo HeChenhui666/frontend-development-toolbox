@@ -1,13 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import jsQR from 'jsqr';
 import './index.css';
 import { showMessage } from '../../utils/message';
 
+interface QRCodeResult {
+  data: string;
+  location: {
+    topLeftCorner: { x: number; y: number };
+    topRightCorner: { x: number; y: number };
+    bottomLeftCorner: { x: number; y: number };
+    bottomRightCorner: { x: number; y: number };
+  };
+}
+
 const QRCodeDecoder: React.FC = () => {
-  const [decodedText, setDecodedText] = useState<string>('');
+  const [decodedResults, setDecodedResults] = useState<QRCodeResult[]>([]);
   const [error, setError] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [isScanning, setIsScanning] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<number | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -20,7 +34,7 @@ const QRCodeDecoder: React.FC = () => {
     }
 
     setError('');
-    setDecodedText('');
+    setDecodedResults([]);
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -33,6 +47,7 @@ const QRCodeDecoder: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  // 识别多个二维码
   const decodeQRCode = (imageSrc: string) => {
     const img = new Image();
     img.onload = () => {
@@ -48,12 +63,82 @@ const QRCodeDecoder: React.FC = () => {
       ctx.drawImage(img, 0, 0);
 
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      const results: QRCodeResult[] = [];
+      const foundData: Set<string> = new Set(); // 基于内容去重
+      const maxScanAttempts = 20; // 最大扫描次数，避免无限循环
 
-      if (code) {
-        setDecodedText(code.data);
+      // 使用不同的扫描参数来提高检测率
+      const scanAttempts = [
+        { inversionAttempts: 'dontInvert' as const },
+        { inversionAttempts: 'onlyInvert' as const },
+        { inversionAttempts: 'attemptBoth' as const },
+      ];
+
+      // 创建原始图像数据的副本用于遮挡
+      let currentImageData = new ImageData(
+        new Uint8ClampedArray(imageData.data),
+        imageData.width,
+        imageData.height
+      );
+
+      for (const attempt of scanAttempts) {
+        let scanCount = 0;
+        let code = jsQR(currentImageData.data, currentImageData.width, currentImageData.height, attempt);
+        
+        while (code && scanCount < maxScanAttempts) {
+          scanCount++;
+          
+          // 基于内容去重，避免重复添加相同的二维码
+          if (!foundData.has(code.data)) {
+            foundData.add(code.data);
+            results.push({
+              data: code.data,
+              location: code.location
+            });
+          }
+
+          // 遮挡已识别的区域，继续查找其他二维码
+          const padding = 30; // 增加填充，确保完全遮挡
+          const corners = [
+            code.location.topLeftCorner,
+            code.location.topRightCorner,
+            code.location.bottomLeftCorner,
+            code.location.bottomRightCorner
+          ];
+          
+          const minX = Math.max(0, Math.min(...corners.map(c => c.x)) - padding);
+          const maxX = Math.min(currentImageData.width, Math.max(...corners.map(c => c.x)) + padding);
+          const minY = Math.max(0, Math.min(...corners.map(c => c.y)) - padding);
+          const maxY = Math.min(currentImageData.height, Math.max(...corners.map(c => c.y)) + padding);
+          
+          // 在已识别区域绘制白色矩形以遮挡
+          const maskedData = new Uint8ClampedArray(currentImageData.data);
+          for (let y = minY; y < maxY; y++) {
+            for (let x = minX; x < maxX; x++) {
+              const index = (y * currentImageData.width + x) * 4;
+              maskedData[index] = 255;     // R
+              maskedData[index + 1] = 255; // G
+              maskedData[index + 2] = 255; // B
+              // A 保持不变
+            }
+          }
+          
+          currentImageData = new ImageData(maskedData, currentImageData.width, currentImageData.height);
+          code = jsQR(currentImageData.data, currentImageData.width, currentImageData.height, attempt);
+        }
+      }
+
+      // 去重（基于内容）
+      const uniqueResults = results.filter((result, index, self) =>
+        index === self.findIndex((r) => r.data === result.data)
+      );
+
+      if (uniqueResults.length > 0) {
+        setDecodedResults(uniqueResults);
         setError('');
+        showMessage.success(`成功识别 ${uniqueResults.length} 个二维码`);
       } else {
+        setDecodedResults([]);
         setError('未检测到二维码，请确保图片清晰且包含有效的二维码');
       }
     };
@@ -63,29 +148,287 @@ const QRCodeDecoder: React.FC = () => {
     img.src = imageSrc;
   };
 
-  const copyDecodedText = () => {
-    if (decodedText) {
-      navigator.clipboard.writeText(decodedText);
+  const copyDecodedText = (text: string) => {
+    if (text) {
+      navigator.clipboard.writeText(text);
       showMessage.success('已复制到剪贴板');
     }
   };
 
-  const openDecodedUrl = () => {
-    if (decodedText && (decodedText.startsWith('http://') || decodedText.startsWith('https://'))) {
-      chrome.tabs.create({ url: decodedText });
+  const copyAllDecodedText = () => {
+    if (decodedResults.length > 0) {
+      const allText = decodedResults.map((r, i) => `二维码 ${i + 1}:\n${r.data}`).join('\n\n');
+      navigator.clipboard.writeText(allText);
+      showMessage.success('已复制所有结果到剪贴板');
+    }
+  };
+
+  const openDecodedUrl = (url: string) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      chrome.tabs.create({ url });
     } else {
       showMessage.warning('解码内容不是有效的URL');
     }
   };
 
   const clearAll = () => {
-    setDecodedText('');
+    setDecodedResults([]);
     setError('');
     setImagePreview('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    stopScanning();
   };
+
+  // 截屏功能
+  const captureScreenshot = async () => {
+    try {
+      setError('');
+      setDecodedResults([]);
+      
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tabs[0]?.id) {
+        setError('无法获取当前标签页');
+        return;
+      }
+
+      const dataUrl = await chrome.tabs.captureVisibleTab(undefined, {
+        format: 'png',
+        quality: 100
+      });
+
+      setImagePreview(dataUrl);
+      decodeQRCode(dataUrl);
+      showMessage.success('截屏成功');
+    } catch (err) {
+      setError('截屏失败：' + (err instanceof Error ? err.message : '未知错误'));
+      showMessage.error('截屏失败');
+    }
+  };
+
+  // 开始摄像头扫码
+  const startScanning = async () => {
+    try {
+      setError('');
+      setDecodedResults([]);
+
+      // 检查是否在安全上下文中
+      if (typeof window === 'undefined' || !window.isSecureContext) {
+        console.warn('当前不在安全上下文中');
+      }
+
+      // 检查 mediaDevices 是否可用
+      if (!navigator.mediaDevices) {
+        console.error('navigator.mediaDevices 不可用');
+        setError('您的浏览器不支持摄像头访问 API，请使用最新版本的 Chrome、Edge 或 Firefox 浏览器');
+        showMessage.error('浏览器不支持摄像头');
+        return;
+      }
+
+      if (!navigator.mediaDevices.getUserMedia) {
+        // 尝试使用旧版 API
+        const getUserMedia = 
+          navigator.getUserMedia || 
+          (navigator as any).webkitGetUserMedia || 
+          (navigator as any).mozGetUserMedia;
+        
+        if (!getUserMedia) {
+          setError('您的浏览器不支持摄像头访问，请使用 Chrome、Edge 或 Firefox 浏览器');
+          showMessage.error('浏览器不支持摄像头');
+          return;
+        }
+
+        // 使用旧版 API（需要 Promise 包装）
+        const stream = await new Promise<MediaStream>((resolve, reject) => {
+          getUserMedia.call(
+            navigator,
+            { video: { facingMode: 'environment' } },
+            resolve,
+            reject
+          );
+        });
+
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+
+        setIsScanning(true);
+        setDecodedResults([]);
+        scanIntervalRef.current = window.setInterval(() => {
+          scanQRCode();
+        }, 300);
+
+        showMessage.success('摄像头已启动');
+        return;
+      }
+
+      // 使用新版 API
+      setIsScanning(true);
+      setDecodedResults([]);
+
+      // 先尝试后置摄像头，如果失败则使用默认摄像头
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
+      } catch (err) {
+        // 如果后置摄像头失败，尝试使用默认摄像头
+        console.log('后置摄像头不可用，尝试使用默认摄像头');
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+      }
+
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        
+        try {
+          await videoRef.current.play();
+        } catch (playError) {
+          console.error('视频播放失败:', playError);
+          // 如果自动播放失败，尝试用户交互后播放
+          setError('视频播放失败，请点击视频区域重试');
+          showMessage.warning('需要用户交互才能播放视频');
+        }
+      }
+
+      // 开始扫描
+      scanIntervalRef.current = window.setInterval(() => {
+        scanQRCode();
+      }, 300); // 每300ms扫描一次
+
+      showMessage.success('摄像头已启动');
+    } catch (err) {
+      setIsScanning(false);
+      
+      const error = err as Error | DOMException;
+      const errorName = error.name || '';
+      const errorMessage = error.message || '未知错误';
+      
+      // 输出详细的错误信息到控制台，方便调试
+      console.error('=== 摄像头启动失败 ===');
+      console.error('错误名称:', errorName);
+      console.error('错误信息:', errorMessage);
+      console.error('完整错误对象:', err);
+      console.error('navigator.mediaDevices 可用:', !!navigator.mediaDevices);
+      console.error('getUserMedia 可用:', !!(navigator.mediaDevices?.getUserMedia));
+      console.error('当前协议:', window.location.protocol);
+      console.error('是否安全上下文:', window.isSecureContext);
+      console.error('==================');
+      
+      let userMessage = '';
+      if (errorName === 'NotAllowedError' || errorMessage.includes('Permission denied') || errorMessage.includes('NotAllowedError')) {
+        userMessage = '需要摄像头权限。请按以下步骤操作：\n1. 点击地址栏左侧的锁图标\n2. 在"摄像头"选项中选择"允许"\n3. 刷新扩展后重试';
+      } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError' || errorMessage.includes('NotFoundError')) {
+        userMessage = '未找到摄像头设备。请确保：\n1. 您的设备已连接摄像头\n2. 摄像头驱动已正确安装\n3. 摄像头未被禁用';
+      } else if (errorName === 'NotReadableError' || errorMessage.includes('NotReadableError')) {
+        userMessage = '摄像头被其他应用占用。请：\n1. 关闭其他使用摄像头的应用（如 Zoom、Teams 等）\n2. 关闭其他浏览器标签页中可能使用摄像头的页面\n3. 重试';
+      } else if (errorName === 'OverconstrainedError' || errorMessage.includes('OverconstrainedError')) {
+        userMessage = '摄像头不支持请求的配置，正在尝试使用默认配置...';
+        // 尝试使用更简单的配置
+        try {
+          console.log('尝试使用默认摄像头配置...');
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          streamRef.current = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.setAttribute('playsinline', 'true');
+            videoRef.current.setAttribute('webkit-playsinline', 'true');
+            await videoRef.current.play();
+          }
+          setIsScanning(true);
+          scanIntervalRef.current = window.setInterval(() => {
+            scanQRCode();
+          }, 300);
+          showMessage.success('摄像头已启动');
+          return;
+        } catch (retryErr) {
+          console.error('使用默认配置也失败:', retryErr);
+          userMessage = '启动摄像头失败，请检查摄像头是否正常工作。如果问题持续，请查看浏览器控制台的详细错误信息。';
+        }
+      } else {
+        userMessage = `启动摄像头失败：${errorMessage}\n\n如果问题持续，请：\n1. 打开浏览器开发者工具（F12）\n2. 查看控制台中的详细错误信息\n3. 检查浏览器和扩展是否已更新到最新版本`;
+      }
+      
+      setError(userMessage);
+      showMessage.error('启动摄像头失败');
+    }
+  };
+
+  // 停止摄像头扫码
+  const stopScanning = () => {
+    setIsScanning(false);
+    
+    if (scanIntervalRef.current !== null) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  // 从视频流中扫描二维码（摄像头模式，只识别第一个）
+  const scanQRCode = () => {
+    const video = videoRef.current;
+    if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (code) {
+      // 检查是否已经识别过这个二维码（避免重复）
+      const existingResult = decodedResults.find(r => r.data === code.data);
+      if (!existingResult) {
+        const newResult: QRCodeResult = {
+          data: code.data,
+          location: code.location
+        };
+        setDecodedResults(prev => [...prev, newResult]);
+        setError('');
+        setImagePreview(canvas.toDataURL('image/png'));
+        showMessage.success(`二维码识别成功（已识别 ${decodedResults.length + 1} 个）`);
+        
+        // 如果识别到第一个二维码，可以选择继续扫描或停止
+        // 这里选择继续扫描以识别更多二维码
+        if (decodedResults.length === 0) {
+          // 第一个二维码识别成功，继续扫描
+        }
+      }
+    }
+  };
+
+  // 组件卸载时清理
+  useEffect(() => {
+    return () => {
+      stopScanning();
+    };
+  }, []);
 
   return (
     <div className="decoder">
@@ -98,10 +441,51 @@ const QRCodeDecoder: React.FC = () => {
           className="file-input"
           id="file-input"
         />
-        <label htmlFor="file-input" className="file-label">
-          选择二维码图片
-        </label>
+        <div className="upload-buttons">
+          <label htmlFor="file-input" className="file-label">
+            选择二维码图片
+          </label>
+          <button onClick={captureScreenshot} className="file-label screenshot-btn">
+            截屏识别
+          </button>
+          {!isScanning ? (
+            <button onClick={startScanning} className="file-label scan-btn">
+              摄像头扫码
+            </button>
+          ) : (
+            <button onClick={stopScanning} className="file-label scan-btn stop-scan">
+              停止扫码
+            </button>
+          )}
+        </div>
       </div>
+
+      {isScanning && (
+        <div className="video-container">
+          <video
+            ref={videoRef}
+            className="scan-video"
+            autoPlay
+            playsInline
+            muted
+            onClick={async () => {
+              // 如果视频没有播放，点击后尝试播放
+              if (videoRef.current && videoRef.current.paused) {
+                try {
+                  await videoRef.current.play();
+                  setError('');
+                } catch (err) {
+                  console.error('手动播放失败:', err);
+                }
+              }
+            }}
+          />
+          <div className="scan-overlay">
+            <div className="scan-frame"></div>
+            <div className="scan-hint">请将二维码对准扫描框</div>
+          </div>
+        </div>
+      )}
 
       {imagePreview && (
         <div className="image-preview">
@@ -111,21 +495,43 @@ const QRCodeDecoder: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
 
-      {decodedText && (
-        <div className="decoded-result">
-          <div className="result-label">解码结果：</div>
-          <div className="result-text">{decodedText}</div>
-          <div className="result-actions">
-            <button onClick={copyDecodedText} className="action-btn">
-              复制
-            </button>
-            {(decodedText.startsWith('http://') || decodedText.startsWith('https://')) && (
-              <button onClick={openDecodedUrl} className="action-btn">
-                打开链接
+      {decodedResults.length > 0 && (
+        <div className="decoded-results">
+          <div className="results-header">
+            <div className="result-label">
+              识别到 {decodedResults.length} 个二维码：
+            </div>
+            {decodedResults.length > 1 && (
+              <button onClick={copyAllDecodedText} className="action-btn copy-all-btn">
+                复制全部
               </button>
             )}
+          </div>
+          {decodedResults.map((result, index) => (
+            <div key={index} className="decoded-result">
+              <div className="result-index">二维码 {index + 1}</div>
+              <div className="result-text">{result.data}</div>
+              <div className="result-actions">
+                <button 
+                  onClick={() => copyDecodedText(result.data)} 
+                  className="action-btn"
+                >
+                  复制
+                </button>
+                {(result.data.startsWith('http://') || result.data.startsWith('https://')) && (
+                  <button 
+                    onClick={() => openDecodedUrl(result.data)} 
+                    className="action-btn"
+                  >
+                    打开链接
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          <div className="result-actions">
             <button onClick={clearAll} className="action-btn secondary">
-              清除
+              清除全部
             </button>
           </div>
         </div>

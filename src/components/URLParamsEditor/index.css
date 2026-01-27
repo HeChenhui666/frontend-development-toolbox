@@ -54,6 +54,30 @@
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
 }
 
+.url-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
+  border-radius: 8px;
+  font-size: 10px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  transition: all 0.25s ease;
+  background: var(--theme-inputBackground, #ffffff);
+  color: var(--theme-inputText, #334155);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: var(--theme-inputFocusBorder, #667eea);
+  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+}
+
+.url-input::placeholder {
+  color: var(--theme-textSecondary, #94a3b8);
+}
+
 .base-url-section {
   display: flex;
   flex-direction: column;
