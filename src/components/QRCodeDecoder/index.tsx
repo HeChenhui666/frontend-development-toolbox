@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import jsQR from 'jsqr';
 import './index.css';
 import { showMessage } from '../../utils/message';
+import CompatibilityWarning from '../CompatibilityWarning';
+import { checkQRCodeFeatures, checkMediaAPIs, checkBasicAPIs } from '../../utils/browserCompatibility';
 
 interface QRCodeResult {
   data: string;
@@ -18,10 +20,33 @@ const QRCodeDecoder: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [isCompatible, setIsCompatible] = useState<boolean>(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<number | null>(null);
+
+  // 检查浏览器兼容性（异步执行，避免阻塞渲染）
+  useEffect(() => {
+    const performCheck = () => {
+      const qrChecks = checkQRCodeFeatures();
+      const mediaChecks = checkMediaAPIs();
+      const basicChecks = checkBasicAPIs();
+      const allChecks = [...qrChecks, ...mediaChecks, ...basicChecks];
+      const critical = allChecks.filter((check) => !check.supported && !check.fallback);
+      setIsCompatible(critical.length === 0);
+      
+      if (critical.length > 0) {
+        setTimeout(() => {
+          showMessage.warning('当前浏览器可能不完全支持二维码解码功能');
+        }, 100);
+      }
+    };
+
+    // 延迟执行，避免阻塞初始渲染
+    const timer = setTimeout(performCheck, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -432,6 +457,12 @@ const QRCodeDecoder: React.FC = () => {
 
   return (
     <div className="decoder">
+      {!isCompatible && (
+        <CompatibilityWarning
+          featureName="二维码解码"
+          requiredFeatures={['Canvas', 'MediaDevices', 'FileReader']}
+        />
+      )}
       <div className="file-upload">
         <input
           ref={fileInputRef}

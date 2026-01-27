@@ -2,23 +2,49 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import './index.css';
 import { showMessage } from '../../utils/message';
+import CompatibilityWarning from '../CompatibilityWarning';
+import { checkQRCodeFeatures, checkBasicAPIs } from '../../utils/browserCompatibility';
 
 const QRCodeGenerator: React.FC = () => {
   const [url, setUrl] = useState('');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [isCompatible, setIsCompatible] = useState<boolean>(true);
+
+  // 检查浏览器兼容性（异步执行，避免阻塞渲染）
+  useEffect(() => {
+    const performCheck = () => {
+      const qrChecks = checkQRCodeFeatures();
+      const basicChecks = checkBasicAPIs();
+      const allChecks = [...qrChecks, ...basicChecks];
+      const critical = allChecks.filter((check) => !check.supported && !check.fallback);
+      setIsCompatible(critical.length === 0);
+      
+      if (critical.length > 0) {
+        setTimeout(() => {
+          showMessage.warning('当前浏览器可能不完全支持二维码生成功能');
+        }, 100);
+      }
+    };
+
+    // 延迟执行，避免阻塞初始渲染
+    const timer = setTimeout(performCheck, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 获取当前标签页的URL并自动生成二维码
   useEffect(() => {
     // 延迟执行，避免阻塞初始渲染
     const timer = setTimeout(() => {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.url) {
-          setUrl(tabs[0].url);
-          // 自动生成二维码
-          generateQRCodeForUrl(tabs[0].url);
-        }
-      });
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0]?.url) {
+            setUrl(tabs[0].url);
+            // 自动生成二维码
+            generateQRCodeForUrl(tabs[0].url);
+          }
+        });
+      }
     }, 0);
     
     return () => clearTimeout(timer);
@@ -63,14 +89,41 @@ const QRCodeGenerator: React.FC = () => {
     link.click();
   };
 
-  // 复制URL
-  const copyUrl = () => {
-    navigator.clipboard.writeText(url);
-    showMessage.success('URL已复制到剪贴板');
+  // 复制URL（兼容性处理）
+  const copyUrl = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        showMessage.success('URL已复制到剪贴板');
+      } else {
+        // 降级方案：使用 document.execCommand
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          showMessage.success('URL已复制到剪贴板');
+        } catch (err) {
+          showMessage.error('复制失败，请手动复制');
+        }
+        document.body.removeChild(textArea);
+      }
+    } catch (err) {
+      showMessage.error('复制失败，请手动复制');
+    }
   };
 
   return (
     <div className="generator">
+      {!isCompatible && (
+        <CompatibilityWarning
+          featureName="二维码生成"
+          requiredFeatures={['Canvas', 'Image']}
+        />
+      )}
       <div className="input-group">
         <label htmlFor="url-input">URL地址：</label>
         <div className="input-wrapper">
