@@ -20,14 +20,30 @@ import {
 import { showMessage } from '../../utils/message';
 import './index.css';
 
-const APP_VERSION = import.meta.env.APP_VERSION || '1.6.1';
+const APP_VERSION = import.meta.env.APP_VERSION || '';
 const GITHUB_URL = 'https://github.com/HeChenhui666/frontend-development-toolbox';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/HeChenhui666/frontend-development-toolbox/main';
 
 interface SettingsProps {
   onClose: () => void;
 }
 
 type SettingsTab = 'general' | 'theme';
+
+// 版本号比较函数
+const compareVersions = (v1: string, v2: string): number => {
+  const parts1 = v1.split('.').map(Number);
+  const parts2 = v2.split('.').map(Number);
+  const maxLength = Math.max(parts1.length, parts2.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    const part1 = parts1[i] || 0;
+    const part2 = parts2[i] || 0;
+    if (part1 > part2) return 1;
+    if (part1 < part2) return -1;
+  }
+  return 0;
+};
 
 // 标签页名称映射
 const TAB_NAMES: Record<FeatureTab, string> = {
@@ -53,6 +69,9 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showTabOrderManager, setShowTabOrderManager] = useState(false);
   const [showStorageDetails, setShowStorageDetails] = useState(false);
+  const [remoteVersion, setRemoteVersion] = useState<string | null>(null);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [updateCheckError, setUpdateCheckError] = useState<string | null>(null);
 
   // 更新存储信息 - 使用 useMemo 延迟计算，避免阻塞渲染
   useEffect(() => {
@@ -68,6 +87,71 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
       setTimeout(updateStorageInfo, 0);
     }
   }, [activeTab]);
+
+  // 检查版本更新
+  const checkForUpdate = useCallback(async () => {
+    setIsCheckingUpdate(true);
+    setUpdateCheckError(null);
+    setRemoteVersion(null);
+
+    try {
+      // 尝试从 package.json 获取版本
+      const packageResponse = await fetch(`${GITHUB_RAW_BASE}/package.json`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!packageResponse.ok) {
+        throw new Error('无法获取 package.json');
+      }
+
+      const packageData = await packageResponse.json();
+      const remotePackageVersion = packageData.version;
+
+      // 也尝试从 manifest.json 获取版本（作为备用）
+      let remoteManifestVersion: string | null = null;
+      try {
+        const manifestResponse = await fetch(`${GITHUB_RAW_BASE}/manifest.json`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        if (manifestResponse.ok) {
+          const manifestData = await manifestResponse.json();
+          remoteManifestVersion = manifestData.version;
+        }
+      } catch (e) {
+        // manifest.json 获取失败不影响主流程
+        console.warn('Failed to fetch manifest.json:', e);
+      }
+
+      // 优先使用 package.json 的版本，如果不存在则使用 manifest.json
+      const finalRemoteVersion = remotePackageVersion || remoteManifestVersion;
+
+      if (finalRemoteVersion) {
+        setRemoteVersion(finalRemoteVersion);
+        // 如果远程版本更新，显示提示
+        if (compareVersions(finalRemoteVersion, APP_VERSION) > 0) {
+          showMessage.info(`发现新版本 v${finalRemoteVersion}！当前版本 v${APP_VERSION}。请前往 GitHub 下载更新。`);
+        } else {
+          showMessage.success('当前已是最新版本');
+        }
+      } else {
+        throw new Error('无法获取远程版本号');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '检查更新失败';
+      setUpdateCheckError(errorMessage);
+      showMessage.error(`检查更新失败: ${errorMessage}`);
+      console.error('Update check failed:', error);
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  }, []);
 
   const handleDefaultTabChange = useCallback((tab: DefaultTab) => {
     setDefaultTab(tab);
@@ -665,6 +749,34 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                       <div className='about-version'>
                         <span className='about-label'>版本:</span>
                         <span className='about-value'>v{APP_VERSION}</span>
+                        {remoteVersion && (
+                          <span
+                            className={`about-remote-version ${
+                              compareVersions(remoteVersion, APP_VERSION) > 0 ? 'update-available' : ''
+                            }`}
+                          >
+                            {compareVersions(remoteVersion, APP_VERSION) > 0 ? (
+                              <> 🆕 最新版本: v{remoteVersion}</>
+                            ) : (
+                              <> ✓ 已是最新</>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      {updateCheckError && (
+                        <div className='about-update-error' style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
+                          检查更新失败: {updateCheckError}
+                        </div>
+                      )}
+                      <div className='about-actions' style={{ marginTop: '12px' }}>
+                        <Button
+                          onClick={checkForUpdate}
+                          loading={isCheckingUpdate}
+                          size='small'
+                          type={remoteVersion && compareVersions(remoteVersion, APP_VERSION) > 0 ? 'primary' : 'default'}
+                        >
+                          {isCheckingUpdate ? '检查中...' : '检查更新'}
+                        </Button>
                       </div>
                       <div className='about-links'>
                         <a href={GITHUB_URL} target='_blank' rel='noopener noreferrer' className='about-link'>
