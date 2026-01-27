@@ -136,7 +136,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
         setRemoteVersion(finalRemoteVersion);
         // 如果远程版本更新，显示提示
         if (compareVersions(finalRemoteVersion, APP_VERSION) > 0) {
-          showMessage.info(`发现新版本 v${finalRemoteVersion}！当前版本 v${APP_VERSION}。请前往 GitHub 下载更新。`);
+          showMessage.info(`发现新版本v${finalRemoteVersion}！可前往GitHub拉取最新代码。`);
         } else {
           showMessage.success('当前已是最新版本');
         }

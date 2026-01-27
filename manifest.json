@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "小火火工具箱",
-  "version": "1.6.3",
+  "version": "1.6.2",
   "description": "实用工具集合：二维码生成/解码、URL参数编辑等",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
     "https://translate.googleapis.com/*"
