@@ -245,15 +245,38 @@ const App: React.FC = () => {
   }, []);
 
   // 支持在 tab 区域通过鼠标滚轮横向滚动
-  const handleTabsWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
-    if (!tabsContainerRef.current) return;
-
-    // 阻止默认垂直滚动，让滚轮用于横向滚动 tab
-    event.preventDefault();
-
+  // 兼容 Windows 系统和所有主流浏览器（Chrome、Edge、Firefox）
+  useEffect(() => {
     const container = tabsContainerRef.current;
-    const delta = event.deltaY !== 0 ? event.deltaY : event.deltaX;
-    container.scrollLeft += delta;
+    if (!container) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      // 检查事件是否可以被取消（兼容性处理）
+      // 在 Windows 系统上，如果事件是 passive 的，cancelable 会是 false
+      if (event.cancelable) {
+        // 如果事件可取消，阻止默认垂直滚动行为
+        event.preventDefault();
+      }
+
+      // 执行横向滚动（无论事件是否可取消都执行）
+      const delta = event.deltaY !== 0 ? event.deltaY : event.deltaX;
+      container.scrollLeft += delta;
+    };
+
+    // 尝试使用 passive: false 添加事件监听器
+    // 如果浏览器不支持 passive 选项，会忽略该选项，但事件监听器仍然正常工作
+    // Windows 系统上的 Chrome、Edge、Firefox 都支持 passive 选项
+    try {
+      container.addEventListener('wheel', handleWheel, { passive: false });
+    } catch (e) {
+      // 如果添加失败（极少数旧版浏览器），使用传统方式
+      container.addEventListener('wheel', handleWheel, false);
+    }
+
+    return () => {
+      // 清理事件监听器
+      container.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   // 在恢复tab后滚动到中间
@@ -323,7 +346,7 @@ const App: React.FC = () => {
           {showSettings && <Settings onClose={() => setShowSettings(false)} />}
         </Suspense>
         <div className='tabs-container'>
-          <div className='tabs' ref={tabsContainerRef} onWheel={handleTabsWheel}>
+          <div className='tabs' ref={tabsContainerRef}>
             {features.map((feature) => (
               <TabButton
                 key={feature.id}
@@ -356,11 +379,18 @@ interface TabButtonProps {
 }
 
 const TabButton = memo<TabButtonProps>(({ feature, isActive, onClick }) => {
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClick(feature.id);
+  }, [feature.id, onClick]);
+
   return (
     <button
       className={`tab ${isActive ? 'active' : ''}`}
-      onClick={() => onClick(feature.id)}
+      onClick={handleClick}
       title={feature.name}
+      type="button"
     >
       <span className='tab-icon'>{feature.icon}</span>
       <span className='tab-text'>{feature.name}</span>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Select } from 'antd';
 import RandExp from 'randexp';
+import CompatibilityWarning from '../CompatibilityWarning';
+import { useCompatibility } from '../../hooks/useCompatibility';
 import './index.css';
 
 type ActionType = 'extract' | 'filter' | 'remove' | 'replace' | 'transform';
@@ -266,6 +268,11 @@ const PRESET_REGEXES: PresetRegex[] = [
 ];
 
 const RegexTester: React.FC = () => {
+  const { isCompatible } = useCompatibility({
+    featureName: '正则表达式测试',
+    requiredFeatures: ['RegExp'],
+    checkTypes: ['regex', 'basic'],
+  });
   const [regexPattern, setRegexPattern] = useState<string>('');
   const [testText, setTestText] = useState<string>('');
   const [flags, setFlags] = useState<string>('g');
@@ -502,6 +509,12 @@ const RegexTester: React.FC = () => {
 
   return (
     <div className='regex-tester'>
+      {!isCompatible && (
+        <CompatibilityWarning
+          featureName="正则表达式测试"
+          requiredFeatures={['RegExp']}
+        />
+      )}
       {/* 预设正则表达式 */}
       <div className='preset-section'>
         <div className='section-header'>

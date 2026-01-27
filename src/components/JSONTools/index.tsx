@@ -5,6 +5,8 @@ import JSONCompare from './JSONCompare';
 import JSONSchemaGenerator from './JSONSchemaGenerator';
 import JSONToTypeScript from './JSONToTypeScript';
 import JSONToCSV from './JSONToCSV';
+import CompatibilityWarning from '../CompatibilityWarning';
+import { useCompatibility } from '../../hooks/useCompatibility';
 import './index.css';
 
 type JSONSubTab = 'parser' | 'compare' | 'schema' | 'typescript' | 'csv';
@@ -25,6 +27,11 @@ const TOOL_OPTIONS: ToolOption[] = [
 
 const JSONTools: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<JSONSubTab>('parser');
+  const { isCompatible } = useCompatibility({
+    featureName: 'JSON工具',
+    requiredFeatures: ['JSON'],
+    checkTypes: ['json', 'basic'],
+  });
 
   // 使用 useMemo 缓存渲染内容，避免每次渲染重新创建组件
   const renderContent = useMemo(() => {
@@ -56,6 +63,12 @@ const JSONTools: React.FC = () => {
 
   return (
     <div className="json-tools">
+      {!isCompatible && (
+        <CompatibilityWarning
+          featureName="JSON工具"
+          requiredFeatures={['JSON']}
+        />
+      )}
       <div className="tool-selector">
         <Select
           value={activeSubTab}

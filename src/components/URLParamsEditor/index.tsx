@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
 import { showMessage } from '../../utils/message';
+import CompatibilityWarning from '../CompatibilityWarning';
+import { checkBasicAPIs, checkChromeExtensionAPIs } from '../../utils/browserCompatibility';
 import {
   getPresetParams,
   addPresetParam,
@@ -25,6 +27,28 @@ const URLParamsEditor: React.FC = () => {
   const [editingPreset, setEditingPreset] = useState<{ index: number; preset: PresetParam } | null>(null);
   const [newPresetName, setNewPresetName] = useState<string>('');
   const [newPresetParams, setNewPresetParams] = useState<URLParam[]>([]);
+  const [isCompatible, setIsCompatible] = useState<boolean>(true);
+
+  // 检查浏览器兼容性（异步执行，避免阻塞渲染）
+  useEffect(() => {
+    const performCheck = () => {
+      const basicChecks = checkBasicAPIs();
+      const extensionChecks = checkChromeExtensionAPIs();
+      const allChecks = [...basicChecks, ...extensionChecks];
+      const critical = allChecks.filter((check) => !check.supported && !check.fallback);
+      setIsCompatible(critical.length === 0);
+      
+      if (critical.length > 0) {
+        setTimeout(() => {
+          showMessage.warning('当前浏览器可能不完全支持URL参数编辑功能');
+        }, 100);
+      }
+    };
+
+    // 延迟执行，避免阻塞初始渲染
+    const timer = setTimeout(performCheck, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 加载预设参数
   useEffect(() => {
@@ -35,17 +59,19 @@ const URLParamsEditor: React.FC = () => {
   useEffect(() => {
     // 延迟执行，避免阻塞初始渲染
     const timer = setTimeout(() => {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.url) {
-          parseURL(tabs[0].url);
-        }
-      });
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0]?.url) {
+            parseURL(tabs[0].url);
+          }
+        });
+      }
     }, 0);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // 解析URL
+  // 解析URL（兼容性处理）
   const parseURL = (url: string) => {
     try {
       setError('');
@@ -59,17 +85,87 @@ const URLParamsEditor: React.FC = () => {
         return;
       }
 
+      // 检查 URL API 支持
+      if (typeof URL === 'undefined') {
+        // 降级方案：手动解析
+        const urlMatch = url.match(/^(https?:\/\/[^\/]+)(\/.*)?(\?.*)?$/);
+        if (urlMatch) {
+          setBaseUrl(urlMatch[1] + (urlMatch[2] || ''));
+          const queryString = urlMatch[3] ? urlMatch[3].substring(1) : '';
+          const paramsArray: URLParam[] = [];
+          
+          if (queryString) {
+            queryString.split('&').forEach((param) => {
+              const [key, value = ''] = param.split('=');
+              if (key) {
+                try {
+                  paramsArray.push({
+                    key: decodeURIComponent(key),
+                    value: decodeURIComponent(value),
+                  });
+                } catch (e) {
+                  paramsArray.push({ key, value });
+                }
+              }
+            });
+          }
+          
+          if (paramsArray.length === 0) {
+            paramsArray.push({ key: '', value: '' });
+          }
+          setParams(paramsArray);
+        } else {
+          setBaseUrl(url.split('?')[0] || url);
+          setParams([{ key: '', value: '' }]);
+        }
+        return;
+      }
+
       const urlObj = new URL(url);
       setBaseUrl(`${urlObj.origin}${urlObj.pathname}`);
+
+      // 检查 URLSearchParams API 支持
+      if (typeof URLSearchParams === 'undefined') {
+        // 降级方案：手动解析查询字符串
+        const search = urlObj.search.substring(1);
+        const paramsArray: URLParam[] = [];
+        
+        if (search) {
+          search.split('&').forEach((param) => {
+            const [key, value = ''] = param.split('=');
+            if (key) {
+              try {
+                paramsArray.push({
+                  key: decodeURIComponent(key),
+                  value: decodeURIComponent(value),
+                });
+              } catch (e) {
+                paramsArray.push({ key, value });
+              }
+            }
+          });
+        }
+        
+        if (paramsArray.length === 0) {
+          paramsArray.push({ key: '', value: '' });
+        }
+        setParams(paramsArray);
+        return;
+      }
 
       const urlParams = new URLSearchParams(urlObj.search);
       const paramsArray: URLParam[] = [];
 
       urlParams.forEach((value, key) => {
         // 对参数名和参数值进行URL解码，将编码的字符转换为中文
-        const decodedKey = decodeURIComponent(key);
-        const decodedValue = decodeURIComponent(value);
-        paramsArray.push({ key: decodedKey, value: decodedValue });
+        try {
+          const decodedKey = decodeURIComponent(key);
+          const decodedValue = decodeURIComponent(value);
+          paramsArray.push({ key: decodedKey, value: decodedValue });
+        } catch (e) {
+          // 如果解码失败，使用原始值
+          paramsArray.push({ key, value });
+        }
       });
 
       // 如果没有参数，添加一个空行方便添加
