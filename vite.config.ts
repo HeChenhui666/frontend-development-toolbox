@@ -19,6 +19,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         'content/translator': resolve(__dirname, 'src/content/translator.ts'),
+        'background': resolve(__dirname, 'src/background/index.ts'),
       },
       output: {
         // 对于 Chrome 扩展，使用 IIFE 格式可能更兼容
@@ -41,9 +42,12 @@ export default defineConfig({
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: (chunkInfo) => {
-          // content script文件放在content目录，不使用hash
+          // content script和background文件不使用hash
           if (chunkInfo.name === 'content/translator') {
             return 'content/translator.js';
+          }
+          if (chunkInfo.name === 'background') {
+            return 'background.js';
           }
           return 'assets/[name]-[hash].js';
         },

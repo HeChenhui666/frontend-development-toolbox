@@ -15,6 +15,7 @@ const ImageTools = lazy(() => import('./components/ImageTools'));
 const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
 const APITester = lazy(() => import('./components/APITester'));
+const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -30,6 +31,7 @@ type FeatureTab =
   | 'css'
   | 'translator'
   | 'apitester'
+  | 'redirector'
   | 'future1'
   | 'future2';
 
@@ -51,6 +53,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   css: { id: 'css', name: 'CSS预设', icon: '🎨' },
   translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
   apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
+  redirector: { id: 'redirector', name: '请求重定向', icon: '🔄' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -166,6 +169,7 @@ const App: React.FC = () => {
       css: <CSSTools />,
       translator: <Translator />,
       apitester: <APITester />,
+      redirector: <RequestRedirector />,
       future1: null,
       future2: null,
     }),

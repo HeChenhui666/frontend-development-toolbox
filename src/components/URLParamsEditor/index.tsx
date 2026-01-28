@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
 import { showMessage } from '../../utils/message';
-import CompatibilityWarning from '../CompatibilityWarning';
-import { checkBasicAPIs, checkChromeExtensionAPIs } from '../../utils/browserCompatibility';
 import {
   getPresetParams,
   addPresetParam,
@@ -27,28 +25,6 @@ const URLParamsEditor: React.FC = () => {
   const [editingPreset, setEditingPreset] = useState<{ index: number; preset: PresetParam } | null>(null);
   const [newPresetName, setNewPresetName] = useState<string>('');
   const [newPresetParams, setNewPresetParams] = useState<URLParam[]>([]);
-  const [isCompatible, setIsCompatible] = useState<boolean>(true);
-
-  // 检查浏览器兼容性（异步执行，避免阻塞渲染）
-  useEffect(() => {
-    const performCheck = () => {
-      const basicChecks = checkBasicAPIs();
-      const extensionChecks = checkChromeExtensionAPIs();
-      const allChecks = [...basicChecks, ...extensionChecks];
-      const critical = allChecks.filter((check) => !check.supported && !check.fallback);
-      setIsCompatible(critical.length === 0);
-      
-      if (critical.length > 0) {
-        setTimeout(() => {
-          showMessage.warning('当前浏览器可能不完全支持URL参数编辑功能');
-        }, 100);
-      }
-    };
-
-    // 延迟执行，避免阻塞初始渲染
-    const timer = setTimeout(performCheck, 50);
-    return () => clearTimeout(timer);
-  }, []);
 
   // 加载预设参数
   useEffect(() => {
