@@ -6,9 +6,9 @@ export interface RedirectRule {
   id: string;
   name: string;
   enabled: boolean;
-  type: 'url' | 'file' | 'directory';
-  source: string; // 源URL或URL模式
-  target: string; // 目标URL或本地文件路径
+  type: 'url';
+  source: string; // 源URL
+  target: string; // 目标URL
   priority: number; // 优先级，数字越大优先级越高
   createdAt: number;
   updatedAt: number;
@@ -128,24 +128,12 @@ export function validateRule(rule: Partial<RedirectRule>): { valid: boolean; err
   }
   
   if (!rule.target || !rule.target.trim()) {
-    return { valid: false, error: '目标URL或文件路径不能为空' };
+    return { valid: false, error: '目标URL不能为空' };
   }
   
-  // 验证URL格式（简单验证）
+  // 验证URL格式
   try {
-    if (rule.type === 'url') {
-      new URL(rule.target);
-    } else if (rule.type === 'file') {
-      // 文件路径验证：不能为空，不能包含特殊字符
-      const cleanPath = rule.target.trim().replace(/^\/+/, '');
-      if (!cleanPath) {
-        return { valid: false, error: '文件路径不能为空' };
-      }
-      // 检查是否包含无效字符
-      if (cleanPath.includes('..') || cleanPath.includes('//')) {
-        return { valid: false, error: '文件路径包含无效字符' };
-      }
-    }
+    new URL(rule.target);
   } catch (e) {
     return { valid: false, error: '目标URL格式无效' };
   }
@@ -160,105 +148,14 @@ const RULE_ID_BASE = 10000;
 const RULE_ID_MAX = 20000;
 
 /**
- * 检查URL模式是否包含通配符或正则表达式
- */
-function isComplexPattern(pattern: string): boolean {
-  // 检查是否包含通配符
-  if (pattern.includes('*') || pattern.includes('**')) {
-    return true;
-  }
-  // 检查是否包含正则表达式特征
-  if (pattern.startsWith('^') || pattern.includes('(') || pattern.includes('[')) {
-    return true;
-  }
-  return false;
-}
-
-/**
  * 将规则转换为 declarativeNetRequest 格式
  */
 export function convertToDeclarativeNetRequestRule(rule: RedirectRule, index: number): chrome.declarativeNetRequest.Rule {
   // 使用固定范围生成ID，避免冲突
   const ruleId = Math.min(RULE_ID_BASE + index, RULE_ID_MAX);
   
-  // 处理URL模式匹配
-  let urlFilter = rule.source;
-  
-  // 如果是目录映射，需要处理路径匹配
-  if (rule.type === 'directory') {
-    // 目录映射：匹配所有以 source 开头的URL
-    // 移除末尾的 *（如果存在），因为 urlFilter 不支持通配符
-    urlFilter = rule.source.replace(/\*$/, '');
-  }
-  
-  // 验证 URL filter 格式
-  // declarativeNetRequest 的 urlFilter 不支持通配符，需要使用 urlMatches 或手动处理
-  // 为了简化，我们使用 urlFilter，但需要确保格式正确
-  
-  // 处理目标URL
-  let redirectUrl: string | undefined;
-  let regexSubstitution: string | undefined;
-  
-  if (rule.type === 'file') {
-    // 对于本地文件，需要使用扩展资源路径
-    // 注意：文件必须在扩展包中，路径相对于扩展根目录
-    // 例如：如果文件在 dist/assets/mock.json，target 应该是 "assets/mock.json"
-    if (!rule.target || !rule.target.trim()) {
-      throw new Error('文件映射规则的目标路径不能为空');
-    }
-    // 确保路径不以 / 开头（chrome.runtime.getURL 会自动添加）
-    const cleanPath = rule.target.trim().replace(/^\/+/, '');
-    if (!cleanPath) {
-      throw new Error('文件映射规则的目标路径无效');
-    }
-    redirectUrl = chrome.runtime.getURL(cleanPath);
-  } else if (rule.type === 'directory') {
-    // 目录映射：检查是否包含替换变量（$1, $2等）
-    if (rule.target.includes('$')) {
-      // 使用 regexSubstitution 支持捕获组替换
-      // 将 $1, $2 等转换为 \1, \2（Chrome API 使用反斜杠）
-      regexSubstitution = rule.target
-        .trim()
-        .replace(/\$(\d+)/g, '\\$1');
-      // 如果目标URL缺少协议，添加 http://
-      if (!regexSubstitution.match(/^https?:\/\//)) {
-        regexSubstitution = `http://${regexSubstitution}`;
-      }
-      console.log(`[重定向] 目录映射替换 - 源: "${rule.source}"`);
-      console.log(`[重定向] 目标: "${rule.target}"`);
-      console.log(`[重定向] 转换后替换: ${regexSubstitution}`);
-    } else {
-      // 检查是否是简单的反向代理场景（域名:端口 -> 域名）
-      // 例如：127.0.0.1:3355 -> pre-air.1688.com
-      const sourceTrimmed = rule.source.trim();
-      const targetTrimmed = rule.target.trim();
-      
-      // 检查源是否是 host:port 格式（不包含协议和路径）
-      const hostPortPattern = /^([^:\/]+):(\d+)$/;
-      const sourceMatch = sourceTrimmed.match(hostPortPattern);
-      
-      if (sourceMatch && !sourceTrimmed.includes('/') && !sourceTrimmed.includes('*')) {
-        // 反向代理场景：使用捕获组保持路径和查询参数
-        // 使用 regexSubstitution 来保持路径（\1 是路径部分）
-        regexSubstitution = targetTrimmed.match(/^https?:\/\//) 
-          ? `${targetTrimmed}\\1`  // 如果目标包含协议，直接使用
-          : `https://${targetTrimmed}\\1`; // 否则添加 https://
-        
-        console.log(`[重定向] 检测到反向代理场景 - 源: ${sourceTrimmed}, 目标: ${targetTrimmed}`);
-        console.log(`[重定向] 替换字符串: ${regexSubstitution}`);
-      } else {
-        // 简单替换，直接使用目标URL
-        redirectUrl = rule.target;
-        // 如果目标URL缺少协议，添加 http://
-        if (!redirectUrl.match(/^https?:\/\//)) {
-          redirectUrl = `http://${redirectUrl}`;
-        }
-      }
-    }
-  } else {
-    // URL映射：清理目标URL
-    redirectUrl = rule.target.trim();
-  }
+  // URL映射：清理目标URL
+  const redirectUrl = rule.target.trim();
   
   // 构建条件 - 使用标准资源类型配置
   const condition: chrome.declarativeNetRequest.RuleCondition = {
@@ -273,102 +170,22 @@ export function convertToDeclarativeNetRequestRule(rule: RedirectRule, index: nu
     ],
   };
   
-  // 根据规则类型和复杂度选择匹配方式
-  const isComplex = isComplexPattern(rule.source);
-  
-  if (rule.type === 'directory' || isComplex) {
-    // 检查是否是反向代理场景（host:port -> host）
-    const sourceTrimmed = rule.source.trim();
-    const hostPortPattern = /^([^:\/]+):(\d+)$/;
-    const sourceMatch = sourceTrimmed.match(hostPortPattern);
-    
-    if (sourceMatch && !sourceTrimmed.includes('/') && !sourceTrimmed.includes('*') && !rule.target.includes('$')) {
-      // 反向代理场景：127.0.0.1:3355 -> pre-air.1688.com
-      const [, host, port] = sourceMatch;
-      const escapedHost = host.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // 构建正则表达式：匹配 http://host:port 或 https://host:port，捕获路径和查询参数
-      condition.regexFilter = `^https?://${escapedHost}:${port}(.*)$`;
-      console.log(`[重定向] 反向代理 - 源: ${host}:${port}, 正则: ${condition.regexFilter}`);
-    } else {
-      // 目录映射：使用 regexFilter 支持通配符和正则表达式
-      // 清理源URL（移除前后空格）
-      let regexPattern = rule.source.trim();
-      
-      // 如果源规则以 ^ 开头，说明是正则表达式格式
-      if (regexPattern.startsWith('^')) {
-        // 移除开头的 ^，因为我们会自动添加
-        regexPattern = regexPattern.slice(1).trim();
-      }
-      
-      // 处理通配符转换
-      // ** 表示匹配任意路径（包括斜杠），转换为 (.*)
-      // * 表示匹配单个路径段（不包括斜杠），转换为 ([^/]*)
-      // 注意：需要先标记所有通配符，再统一转换，避免已转换的捕获组被再次处理
-      // 先标记所有通配符
-      regexPattern = regexPattern
-        .replace(/\*\*/g, '___DOUBLE_STAR___') // 临时标记双星号
-        .replace(/\*/g, '___SINGLE_STAR___'); // 临时标记单星号
-      
-      // 特殊处理：如果以 /** 开头（现在是 /___DOUBLE_STAR___），应该匹配协议和域名部分
-      if (regexPattern.startsWith('/___DOUBLE_STAR___')) {
-        // 将开头的 /___DOUBLE_STAR___ 转换为 (.*)，匹配协议和域名
-        regexPattern = regexPattern.replace(/^\/___DOUBLE_STAR___/, '(.*)');
-      }
-      
-      // 转换剩余的通配符标记
-      regexPattern = regexPattern
-        .replace(/___DOUBLE_STAR___/g, '(.*)') // 双星号转换为捕获组，匹配任意字符包括斜杠
-        .replace(/___SINGLE_STAR___/g, '([^/]*)'); // 单星号转换为捕获组，匹配非斜杠字符
-      
-      // 如果源规则以 $ 结尾，移除它（我们会自动添加）
-      if (regexPattern.endsWith('$')) {
-        regexPattern = regexPattern.slice(0, -1);
-      }
-      
-      // 确保正则表达式匹配完整URL
-      condition.regexFilter = `^${regexPattern}$`;
-      
-      // 调试输出：显示转换后的正则表达式和捕获组信息
-      const captureGroupCount = (regexPattern.match(/\(/g) || []).length;
-      console.log(`[重定向] 目录映射转换 - 源: "${rule.source}"`);
-      console.log(`[重定向] 转换后正则: ${condition.regexFilter}`);
-      console.log(`[重定向] 捕获组数量: ${captureGroupCount}`);
-    }
-    
-    // 调试输出：显示转换后的正则表达式
-    console.log(`[重定向] 目录映射转换 - 源: ${rule.source}, 转换后正则: ${condition.regexFilter}`);
-  } else if (rule.type === 'url') {
-    // URL映射：对于完整URL，必须使用 regexFilter 进行精确匹配
-    // urlFilter 是前缀匹配，不适合完整URL的精确匹配
-    // 清理URL（移除前后空格）
-    const cleanUrl = rule.source.trim();
-    // 转义特殊字符，确保精确匹配
-    const escapedUrl = cleanUrl
-      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    condition.regexFilter = `^${escapedUrl}$`;
-  } else {
-    // 文件映射：使用 urlFilter 进行前缀匹配
-    condition.urlFilter = urlFilter;
-  }
+  // URL映射：对于完整URL，必须使用 regexFilter 进行精确匹配
+  // urlFilter 是前缀匹配，不适合完整URL的精确匹配
+  // 清理URL（移除前后空格）
+  const cleanUrl = rule.source.trim();
+  // 转义特殊字符，确保精确匹配
+  const escapedUrl = cleanUrl
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  condition.regexFilter = `^${escapedUrl}$`;
   
   // 构建重定向动作
   const redirectAction: chrome.declarativeNetRequest.RuleAction = {
     type: chrome.declarativeNetRequest.RuleActionType.REDIRECT,
-  };
-  
-  if (regexSubstitution) {
-    // 使用 regexSubstitution 支持捕获组替换
-    redirectAction.redirect = {
-      regexSubstitution: regexSubstitution,
-    } as chrome.declarativeNetRequest.Redirect;
-  } else if (redirectUrl) {
-    // 使用简单URL重定向
-    redirectAction.redirect = {
+    redirect: {
       url: redirectUrl,
-    } as chrome.declarativeNetRequest.Redirect;
-  } else {
-    throw new Error('无效的重定向目标');
-  }
+    } as chrome.declarativeNetRequest.Redirect,
+  };
   
   return {
     id: ruleId,

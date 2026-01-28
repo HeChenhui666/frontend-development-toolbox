@@ -289,7 +289,7 @@ const RequestRedirector: React.FC = () => {
           <div className="header-info">
             <h3>请求重定向规则</h3>
             <p className="header-desc">
-              配置URL重定向规则，支持URL到URL映射、URL到本地文件映射、目录映射
+              配置URL重定向规则，支持URL到URL映射
             </p>
           </div>
           <div className="header-actions">
@@ -350,20 +350,8 @@ const RequestRedirector: React.FC = () => {
             </summary>
             <ul style={{ marginTop: '6px' }}>
               <li><strong>URL映射</strong>：将源URL重定向到目标URL</li>
-              <li><strong>文件映射</strong>：将URL重定向到扩展包内的本地文件（文件需在扩展包中）</li>
-              <li><strong>目录映射</strong>：支持通配符和正则表达式
-                <ul style={{ marginTop: '4px', paddingLeft: '16px' }}>
-                  <li><code>*</code> 匹配单个路径段（如：<code>assets-super-buyer/*/pages</code>）</li>
-                  <li><code>**</code> 匹配任意路径（如：<code>**/assets-super-buyer/**</code>）</li>
-                  <li>支持正则表达式（如：<code>^https://.*/assets-super-buyer/(.*)/pages/(.*)$</code>）</li>
-                  <li>目标URL可使用 <code>$1</code>, <code>$2</code> 等引用捕获组（如：<code>http://localhost:3333/dev/pages/$2</code>）</li>
-                </ul>
-              </li>
               <li><strong>优先级</strong>：数字越大优先级越高，高优先级规则会先匹配</li>
             </ul>
-            <p className="warning-text">
-              ⚠️ 注意：本地文件映射需要文件在扩展包内。对于外部文件，建议使用本地HTTP服务器方案。
-            </p>
             <p className="warning-text" style={{ marginTop: '8px' }}>
               💡 提示：如果看到304状态码，说明浏览器使用了缓存。请使用 <strong>Ctrl+Shift+R</strong>（Windows）或 <strong>Cmd+Shift+R</strong>（Mac）强制刷新，或清除浏览器缓存。
             </p>
@@ -400,7 +388,7 @@ const RequestRedirector: React.FC = () => {
                 <div className="rule-info">
                   <div className="rule-name">{rule.name}</div>
                   <div className="rule-meta">
-                    <span className="rule-type">{rule.type === 'url' ? 'URL映射' : rule.type === 'file' ? '文件映射' : '目录映射'}</span>
+                    <span className="rule-type">URL映射</span>
                     <span className="rule-priority">优先级: {rule.priority}</span>
                   </div>
                 </div>
@@ -457,76 +445,28 @@ const RequestRedirector: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>映射类型 *</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as RedirectRule['type'] })}
-                >
-                  <option value="url">URL到URL映射</option>
-                  <option value="file">URL到本地文件映射</option>
-                  <option value="directory">目录映射</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>源URL/模式 *</label>
+                <label>源URL *</label>
                 <input
                   type="text"
                   value={formData.source}
                   onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                  placeholder={
-                    formData.type === 'directory'
-                      ? '例如: https://api.example.com/api/*'
-                      : '例如: https://api.example.com/users'
-                  }
+                  placeholder="例如: https://api.example.com/users"
                 />
                 <div className="form-hint">
-                  {formData.type === 'directory' ? (
-                    <>
-                      支持多种格式：
-                      <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
-                        <li><strong>反向代理</strong>：<code>127.0.0.1:3355</code>（自动保持路径和查询参数）</li>
-                        <li><code>*</code> 匹配单个路径段</li>
-                        <li><code>**</code> 匹配任意路径</li>
-                        <li>正则表达式：<code>^https://.*/api/(.*)$</code></li>
-                      </ul>
-                    </>
-                  ) : (
-                    '完整的URL地址（简单URL性能更好）'
-                  )}
+                  完整的URL地址
                 </div>
               </div>
 
               <div className="form-group">
-                <label>目标URL/文件路径 *</label>
+                <label>目标URL *</label>
                 <input
                   type="text"
                   value={formData.target}
                   onChange={(e) => setFormData({ ...formData, target: e.target.value })}
-                  placeholder={
-                    formData.type === 'file'
-                      ? '例如: assets/mock-data.json (相对于扩展根目录)'
-                      : formData.type === 'directory'
-                      ? '例如: http://localhost:3000/api/*'
-                      : '例如: https://api-proxy.example.com/users'
-                  }
+                  placeholder="例如: https://api-proxy.example.com/users"
                 />
                 <div className="form-hint">
-                  {formData.type === 'file' ? (
-                    '本地文件路径（相对于扩展根目录）或使用扩展资源URL'
-                  ) : formData.type === 'directory' ? (
-                    <>
-                      目标URL，支持多种格式：
-                      <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
-                        <li><strong>反向代理</strong>：<code>pre-air.1688.com</code>（自动添加 https:// 并保持路径）</li>
-                        <li>简单替换：<code>http://localhost:3000/api/*</code></li>
-                        <li>捕获组替换：<code>http://localhost:3333/dev/pages/$3</code></li>
-                        <li>自动添加协议（如果缺少）</li>
-                      </ul>
-                    </>
-                  ) : (
-                    '目标URL地址'
-                  )}
+                  目标URL地址
                 </div>
               </div>
 
