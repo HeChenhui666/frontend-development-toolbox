@@ -1,5 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo, useDeferredValue } from 'react';
-import { ConfigProvider, theme as antdTheme } from 'antd';
+import { ConfigProvider, theme as antdTheme, Popover, Button } from 'antd';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab } from './utils/userPreferences';
 import { getSavedTheme } from './utils/theme';
@@ -73,6 +73,8 @@ const App: React.FC = () => {
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tabOrderVersion, setTabOrderVersion] = useState(0); // 用于触发重新计算
+  const [allTabsOpen, setAllTabsOpen] = useState(false);
+  const [showAllTabsButton, setShowAllTabsButton] = useState(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const shouldScrollToActiveTab = useRef<boolean>(initialShouldScroll); // 标记是否需要滚动到活动tab
@@ -223,6 +225,7 @@ const App: React.FC = () => {
     startTransition(() => {
       setActiveTab(tab);
     });
+    setAllTabsOpen(false);
   }, []);
 
   // 滚动活动tab到容器中间
@@ -283,6 +286,37 @@ const App: React.FC = () => {
       container.removeEventListener('wheel', handleWheel);
     };
   }, []);
+
+  // 只有在 tabs 可滚动时才显示“全部”按钮
+  useEffect(() => {
+    const container = tabsContainerRef.current;
+    if (!container) return;
+
+    const updateScrollable = () => {
+      const isScrollable = container.scrollWidth > container.clientWidth + 1;
+      setShowAllTabsButton(isScrollable);
+      if (!isScrollable) {
+        setAllTabsOpen(false);
+      }
+    };
+
+    const rafId = requestAnimationFrame(updateScrollable);
+    window.addEventListener('resize', updateScrollable);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updateScrollable);
+      resizeObserver.observe(container);
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', updateScrollable);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [features]);
 
   // 在恢复tab后滚动到中间
   useEffect(() => {
@@ -443,6 +477,38 @@ const App: React.FC = () => {
               />
             ))}
           </div>
+          {showAllTabsButton && (
+            <div className='tabs-all'>
+              <Popover
+                open={allTabsOpen}
+                onOpenChange={setAllTabsOpen}
+                placement="bottomRight"
+                trigger="click"
+                overlayClassName="tabs-all-overlay"
+                overlayInnerStyle={{ padding: 0 }}
+                content={
+                  <div className="tabs-all-popover">
+                    {features.map((feature) => (
+                      <Button
+                        key={feature.id}
+                        type={activeTab === feature.id ? 'primary' : 'text'}
+                        size="small"
+                        className="tabs-all-item"
+                        onClick={() => handleTabChange(feature.id)}
+                      >
+                        <span className="tabs-all-icon">{feature.icon}</span>
+                        <span className="tabs-all-text">{feature.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                }
+              >
+                <Button className="tabs-all-button" size="small" type="text">
+                  全部
+                </Button>
+              </Popover>
+            </div>
+          )}
         </div>
         <div className='content'>
           <Suspense fallback={<div className='loading'>加载中...</div>}>

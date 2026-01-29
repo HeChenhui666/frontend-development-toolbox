@@ -224,31 +224,6 @@ const QRCodeDecoder: React.FC = () => {
     stopScanning();
   };
 
-  // 截屏功能
-  const captureScreenshot = async () => {
-    try {
-      setError('');
-      setDecodedResults([]);
-      
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tabs[0]?.id) {
-        setError('无法获取当前标签页');
-        return;
-      }
-
-      const dataUrl = await chrome.tabs.captureVisibleTab(undefined, {
-        format: 'png',
-        quality: 100
-      });
-
-      setImagePreview(dataUrl);
-      decodeQRCode(dataUrl);
-      antdMessage.success('截屏成功');
-    } catch (err) {
-      setError('截屏失败：' + (err instanceof Error ? err.message : '未知错误'));
-      antdMessage.error('截屏失败');
-    }
-  };
 
   // 开始摄像头扫码
   const startScanning = async () => {
@@ -493,12 +468,6 @@ const QRCodeDecoder: React.FC = () => {
               选择二维码图片
             </Button>
           </Upload>
-          <Button
-            icon={<CameraOutlined />}
-            onClick={captureScreenshot}
-          >
-            截屏识别
-          </Button>
           {!isScanning ? (
             <Button
               type="primary"
