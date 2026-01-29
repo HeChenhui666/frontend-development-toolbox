@@ -9,7 +9,6 @@ import {
   Progress,
   Tabs,
   message as antdMessage,
-  Input,
 } from 'antd';
 import {
   SettingOutlined,
@@ -82,8 +81,10 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   gradient: '颜色工具',
   regex: '正则',
   css: 'CSS预设',
+  functions: '常用函数',
   translator: '在线翻译',
   apitester: 'API调试',
+  redirector: '请求重定向',
 };
 
 const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
@@ -591,12 +592,6 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
     setDragOverIndex(null);
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
     <Modal
       title="设置"
@@ -770,24 +765,23 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                       </Space>
 
                       <Space wrap>
-                        <Link href={GITHUB_URL} target='_blank' rel='noopener noreferrer' icon={<GithubOutlined />}>
-                          GitHub 仓库
+                        <Link href={GITHUB_URL} target='_blank' rel='noopener noreferrer'>
+                          <Space>
+                            <GithubOutlined />
+                            <span>GitHub 仓库</span>
+                          </Space>
                         </Link>
-                        <Link
-                          href={`${GITHUB_URL}/issues`}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          icon={<BugOutlined />}
-                        >
-                          问题反馈
+                        <Link href={`${GITHUB_URL}/issues`} target='_blank' rel='noopener noreferrer'>
+                          <Space>
+                            <BugOutlined />
+                            <span>问题反馈</span>
+                          </Space>
                         </Link>
-                        <Link
-                          href={`${GITHUB_URL}#readme`}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          icon={<BookOutlined />}
-                        >
-                          使用文档
+                        <Link href={`${GITHUB_URL}#readme`} target='_blank' rel='noopener noreferrer'>
+                          <Space>
+                            <BookOutlined />
+                            <span>使用文档</span>
+                          </Space>
                         </Link>
                       </Space>
                     </Space>

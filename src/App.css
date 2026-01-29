@@ -110,6 +110,15 @@ body {
   padding: var(--app-spacing);
 }
 
+/* 统一 Space.Compact 中输入框 + 按钮的高度对齐 */
+.ant-space-compact .ant-btn {
+  align-self: stretch;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* 独立页面模式下，body需要全屏高度 */
 body:has(.app-standalone) {
   min-height: 100vh;
