@@ -1,8 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Input,
+  Button,
+  Space,
+  Card,
+  Modal,
+  Popconfirm,
+  message as antdMessage,
+  Typography,
+  Tag,
+} from 'antd';
+import {
+  ReloadOutlined,
+  SettingOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  CopyOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../utils/message';
-import CompatibilityWarning from '../CompatibilityWarning';
-import { checkBasicAPIs, checkChromeExtensionAPIs } from '../../utils/browserCompatibility';
+
+const { Text } = Typography;
 import {
   getPresetParams,
   addPresetParam,
@@ -27,28 +47,6 @@ const URLParamsEditor: React.FC = () => {
   const [editingPreset, setEditingPreset] = useState<{ index: number; preset: PresetParam } | null>(null);
   const [newPresetName, setNewPresetName] = useState<string>('');
   const [newPresetParams, setNewPresetParams] = useState<URLParam[]>([]);
-  const [isCompatible, setIsCompatible] = useState<boolean>(true);
-
-  // 检查浏览器兼容性（异步执行，避免阻塞渲染）
-  useEffect(() => {
-    const performCheck = () => {
-      const basicChecks = checkBasicAPIs();
-      const extensionChecks = checkChromeExtensionAPIs();
-      const allChecks = [...basicChecks, ...extensionChecks];
-      const critical = allChecks.filter((check) => !check.supported && !check.fallback);
-      setIsCompatible(critical.length === 0);
-      
-      if (critical.length > 0) {
-        setTimeout(() => {
-          showMessage.warning('当前浏览器可能不完全支持URL参数编辑功能');
-        }, 100);
-      }
-    };
-
-    // 延迟执行，避免阻塞初始渲染
-    const timer = setTimeout(performCheck, 50);
-    return () => clearTimeout(timer);
-  }, []);
 
   // 加载预设参数
   useEffect(() => {
@@ -254,7 +252,7 @@ const URLParamsEditor: React.FC = () => {
   const copyNewURL = () => {
     const newURL = generateNewURL();
     navigator.clipboard.writeText(newURL);
-    showMessage.success('URL已复制到剪贴板');
+    antdMessage.success('URL已复制到剪贴板');
   };
 
   // 刷新当前URL
@@ -302,13 +300,13 @@ const URLParamsEditor: React.FC = () => {
   // 保存预设（新增或编辑）
   const savePreset = () => {
     if (!newPresetName.trim()) {
-      showMessage.warning('请输入预设名称');
+      antdMessage.warning('请输入预设名称');
       return;
     }
 
     const validParams = newPresetParams.filter((p) => p.key.trim() && p.value.trim());
     if (validParams.length === 0) {
-      showMessage.warning('请至少添加一个有效的参数');
+      antdMessage.warning('请至少添加一个有效的参数');
       return;
     }
 
@@ -319,46 +317,42 @@ const URLParamsEditor: React.FC = () => {
           name: newPresetName.trim(),
           params: validParams,
         });
-        showMessage.success('预设已更新');
+        antdMessage.success('预设已更新');
       } else {
         // 添加新预设
         addPresetParam({
           name: newPresetName.trim(),
           params: validParams,
         });
-        showMessage.success('预设已添加');
+        antdMessage.success('预设已添加');
       }
       setPresetParams(getPresetParams());
       cancelEdit();
     } catch (error: any) {
-      showMessage.error(error.message || '保存失败');
+      antdMessage.error(error.message || '保存失败');
     }
   };
 
   // 删除预设
   const handleDeletePreset = (index: number) => {
-    if (window.confirm(`确定要删除预设 "${presetParams[index].name}" 吗？`)) {
-      try {
-        deletePresetParam(index);
-        setPresetParams(getPresetParams());
-        showMessage.success('预设已删除');
-        if (editingPreset && editingPreset.index === index) {
-          cancelEdit();
-        }
-      } catch (error: any) {
-        showMessage.error(error.message || '删除失败');
+    try {
+      deletePresetParam(index);
+      setPresetParams(getPresetParams());
+      antdMessage.success('预设已删除');
+      if (editingPreset && editingPreset.index === index) {
+        cancelEdit();
       }
+    } catch (error: any) {
+      antdMessage.error(error.message || '删除失败');
     }
   };
 
   // 重置预设
   const handleResetPresets = () => {
-    if (window.confirm('确定要重置为默认预设吗？这将删除所有自定义预设。')) {
-      resetPresetParams();
-      setPresetParams(getPresetParams());
-      showMessage.success('已重置为默认预设');
-      cancelEdit();
-    }
+    resetPresetParams();
+    setPresetParams(getPresetParams());
+    antdMessage.success('已重置为默认预设');
+    cancelEdit();
   };
 
   // 更新新预设的参数
@@ -396,7 +390,7 @@ const URLParamsEditor: React.FC = () => {
     // 如果存在预设参数，弹出提醒并返回
     if (existingParams.length > 0) {
       const paramNames = existingParams.join('、');
-      showMessage.warning(`参数 ${paramNames} 已存在，无需重复添加`);
+      antdMessage.warning(`参数 ${paramNames} 已存在，无需重复添加`);
       return;
     }
 
@@ -440,245 +434,275 @@ const URLParamsEditor: React.FC = () => {
   };
 
   return (
-    <div className='url-params-editor'>
-      <div className='url-display'>
-        <div className='url-display-header'>
-          <label>当前URL：</label>
-          <button onClick={refreshURL} className='refresh-btn' title='刷新URL'>
-            🔄
-          </button>
-        </div>
-        <input
-          type='text'
-          value={currentUrl}
-          onChange={(e) => {
-            setCurrentUrl(e.target.value);
-          }}
-          onBlur={(e) => {
-            // 失去焦点时，如果URL有效则重新解析
-            if (e.target.value.trim()) {
-              parseURL(e.target.value);
-            }
-          }}
-          onKeyDown={(e) => {
-            // 按Enter键时解析URL
-            if (e.key === 'Enter') {
-              e.currentTarget.blur();
-            }
-          }}
-          className='url-input'
-          placeholder='输入或粘贴URL，按Enter或失去焦点时解析'
-        />
-      </div>
+    <div className='url-params-editor' style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px'}}>
+      <Card size="small" title="当前URL">
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            value={currentUrl}
+            onChange={(e) => {
+              setCurrentUrl(e.target.value);
+            }}
+            onBlur={(e) => {
+              // 失去焦点时，如果URL有效则重新解析
+              if (e.target.value.trim()) {
+                parseURL(e.target.value);
+              }
+            }}
+            onPressEnter={(e) => {
+              // 按Enter键时解析URL
+              (e.target as HTMLInputElement).blur();
+            }}
+            placeholder='输入或粘贴URL，按Enter或失去焦点时解析'
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={refreshURL}
+            title='刷新URL'
+          />
+        </Space.Compact>
+      </Card>
 
-      <div className='base-url-section'>
-        <label>基础URL：</label>
-        <input
-          type='text'
+      <Card size="small" title="基础URL">
+        <Input
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
-          className='base-url-input'
           placeholder='基础URL'
         />
-      </div>
+      </Card>
 
-      <div className='preset-params-section'>
-        <div className='preset-params-header'>
-          <label>预设参数：</label>
-          <button onClick={openPresetManager} className='manage-presets-btn' title='管理预设'>
-            ⚙️ 管理
-          </button>
-        </div>
-        <div className='preset-params-list'>
+      <Card 
+        size="small" 
+        title={
+          <Space>
+            <Text>预设参数</Text>
+            <Button
+              size="small"
+              icon={<SettingOutlined />}
+              onClick={openPresetManager}
+              type="link"
+            >
+              管理
+            </Button>
+          </Space>
+        }
+      >
+        <Space wrap>
           {presetParams.map((preset, index) => (
-            <button
+            <Tag
               key={index}
               onClick={() => addPresetParams(preset)}
-              className='preset-param-btn'
+              style={{ cursor: 'pointer' }}
               title={preset.params.map((p) => `${p.key}=${p.value}`).join(' & ')}
             >
               {preset.name}
-            </button>
+            </Tag>
           ))}
-        </div>
-      </div>
+        </Space>
+      </Card>
 
       {/* 预设管理器弹窗 */}
-      {showPresetManager && (
-        <div className='preset-manager-overlay' onClick={closePresetManager}>
-          <div className='preset-manager-modal' onClick={(e) => e.stopPropagation()}>
-            <div className='preset-manager-header'>
-              <h3>{editingPreset ? '编辑预设' : '管理预设参数'}</h3>
-              <button onClick={closePresetManager} className='close-modal-btn'>
-                ×
-              </button>
+      <Modal
+        title={editingPreset ? '编辑预设' : '管理预设参数'}
+        open={showPresetManager}
+        onCancel={closePresetManager}
+        footer={null}
+        width={600}
+        centered
+        destroyOnClose
+        maskClosable={false}
+        getContainer={() => document.body}
+      >
+
+        {editingPreset ? (
+          // 编辑模式
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <div>
+              <Text strong>预设名称</Text>
+              <Input
+                value={newPresetName}
+                onChange={(e) => setNewPresetName(e.target.value)}
+                placeholder='输入预设名称'
+                style={{ marginTop: '6px'}}
+              />
             </div>
 
-            <div className='preset-manager-content'>
-              {editingPreset ? (
-                // 编辑模式
-                <div className='preset-editor'>
-                  <div className='preset-name-input-group'>
-                    <label>预设名称：</label>
-                    <input
-                      type='text'
-                      value={newPresetName}
-                      onChange={(e) => setNewPresetName(e.target.value)}
-                      className='preset-name-input'
-                      placeholder='输入预设名称'
+            <div>
+              <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: '6px'}}>
+                <Text strong>参数列表</Text>
+                <Button
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={addNewPresetParam}
+                >
+                  添加参数
+                </Button>
+              </Space>
+              <Space direction="vertical" style={{ width: '100%' }} size="small">
+                {newPresetParams.map((param, index) => (
+                  <Space.Compact key={index} style={{ width: '100%' }}>
+                    <Input
+                      value={param.key}
+                      onChange={(e) => updateNewPresetParam(index, 'key', e.target.value)}
+                      placeholder='参数名'
+                      style={{ flex: 1 }}
                     />
-                  </div>
-
-                  <div className='preset-params-editor'>
-                    <div className='preset-params-editor-header'>
-                      <label>参数列表：</label>
-                      <button onClick={addNewPresetParam} className='add-preset-param-btn'>
-                        + 添加参数
-                      </button>
-                    </div>
-                    <div className='preset-params-editor-list'>
-                      {newPresetParams.map((param, index) => (
-                        <div key={index} className='preset-param-row'>
-                          <input
-                            type='text'
-                            value={param.key}
-                            onChange={(e) => updateNewPresetParam(index, 'key', e.target.value)}
-                            placeholder='参数名'
-                            className='preset-param-key-input'
-                          />
-                          <span className='preset-param-equals'>=</span>
-                          <input
-                            type='text'
-                            value={param.value}
-                            onChange={(e) => updateNewPresetParam(index, 'value', e.target.value)}
-                            placeholder='参数值'
-                            className='preset-param-value-input'
-                          />
-                          <button
-                            onClick={() => removeNewPresetParam(index)}
-                            className='remove-preset-param-btn'
-                            title='删除参数'
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className='preset-editor-actions'>
-                    <button onClick={cancelEdit} className='cancel-btn'>
-                      取消
-                    </button>
-                    <button onClick={savePreset} className='save-preset-btn'>
-                      保存
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // 列表模式
-                <div className='preset-list'>
-                  <div className='preset-list-header'>
-                    <button onClick={() => setEditingPreset({ index: -1, preset: { name: '', params: [] } })} className='add-preset-btn'>
-                      + 添加预设
-                    </button>
-                    <button onClick={handleResetPresets} className='reset-presets-btn'>
-                      重置为默认
-                    </button>
-                  </div>
-                  <div className='preset-list-items'>
-                    {presetParams.map((preset, index) => (
-                      <div key={index} className='preset-list-item'>
-                        <div className='preset-item-info'>
-                          <div className='preset-item-name'>{preset.name}</div>
-                          <div className='preset-item-params'>
-                            {preset.params.map((p, i) => (
-                              <span key={i} className='preset-item-param'>
-                                {p.key}={p.value}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className='preset-item-actions'>
-                          <button
-                            onClick={() => startEditPreset(index)}
-                            className='edit-preset-btn'
-                            title='编辑'
-                          >
-                            编辑
-                          </button>
-                          <button
-                            onClick={() => handleDeletePreset(index)}
-                            className='delete-preset-btn'
-                            title='删除'
-                          >
-                            删除
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    <Input
+                      value={param.value}
+                      onChange={(e) => updateNewPresetParam(index, 'value', e.target.value)}
+                      placeholder='参数值'
+                      style={{ flex: 1 }}
+                    />
+                    <Button
+                      icon={<CloseOutlined />}
+                      onClick={() => removeNewPresetParam(index)}
+                      danger
+                    />
+                  </Space.Compact>
+                ))}
+              </Space>
             </div>
-          </div>
-        </div>
-      )}
 
-      <div className='params-section'>
-        <div className='params-header'>
-          <label>URL参数：</label>
-          <button onClick={addParam} className='add-param-btn'>
-            + 添加参数
-          </button>
-        </div>
+            <Space style={{ justifyContent: 'flex-end', width: '100%' }}>
+              <Button onClick={cancelEdit}>取消</Button>
+              <Button type="primary" onClick={savePreset}>保存</Button>
+            </Space>
+          </Space>
+        ) : (
+          // 列表模式
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space style={{ justifyContent: 'flex-end', width: '100%' }}>
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => setEditingPreset({ index: -1, preset: { name: '', params: [] } })}
+              >
+                添加预设
+              </Button>
+              <Popconfirm
+                title="确定要重置为默认预设吗？这将删除所有自定义预设。"
+                onConfirm={handleResetPresets}
+                okText="确定"
+                cancelText="取消"
+              >
+                <Button danger>重置为默认</Button>
+              </Popconfirm>
+            </Space>
+            <Space direction="vertical" style={{ width: '100%' }} size="small">
+              {presetParams.map((preset, index) => (
+                <Card key={index} size="small">
+                  <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <div>
+                      <Text strong>{preset.name}</Text>
+                      <div style={{ marginTop: '6px'}}>
+                        <Space wrap>
+                          {preset.params.map((p, i) => (
+                            <Tag key={i}>{p.key}={p.value}</Tag>
+                          ))}
+                        </Space>
+                      </div>
+                    </div>
+                    <Space>
+                      <Button
+                        size="small"
+                        icon={<EditOutlined />}
+                        onClick={() => startEditPreset(index)}
+                      >
+                        编辑
+                      </Button>
+                      <Popconfirm
+                        title={`确定要删除预设 "${preset.name}" 吗？`}
+                        onConfirm={() => handleDeletePreset(index)}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <Button
+                          size="small"
+                          danger
+                          icon={<DeleteOutlined />}
+                        >
+                          删除
+                        </Button>
+                      </Popconfirm>
+                    </Space>
+                  </Space>
+                </Card>
+              ))}
+            </Space>
+          </Space>
+        )}
+      </Modal>
 
-        <div className='params-list'>
+      <Card 
+        size="small" 
+        title={
+          <Space>
+            <Text>URL参数</Text>
+            <Button
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={addParam}
+              type="link"
+            >
+              添加参数
+            </Button>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="small">
           {params.map((param, index) => (
-            <div key={index} className='param-row'>
-              <input
-                type='text'
+            <Space.Compact key={index} style={{ width: '100%' }}>
+              <Input
                 value={param.key}
                 onChange={(e) => updateParam(index, 'key', e.target.value)}
                 placeholder='参数名'
-                className='param-key-input'
+                style={{ flex: 1 }}
               />
-              <span className='param-equals'>=</span>
-              <input
-                type='text'
+              <Input
                 value={param.value}
                 onChange={(e) => updateParam(index, 'value', e.target.value)}
                 placeholder='参数值'
-                className='param-value-input'
+                style={{ flex: 1 }}
               />
-              <button onClick={() => removeParam(index)} className='remove-param-btn' title='删除参数'>
-                ×
-              </button>
-            </div>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={() => removeParam(index)}
+                danger
+              />
+            </Space.Compact>
           ))}
-        </div>
-      </div>
+        </Space>
+      </Card>
 
-      {error && <div className='error'>{error}</div>}
+      {error && (
+        <Card size="small" style={{ borderColor: 'var(--theme-error)' }}>
+          <Text type="danger">{error}</Text>
+        </Card>
+      )}
 
-      <div className='preview-section'>
-        <div className='preview-header'>
-          <label>新URL预览：</label>
-        </div>
-        <div className='preview-url'>{generateNewURL()}</div>
-      </div>
+      <Card size="small" title="新URL预览">
+        <Text code copyable style={{ wordBreak: 'break-all' }}>
+          {generateNewURL()}
+        </Text>
+      </Card>
 
-      <div className='actions'>
-        <button onClick={updateCurrentTabURL} className='action-btn primary'>
-          更新当前标签页
-        </button>
-        <button onClick={openInNewTab} className='action-btn'>
-          新标签页打开
-        </button>
-        <button onClick={copyNewURL} className='action-btn'>
-          复制URL
-        </button>
-      </div>
+      <Card size="small">
+        <Space wrap>
+          <Button
+            type="primary"
+            onClick={updateCurrentTabURL}
+          >
+            更新当前标签页
+          </Button>
+          <Button onClick={openInNewTab}>
+            新标签页打开
+          </Button>
+          <Button
+            icon={<CopyOutlined />}
+            onClick={copyNewURL}
+          >
+            复制URL
+          </Button>
+        </Space>
+      </Card>
     </div>
   );
 };

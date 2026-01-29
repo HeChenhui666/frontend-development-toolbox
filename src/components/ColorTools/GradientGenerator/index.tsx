@@ -1,6 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  Input,
+  InputNumber,
+  Segmented,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  PlusOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
+
+const { Text } = Typography;
 
 interface GradientStop {
   id: string;
@@ -195,7 +212,7 @@ const GradientGenerator: React.FC = () => {
   // 复制CSS
   const copyCSS = () => {
     navigator.clipboard.writeText(`background: ${generateCSS()};`);
-    showMessage.success('CSS已复制到剪贴板');
+    antdMessage.success('CSS已复制到剪贴板');
   };
 
   // 处理滑块拖动
@@ -230,40 +247,49 @@ const GradientGenerator: React.FC = () => {
   const cssCode = generateCSS();
 
   return (
-    <div className="gradient-generator">
+    <Card className="gradient-generator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 主预览区域 */}
-      <div 
-        className="gradient-preview"
-        style={{ background: cssCode }}
-      />
+      <Card size="small" title="渐变预览">
+        <div 
+          style={{ 
+            width: '100%', 
+            height: '120px', 
+            background: cssCode,
+            borderRadius: '4px',
+            border: '1px solid #d9d9d9'
+          }}
+        />
+      </Card>
 
       {/* 渐变滑块 */}
-      <div className="gradient-slider-container">
-        <div 
-          className="gradient-slider"
-          style={{ 
-            background: `linear-gradient(to right, ${stops.map(s => `${s.color} ${s.position}%`).join(', ')})`
-          }}
-        >
-          {stops.map(stop => (
-            <div
-              key={stop.id}
-              className={`gradient-stop-marker ${selectedStopId === stop.id ? 'selected' : ''}`}
-              style={{ left: `${stop.position}%` }}
-              onClick={() => setSelectedStopId(stop.id)}
-              onMouseDown={(e) => handleSliderMouseDown(e, stop.id)}
-            >
-              <div 
-                className="stop-color-preview"
-                style={{ backgroundColor: stop.color }}
-              />
-            </div>
-          ))}
+      <Card size="small" title="渐变滑块">
+        <div className="gradient-slider-container">
+          <div 
+            className="gradient-slider"
+            style={{ 
+              background: `linear-gradient(to right, ${stops.map(s => `${s.color} ${s.position}%`).join(', ')})`
+            }}
+          >
+            {stops.map(stop => (
+              <div
+                key={stop.id}
+                className={`gradient-stop-marker ${selectedStopId === stop.id ? 'selected' : ''}`}
+                style={{ left: `${stop.position}%` }}
+                onClick={() => setSelectedStopId(stop.id)}
+                onMouseDown={(e) => handleSliderMouseDown(e, stop.id)}
+              >
+                <div 
+                  className="stop-color-preview"
+                  style={{ backgroundColor: stop.color }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* 颜色选择器 */}
-      <div className="color-picker-section">
+      <Card size="small" title="颜色选择器">
         <div className="color-picker-main">
           <div 
             ref={colorPickerRef}
@@ -304,12 +330,11 @@ const GradientGenerator: React.FC = () => {
           />
           
           <div className="color-code-section">
-            <div className="color-code-label">COLOR CODE</div>
-            <div className="color-code-values">
-              <div className="color-code-item">
-                <span className="code-label">HEX:</span>
-                <input
-                  type="text"
+            <Text strong>COLOR CODE</Text>
+            <Space direction="vertical" style={{ width: '100%' }} size="small">
+              <Space.Compact style={{ width: '100%' }}>
+                <Text strong>HEX:</Text>
+                <Input
                   value={selectedColor}
                   onChange={(e) => {
                     const hex = e.target.value;
@@ -324,20 +349,16 @@ const GradientGenerator: React.FC = () => {
                       }
                     }
                   }}
-                  className="color-code-input"
+                  style={{ fontFamily: 'monospace', flex: 1 }}
                 />
-              </div>
-              <div className="color-code-item">
-                <span className="code-label">R:</span>
-                <span className="code-value">{rgb.r}</span>
-                <span className="code-label">G:</span>
-                <span className="code-value">{rgb.g}</span>
-                <span className="code-label">B:</span>
-                <span className="code-value">{rgb.b}</span>
-                <span className="code-label">A:</span>
-                <span className="code-value">{rgb.a}</span>
-              </div>
-            </div>
+              </Space.Compact>
+              <Space>
+                <Text>R: <Text strong>{rgb.r}</Text></Text>
+                <Text>G: <Text strong>{rgb.g}</Text></Text>
+                <Text>B: <Text strong>{rgb.b}</Text></Text>
+                <Text>A: <Text strong>{rgb.a}</Text></Text>
+              </Space>
+            </Space>
 
             {/* 色相滑块 */}
             <div className="slider-control">
@@ -381,115 +402,132 @@ const GradientGenerator: React.FC = () => {
         </div>
 
         {/* 停止点列表 */}
-        <div className="stops-list">
-          <div className="stops-header">
-            <span>HEX</span>
-            <span>STOP</span>
-            <button onClick={addStop} className="add-stop-btn">+</button>
-          </div>
-          {stops.map(stop => (
-            <div 
-              key={stop.id}
-              className={`stop-item ${selectedStopId === stop.id ? 'selected' : ''}`}
-              onClick={() => setSelectedStopId(stop.id)}
+        <Card size="small" title={
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text strong>停止点</Text>
+            <Button
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={addStop}
             >
-              <div 
-                className="stop-color-box"
-                style={{ backgroundColor: stop.color }}
-              />
-              <input
-                type="text"
-                value={stop.color}
-                onChange={(e) => {
-                  const hex = e.target.value;
-                  if (/^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(hex)) {
-                    updateStopColor(stop.id, hex);
-                    if (stop.id === selectedStopId) {
-                      setSelectedColor(hex);
-                      const hsl = hexToHsl(hex);
-                      if (hsl) {
-                        setHue(hsl.h);
-                        setSaturation(hsl.s);
-                        setLightness(hsl.l);
-                        setAlpha(getAlphaFromHex(hex));
-                      }
-                    }
-                  }
+              添加
+            </Button>
+          </Space>
+        }>
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            {stops.map(stop => (
+              <Card 
+                key={stop.id}
+                size="small"
+                style={{ 
+                  border: selectedStopId === stop.id ? '2px solid var(--theme-primary)' : '1px solid #d9d9d9',
+                  cursor: 'pointer'
                 }}
-                className="stop-hex-input"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={stop.position}
-                onChange={(e) => updateStopPosition(stop.id, Number(e.target.value))}
-                className="stop-position-input"
-                onClick={(e) => e.stopPropagation()}
-              />
-              {stops.length > 2 && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeStop(stop.id);
-                  }}
-                  className="remove-stop-btn"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+                onClick={() => setSelectedStopId(stop.id)}
+              >
+                <Space style={{ width: '100%' }}>
+                  <div 
+                    style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      backgroundColor: stop.color,
+                      borderRadius: '4px',
+                      border: '1px solid #d9d9d9'
+                    }}
+                  />
+                  <Input
+                    value={stop.color}
+                    onChange={(e) => {
+                      const hex = e.target.value;
+                      if (/^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(hex)) {
+                        updateStopColor(stop.id, hex);
+                        if (stop.id === selectedStopId) {
+                          setSelectedColor(hex);
+                          const hsl = hexToHsl(hex);
+                          if (hsl) {
+                            setHue(hsl.h);
+                            setSaturation(hsl.s);
+                            setLightness(hsl.l);
+                            setAlpha(getAlphaFromHex(hex));
+                          }
+                        }
+                      }
+                    }}
+                    style={{ fontFamily: 'monospace', flex: 1 }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <InputNumber
+                    min={0}
+                    max={100}
+                    value={stop.position}
+                    onChange={(value) => updateStopPosition(stop.id, value || 0)}
+                    addonAfter="%"
+                    style={{ width: '100px' }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {stops.length > 2 && (
+                    <Button
+                      size="small"
+                      danger
+                      icon={<CloseOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeStop(stop.id);
+                      }}
+                    />
+                  )}
+                </Space>
+              </Card>
+            ))}
+          </Space>
+        </Card>
+      </Card>
 
       {/* 控制选项 */}
-      <div className="gradient-controls">
-        <div className="gradient-type-buttons">
-          <button
-            className={`type-btn ${gradientType === 'linear' ? 'active' : ''}`}
-            onClick={() => setGradientType('linear')}
-          >
-            Linear
-          </button>
-          <button
-            className={`type-btn ${gradientType === 'radial' ? 'active' : ''}`}
-            onClick={() => setGradientType('radial')}
-          >
-            Radial
-          </button>
-        </div>
-
-        {gradientType === 'linear' && (
-          <div className="angle-control">
-            <span>角度:</span>
-            <input
-              type="number"
-              min="0"
-              max="360"
+      <Card size="small" title="渐变设置">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Segmented
+            options={[
+              { label: 'Linear', value: 'linear' },
+              { label: 'Radial', value: 'radial' },
+            ]}
+            value={gradientType}
+            onChange={(value) => setGradientType(value as 'linear' | 'radial')}
+            block
+          />
+          {gradientType === 'linear' && (
+            <InputNumber
+              addonBefore="角度"
+              addonAfter="°"
+              min={0}
+              max={360}
               value={angle}
-              onChange={(e) => setAngle(Number(e.target.value))}
-              className="angle-input"
+              onChange={(value) => setAngle(value || 0)}
+              style={{ width: '100%' }}
             />
-            <span>°</span>
-          </div>
-        )}
-
-        <button onClick={copyCSS} className="copy-css-btn">
-          复制CSS
-        </button>
-      </div>
+          )}
+        </Space>
+      </Card>
 
       {/* CSS代码预览 */}
-      <div className="css-preview">
-        <div className="css-preview-label">CSS代码：</div>
-        <div className="css-code">{cssCode}</div>
-        <button onClick={copyCSS} className="copy-css-btn-small">
-          复制
-        </button>
-      </div>
-    </div>
+      <Card 
+        size="small" 
+        title="CSS代码"
+        extra={
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={copyCSS}
+          >
+            复制
+          </Button>
+        }
+      >
+        <Text code copyable style={{ wordBreak: 'break-all', display: 'block' }}>
+          {cssCode}
+        </Text>
+      </Card>
+    </Card>
   );
 };
 

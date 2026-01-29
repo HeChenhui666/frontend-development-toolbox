@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Typography,
+  Alert,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClockCircleOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../utils/message';
+
+const { Text } = Typography;
 
 const TimestampConverter: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -135,7 +150,7 @@ const TimestampConverter: React.FC = () => {
   // 复制到剪贴板
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    showMessage.success('已复制到剪贴板');
+    antdMessage.success('已复制到剪贴板');
   };
 
   // 使用当前时间戳（10位）
@@ -157,63 +172,69 @@ const TimestampConverter: React.FC = () => {
   };
 
   return (
-    <div className="timestamp-converter">
+    <div className="timestamp-converter" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 实时时间显示 */}
-      <div className="current-time-section">
-        <div className="current-time-label">当前时间：</div>
-        <div className="current-time-display">
-          <div className="time-item">
-            <span className="time-label">标准格式：</span>
-            <span className="time-value">{currentTime}</span>
-            <button 
-              onClick={() => copyToClipboard(currentTime)} 
-              className="copy-time-btn"
-              title="复制"
-            >
-              📋
-            </button>
-          </div>
-          <div className="time-item">
-            <span className="time-label">时间戳(10位)：</span>
-            <span className="time-value">{currentTimestamp}</span>
-            <button 
-              onClick={() => copyToClipboard(currentTimestamp.toString())} 
-              className="copy-time-btn"
-              title="复制"
-            >
-              📋
-            </button>
-          </div>
-          <div className="time-item">
-            <span className="time-label">时间戳(13位)：</span>
-            <span className="time-value">{currentTimestampMs}</span>
-            <button 
-              onClick={() => copyToClipboard(currentTimestampMs.toString())} 
-              className="copy-time-btn"
-              title="复制"
-            >
-              📋
-            </button>
-          </div>
-        </div>
-      </div>
+      <Card 
+        size="small" 
+        title={
+          <Space>
+            <ClockCircleOutlined />
+            <Text strong>当前时间</Text>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text>标准格式：</Text>
+            <Space.Compact>
+              <Text code>{currentTime}</Text>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => copyToClipboard(currentTime)}
+              />
+            </Space.Compact>
+          </Space>
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text>时间戳(10位)：</Text>
+            <Space.Compact>
+              <Text code>{currentTimestamp}</Text>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => copyToClipboard(currentTimestamp.toString())}
+              />
+            </Space.Compact>
+          </Space>
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text>时间戳(13位)：</Text>
+            <Space.Compact>
+              <Text code>{currentTimestampMs}</Text>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => copyToClipboard(currentTimestampMs.toString())}
+              />
+            </Space.Compact>
+          </Space>
+        </Space>
+      </Card>
 
       {/* 时间戳转日期时间 */}
-      <div className="converter-section">
-        <div className="converter-header">
-          <label>时间戳 → 日期时间</label>
-          <div className="use-current-buttons">
-            <button onClick={useCurrentTimestamp} className="use-current-btn">
-              10位
-            </button>
-            <button onClick={useCurrentTimestampMs} className="use-current-btn">
-              13位
-            </button>
-          </div>
-        </div>
-        <div className="converter-input-group">
-          <input
-            type="text"
+      <Card 
+        size="small" 
+        title={
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text strong>时间戳 → 日期时间</Text>
+            <Space>
+              <Button size="small" onClick={useCurrentTimestamp}>10位</Button>
+              <Button size="small" onClick={useCurrentTimestampMs}>13位</Button>
+            </Space>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Input
             value={inputTimestamp}
             onChange={(e) => {
               setInputTimestamp(e.target.value);
@@ -225,35 +246,35 @@ const TimestampConverter: React.FC = () => {
               }
             }}
             placeholder="输入时间戳（10位或13位）"
-            className="converter-input"
           />
           {convertedTime && (
-            <div className="converted-result">
-              <span className="result-label">结果：</span>
-              <span className="result-value">{convertedTime}</span>
-              <button 
-                onClick={() => copyToClipboard(convertedTime)} 
-                className="copy-result-btn"
-                title="复制"
-              >
-                📋
-              </button>
-            </div>
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                value={convertedTime}
+                readOnly
+                style={{ flex: 1 }}
+              />
+              <Button
+                icon={<CopyOutlined />}
+                onClick={() => copyToClipboard(convertedTime)}
+              />
+            </Space.Compact>
           )}
-        </div>
-      </div>
+        </Space>
+      </Card>
 
       {/* 日期时间转时间戳 */}
-      <div className="converter-section">
-        <div className="converter-header">
-          <label>日期时间 → 时间戳</label>
-          <button onClick={useCurrentTime} className="use-current-btn">
-            使用当前
-          </button>
-        </div>
-        <div className="converter-input-group">
-          <input
-            type="text"
+      <Card 
+        size="small" 
+        title={
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text strong>日期时间 → 时间戳</Text>
+            <Button size="small" onClick={useCurrentTime}>使用当前</Button>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Input
             value={inputDateTime}
             onChange={(e) => {
               setInputDateTime(e.target.value);
@@ -266,40 +287,49 @@ const TimestampConverter: React.FC = () => {
               }
             }}
             placeholder="输入日期时间 (YYYY-MM-DD HH:mm:ss)"
-            className="converter-input"
           />
           {convertedTimestamp && (
             <>
-              <div className="converted-result">
-                <span className="result-label">10位时间戳：</span>
-                <span className="result-value">{convertedTimestamp}</span>
-                <button 
-                  onClick={() => copyToClipboard(convertedTimestamp)} 
-                  className="copy-result-btn"
-                  title="复制"
-                >
-                  📋
-                </button>
-              </div>
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
+                  value={convertedTimestamp}
+                  readOnly
+                  addonBefore="10位时间戳"
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  icon={<CopyOutlined />}
+                  onClick={() => copyToClipboard(convertedTimestamp)}
+                />
+              </Space.Compact>
               {convertedTimestampMs && (
-                <div className="converted-result">
-                  <span className="result-label">13位时间戳：</span>
-                  <span className="result-value">{convertedTimestampMs}</span>
-                  <button 
-                    onClick={() => copyToClipboard(convertedTimestampMs)} 
-                    className="copy-result-btn"
-                    title="复制"
-                  >
-                    📋
-                  </button>
-                </div>
+                <Space.Compact style={{ width: '100%' }}>
+                  <Input
+                    value={convertedTimestampMs}
+                    readOnly
+                    addonBefore="13位时间戳"
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    icon={<CopyOutlined />}
+                    onClick={() => copyToClipboard(convertedTimestampMs)}
+                  />
+                </Space.Compact>
               )}
             </>
           )}
-        </div>
-      </div>
+        </Space>
+      </Card>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
     </div>
   );
 };

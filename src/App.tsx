@@ -1,7 +1,8 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo, useDeferredValue } from 'react';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme as antdTheme, Popover, Button } from 'antd';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab } from './utils/userPreferences';
+import { getSavedTheme } from './utils/theme';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -15,6 +16,7 @@ const ImageTools = lazy(() => import('./components/ImageTools'));
 const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
 const APITester = lazy(() => import('./components/APITester'));
+const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -30,6 +32,7 @@ type FeatureTab =
   | 'css'
   | 'translator'
   | 'apitester'
+  | 'redirector'
   | 'future1'
   | 'future2';
 
@@ -51,6 +54,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   css: { id: 'css', name: 'CSS预设', icon: '🎨' },
   translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
   apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
+  redirector: { id: 'redirector', name: '请求重定向', icon: '🔄' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -69,6 +73,8 @@ const App: React.FC = () => {
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tabOrderVersion, setTabOrderVersion] = useState(0); // 用于触发重新计算
+  const [allTabsOpen, setAllTabsOpen] = useState(false);
+  const [showAllTabsButton, setShowAllTabsButton] = useState(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const shouldScrollToActiveTab = useRef<boolean>(initialShouldScroll); // 标记是否需要滚动到活动tab
@@ -166,6 +172,7 @@ const App: React.FC = () => {
       css: <CSSTools />,
       translator: <Translator />,
       apitester: <APITester />,
+      redirector: <RequestRedirector />,
       future1: null,
       future2: null,
     }),
@@ -218,6 +225,7 @@ const App: React.FC = () => {
     startTransition(() => {
       setActiveTab(tab);
     });
+    setAllTabsOpen(false);
   }, []);
 
   // 滚动活动tab到容器中间
@@ -279,6 +287,37 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // 只有在 tabs 可滚动时才显示“全部”按钮
+  useEffect(() => {
+    const container = tabsContainerRef.current;
+    if (!container) return;
+
+    const updateScrollable = () => {
+      const isScrollable = container.scrollWidth > container.clientWidth + 1;
+      setShowAllTabsButton(isScrollable);
+      if (!isScrollable) {
+        setAllTabsOpen(false);
+      }
+    };
+
+    const rafId = requestAnimationFrame(updateScrollable);
+    window.addEventListener('resize', updateScrollable);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updateScrollable);
+      resizeObserver.observe(container);
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', updateScrollable);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [features]);
+
   // 在恢复tab后滚动到中间
   useEffect(() => {
     if (shouldScrollToActiveTab.current) {
@@ -327,8 +366,90 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // 获取 CSS 变量值的辅助函数
+  const getCSSVariable = useCallback((varName: string) => {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || undefined;
+  }, []);
+
+  // 监听主题变化，动态更新 antd 主题
+  const [themeVersion, setThemeVersion] = useState(0);
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeVersion((prev) => prev + 1);
+    };
+
+    // 监听 storage 变化（主题切换时）
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app-theme') {
+        handleThemeChange();
+      }
+    };
+
+    // 监听自定义事件（主题切换时触发）
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('themeChanged', handleThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
+
+  // 每次主题版本变化时重新计算主题配置
+  const dynamicThemeConfig = useMemo(() => {
+    return {
+      algorithm: antdTheme.defaultAlgorithm,
+      token: {
+        colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        colorSuccess: getCSSVariable('--theme-success'),
+        colorError: getCSSVariable('--theme-error'),
+        colorWarning: '#faad14',
+        colorInfo: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        borderRadius: 4,
+        borderRadiusSM: 4,
+        borderRadiusLG: 4,
+        padding: 6,
+        paddingXXS: 6,
+        paddingXS: 6,
+        paddingSM: 6,
+        paddingLG: 6,
+        paddingXL: 6,
+        colorBgContainer: getCSSVariable('--theme-background'),
+        colorText: getCSSVariable('--theme-text'),
+        colorTextSecondary: getCSSVariable('--theme-textSecondary'),
+        colorBorder: getCSSVariable('--theme-border'),
+        colorBorderSecondary: getCSSVariable('--theme-borderLight'),
+      },
+      components: {
+        Button: {
+          primaryColor: getCSSVariable('--theme-buttonText') || '#ffffff',
+          colorPrimary: getCSSVariable('--theme-buttonPrimary') || getCSSVariable('--theme-primary'),
+          colorPrimaryHover: getCSSVariable('--theme-buttonPrimaryHover'),
+          colorPrimaryActive: getCSSVariable('--theme-buttonPrimaryHover'),
+        },
+        Card: {
+          colorBgContainer: getCSSVariable('--theme-surface') || getCSSVariable('--theme-background'),
+          colorBorderSecondary: getCSSVariable('--theme-border'),
+        },
+        Input: {
+          colorBgContainer: getCSSVariable('--theme-inputBackground') || getCSSVariable('--theme-background'),
+          colorBorder: getCSSVariable('--theme-inputBorder') || getCSSVariable('--theme-border'),
+          colorText: getCSSVariable('--theme-inputText') || getCSSVariable('--theme-text'),
+          activeBorderColor: getCSSVariable('--theme-inputFocusBorder') || getCSSVariable('--theme-primary'),
+        },
+        Switch: {
+          colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+          colorPrimaryHover: getCSSVariable('--theme-buttonPrimaryHover'),
+        },
+        Tag: {
+          colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        },
+      },
+    };
+  }, [themeVersion, getCSSVariable]);
+
   return (
-    <ConfigProvider>
+    <ConfigProvider theme={dynamicThemeConfig}>
       <div className={`app ${isPopupMode ? 'app-popup' : 'app-standalone'}`}>
         <div className='header'>
           <div className='header-content'>
@@ -356,6 +477,38 @@ const App: React.FC = () => {
               />
             ))}
           </div>
+          {showAllTabsButton && (
+            <div className='tabs-all'>
+              <Popover
+                open={allTabsOpen}
+                onOpenChange={setAllTabsOpen}
+                placement="bottomRight"
+                trigger="click"
+                overlayClassName="tabs-all-overlay"
+                overlayInnerStyle={{ padding: 0 }}
+                content={
+                  <div className="tabs-all-popover">
+                    {features.map((feature) => (
+                      <Button
+                        key={feature.id}
+                        type={activeTab === feature.id ? 'primary' : 'text'}
+                        size="small"
+                        className="tabs-all-item"
+                        onClick={() => handleTabChange(feature.id)}
+                      >
+                        <span className="tabs-all-icon">{feature.icon}</span>
+                        <span className="tabs-all-text">{feature.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                }
+              >
+                <Button className="tabs-all-button" size="small" type="text">
+                  全部
+                </Button>
+              </Popover>
+            </div>
+          )}
         </div>
         <div className='content'>
           <Suspense fallback={<div className='loading'>加载中...</div>}>

@@ -1,4 +1,17 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Alert,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
 
@@ -90,7 +103,7 @@ const JSONSchemaGenerator: React.FC = () => {
       const parsed = JSON.parse(inputJson);
       const schema = generateSchema(parsed);
       setOutputSchema(JSON.stringify(schema, null, 2));
-      showMessage.success('✅ Schema生成成功');
+      antdMessage.success('Schema生成成功');
     } catch (err) {
       setError(`JSON格式错误: ${err instanceof Error ? err.message : '未知错误'}`);
       setOutputSchema('');
@@ -101,7 +114,7 @@ const JSONSchemaGenerator: React.FC = () => {
   const copyResult = () => {
     if (outputSchema) {
       navigator.clipboard.writeText(outputSchema);
-      showMessage.success('已复制到剪贴板');
+      antdMessage.success('已复制到剪贴板');
     }
   };
 
@@ -113,44 +126,70 @@ const JSONSchemaGenerator: React.FC = () => {
   };
 
   return (
-    <div className="json-schema-generator">
-      <div className="generator-controls">
-        <button onClick={handleGenerate} className="action-btn process-btn">
-          生成Schema
-        </button>
-        <button onClick={clearAll} className="action-btn clear-btn">
-          清空
-        </button>
-      </div>
+    <div className="json-schema-generator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+      <Card size="small">
+        <Space>
+          <Button
+            type="primary"
+            icon={<ThunderboltOutlined />}
+            onClick={handleGenerate}
+          >
+            生成Schema
+          </Button>
+          <Button
+            icon={<ClearOutlined />}
+            onClick={clearAll}
+          >
+            清空
+          </Button>
+        </Space>
+      </Card>
 
-      <div className="json-input-section">
-        <div className="section-header">
-          <label>输入JSON：</label>
-        </div>
-        <textarea
-          value={inputJson}
-          onChange={(e) => setInputJson(e.target.value)}
+      <Card size="small" title="输入JSON">
+        <Input.TextArea
+          value={inputJson || ''}
+          onChange={(e) => {
+            if (e && e.target) {
+              setInputJson(e.target.value || '');
+            }
+          }}
           placeholder="请输入JSON字符串..."
-          className="json-textarea"
+          rows={8}
+          style={{ fontFamily: 'monospace' }}
         />
-      </div>
+      </Card>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
 
       {outputSchema && (
-        <div className="json-output-section">
-          <div className="section-header">
-            <label>生成的Schema：</label>
-            <button onClick={copyResult} className="copy-btn">
-              📋 复制
-            </button>
-          </div>
-          <textarea
-            value={outputSchema}
+        <Card 
+          size="small" 
+          title="生成的Schema"
+          extra={
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={copyResult}
+            >
+              复制
+            </Button>
+          }
+        >
+          <Input.TextArea
+            value={outputSchema || ''}
             readOnly
-            className="json-textarea output"
+            rows={8}
+            style={{ fontFamily: 'monospace' }}
           />
-        </div>
+        </Card>
       )}
     </div>
   );

@@ -89,8 +89,8 @@ export function checkBasicAPIs(): CompatibilityCheck[] {
   // Clipboard API
   checks.push({
     feature: 'Clipboard API',
-    supported: !!navigator.clipboard,
-    message: navigator.clipboard
+    supported: typeof navigator !== 'undefined' && !!navigator.clipboard,
+    message: typeof navigator !== 'undefined' && navigator.clipboard
       ? undefined
       : '剪贴板 API 不支持，复制功能可能无法使用',
     fallback: '可以使用 document.execCommand("copy") 作为降级方案',
@@ -127,10 +127,12 @@ export function checkBasicAPIs(): CompatibilityCheck[] {
   });
 
   // Canvas API
+  const canvas = document.createElement('canvas');
+  const hasCanvasContext = typeof canvas.getContext === 'function';
   checks.push({
     feature: 'Canvas API',
-    supported: !!document.createElement('canvas').getContext,
-    message: document.createElement('canvas').getContext
+    supported: hasCanvasContext,
+    message: hasCanvasContext
       ? undefined
       : 'Canvas API 不支持，图片处理功能无法使用',
   });
@@ -217,9 +219,9 @@ export function checkChromeExtensionAPIs(): CompatibilityCheck[] {
   // chrome.tabs API
   checks.push({
     feature: 'chrome.tabs API',
-    supported: !!(chrome.tabs && chrome.tabs.query),
+    supported: !!(chrome.tabs && typeof chrome.tabs.query === 'function'),
     message:
-      chrome.tabs && chrome.tabs.query
+      chrome.tabs && typeof chrome.tabs.query === 'function'
         ? undefined
         : 'chrome.tabs API 不可用，标签页相关功能无法使用',
   });
@@ -227,9 +229,9 @@ export function checkChromeExtensionAPIs(): CompatibilityCheck[] {
   // chrome.storage API
   checks.push({
     feature: 'chrome.storage API',
-    supported: !!(chrome.storage && chrome.storage.local),
+    supported: !!(chrome.storage && chrome.storage.local && typeof chrome.storage.local.get === 'function'),
     message:
-      chrome.storage && chrome.storage.local
+      chrome.storage && chrome.storage.local && typeof chrome.storage.local.get === 'function'
         ? undefined
         : 'chrome.storage API 不可用，数据存储功能无法使用',
   });
@@ -242,6 +244,17 @@ export function checkChromeExtensionAPIs(): CompatibilityCheck[] {
       chrome.runtime && chrome.runtime.id
         ? undefined
         : 'chrome.runtime API 不可用',
+  });
+
+  // chrome.declarativeNetRequest API
+  const hasDeclarativeNetRequest = !!(chrome.declarativeNetRequest && 
+    typeof chrome.declarativeNetRequest.updateDynamicRules === 'function');
+  checks.push({
+    feature: 'chrome.declarativeNetRequest API',
+    supported: hasDeclarativeNetRequest,
+    message: hasDeclarativeNetRequest
+      ? undefined
+      : 'chrome.declarativeNetRequest API 不可用，请求重定向功能无法使用',
   });
 
   return checks;
@@ -336,7 +349,9 @@ export function checkRegexFeatures(): CompatibilityCheck[] {
 
   // 检查一些现代正则特性
   try {
-    const testRegex = /(?<name>test)/;
+    // 测试命名捕获组支持
+    const testPattern = '(?<name>test)';
+    new RegExp(testPattern);
     checks.push({
       feature: 'Named Capture Groups',
       supported: true,

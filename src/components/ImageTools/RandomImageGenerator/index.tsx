@@ -1,6 +1,25 @@
 import React, { useState, useCallback } from 'react';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  InputNumber,
+  Select,
+  message as antdMessage,
+  Alert,
+} from 'antd';
+import {
+  FileImageOutlined,
+  ReloadOutlined,
+  CopyOutlined,
+  DownloadOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
+
+const { Text } = Typography;
 
 const RandomImageGenerator: React.FC = () => {
   const [width, setWidth] = useState<string>('200');
@@ -14,12 +33,12 @@ const RandomImageGenerator: React.FC = () => {
     const h = parseInt(height, 10);
 
     if (isNaN(w) || w <= 0 || w > 5000) {
-      showMessage.error('宽度必须是1-5000之间的数字');
+      antdMessage.error('宽度必须是1-5000之间的数字');
       return;
     }
 
     if (isNaN(h) || h <= 0 || h > 5000) {
-      showMessage.error('高度必须是1-5000之间的数字');
+      antdMessage.error('高度必须是1-5000之间的数字');
       return;
     }
 
@@ -44,17 +63,17 @@ const RandomImageGenerator: React.FC = () => {
   // 复制图片URL
   const copyImageUrl = () => {
     if (!imageUrl) {
-      showMessage.warning('请先生成图片');
+      antdMessage.warning('请先生成图片');
       return;
     }
     navigator.clipboard.writeText(imageUrl);
-    showMessage.success('图片URL已复制到剪贴板');
+    antdMessage.success('图片URL已复制到剪贴板');
   };
 
   // 下载图片
   const downloadImage = async () => {
     if (!imageUrl) {
-      showMessage.warning('请先生成图片');
+      antdMessage.warning('请先生成图片');
       return;
     }
     
@@ -69,110 +88,121 @@ const RandomImageGenerator: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      showMessage.success('图片下载成功');
+      antdMessage.success('图片下载成功');
     } catch (error) {
-      showMessage.error('图片下载失败');
+      antdMessage.error('图片下载失败');
     }
   };
 
 
   return (
-    <div className="random-image-generator">
-      {/* 参数设置区域 */}
-      <div className="image-config-section">
-        <div className="config-header">
-          <label>图片参数设置</label>
-        </div>
-        <div className="config-inputs">
-          <div className="input-group">
-            <label className="input-label">宽度 (px)</label>
-            <input
-              type="number"
-              value={width}
-              onChange={(e) => setWidth(e.target.value)}
-              min="1"
-              max="5000"
-              placeholder="200"
-              className="config-input"
+    <div className="random-image-generator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+      <Card size="small" title="图片参数设置">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space.Compact style={{ width: '100%' }}>
+            <InputNumber
+              addonBefore="宽度"
+              addonAfter="px"
+              min={1}
+              max={5000}
+              value={parseInt(width, 10)}
+              onChange={(value) => setWidth(value?.toString() || '200')}
+              style={{ flex: 1 }}
             />
-          </div>
-          <div className="input-group">
-            <label className="input-label">高度 (px)</label>
-            <input
-              type="number"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              min="1"
-              max="5000"
-              placeholder="300"
-              className="config-input"
+            <InputNumber
+              addonBefore="高度"
+              addonAfter="px"
+              min={1}
+              max={5000}
+              value={parseInt(height, 10)}
+              onChange={(value) => setHeight(value?.toString() || '300')}
+              style={{ flex: 1 }}
             />
-          </div>
-          <div className="input-group">
-            <label className="input-label">图片格式</label>
-            <select
-              value={imageFormat}
-              onChange={(e) => setImageFormat(e.target.value as 'jpg' | 'webp' | 'none')}
-              className="config-select"
-            >
-              <option value="none">默认 (JPG)</option>
-              <option value="jpg">JPG</option>
-              <option value="webp">WebP</option>
-            </select>
-          </div>
-        </div>
-        <button onClick={generateImageUrl} className="generate-btn">
-          🖼️ 生成随机图片
-        </button>
-      </div>
+          </Space.Compact>
+          <Select
+            value={imageFormat}
+            onChange={(value) => setImageFormat(value)}
+            style={{ width: '100%' }}
+            options={[
+              { label: '默认 (JPG)', value: 'none' },
+              { label: 'JPG', value: 'jpg' },
+              { label: 'WebP', value: 'webp' },
+            ]}
+          />
+          <Button
+            type="primary"
+            icon={<FileImageOutlined />}
+            onClick={generateImageUrl}
+            block
+          >
+            生成随机图片
+          </Button>
+        </Space>
+      </Card>
 
-      {/* 图片预览区域 */}
       {imageUrl && (
-        <div className="image-preview-section">
-          <div className="preview-header">
-            <label>图片预览</label>
-            <div className="preview-actions">
-              <button onClick={generateImageUrl} className="action-btn refresh-btn">
-                🔄 刷新图片
-              </button>
-              <button onClick={copyImageUrl} className="action-btn">
-                📋 复制URL
-              </button>
-              <button onClick={downloadImage} className="action-btn">
-                💾 下载图片
-              </button>
-            </div>
-          </div>
-          <div className="image-url-display">
-            <div className="url-label">图片URL：</div>
-            <div className="url-value" title={imageUrl}>
+        <Card 
+          size="small" 
+          title="图片预览"
+          extra={
+            <Space>
+              <Button
+                size="small"
+                icon={<ReloadOutlined />}
+                onClick={generateImageUrl}
+              >
+                刷新
+              </Button>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={copyImageUrl}
+              >
+                复制URL
+              </Button>
+              <Button
+                size="small"
+                icon={<DownloadOutlined />}
+                onClick={downloadImage}
+              >
+                下载
+              </Button>
+            </Space>
+          }
+        >
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Text code copyable style={{ wordBreak: 'break-all', display: 'block' }}>
               {imageUrl}
+            </Text>
+            <div style={{ textAlign: 'center' }}>
+              <img
+                src={imageUrl}
+                alt={`随机图片 ${width}x${height}`}
+                style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px'}}
+                onError={() => {
+                  antdMessage.error('图片加载失败，请重试');
+                }}
+              />
             </div>
-          </div>
-          <div className="image-container">
-            <img
-              src={imageUrl}
-              alt={`随机图片 ${width}x${height}`}
-              className="preview-image"
-              onError={() => {
-                showMessage.error('图片加载失败，请重试');
-              }}
-            />
-          </div>
-        </div>
+          </Space>
+        </Card>
       )}
 
-      {/* 使用说明 */}
-      <div className="info-section">
-        <div className="info-header">💡 使用说明</div>
-        <ul className="info-list">
-          <li>输入宽度和高度（1-5000像素）</li>
-          <li>选择图片格式（默认JPG或WebP）</li>
-          <li>点击"生成随机图片"按钮生成图片</li>
-          <li>图片URL会自动添加时间戳和随机UID参数防止浏览器缓存</li>
-          <li>可以复制URL或下载图片</li>
-        </ul>
-      </div>
+      <Alert
+        message="使用说明"
+        description={
+          <ul style={{ margin: 6, paddingLeft: '6px'}}>
+            <li>输入宽度和高度（1-5000像素）</li>
+            <li>选择图片格式（默认JPG或WebP）</li>
+            <li>点击"生成随机图片"按钮生成图片</li>
+            <li>图片URL会自动添加时间戳和随机UID参数防止浏览器缓存</li>
+            <li>可以复制URL或下载图片</li>
+          </ul>
+        }
+        type="info"
+        icon={<InfoCircleOutlined />}
+        showIcon
+      />
     </div>
   );
 };

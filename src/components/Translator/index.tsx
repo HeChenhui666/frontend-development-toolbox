@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Button, Switch } from 'antd';
+import {
+  Select,
+  Input,
+  Button,
+  Switch,
+  Card,
+  Space,
+  Typography,
+  Alert,
+} from 'antd';
+import {
+  SwapOutlined,
+  ClearOutlined,
+  CopyOutlined,
+  TranslationOutlined,
+} from '@ant-design/icons';
 import './index.css';
+
+const { Text } = Typography;
 
 // 支持的语言列表
 const languages = [
@@ -29,8 +46,19 @@ async function translateText(text: string, targetLang: string = 'zh'): Promise<s
     const response = await fetch(
       `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
     );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
-    return data[0][0][0];
+
+    // 安全地访问嵌套数组
+    if (data && Array.isArray(data) && data[0] && Array.isArray(data[0]) && data[0][0] && Array.isArray(data[0][0]) && data[0][0][0]) {
+      return data[0][0][0];
+    }
+
+    throw new Error('翻译结果格式不正确');
   } catch (error) {
     console.error('翻译失败:', error);
     return null;
@@ -100,7 +128,7 @@ const Translator: React.FC = () => {
   const handlePageTranslateToggle = async (checked: boolean) => {
     setPageTranslateEnabledState(checked);
     await setPageTranslateEnabled(checked);
-    
+
     // 通知所有标签页的content script
     if (typeof chrome !== 'undefined' && chrome.tabs) {
       chrome.tabs.query({}, (tabs) => {
@@ -190,99 +218,138 @@ const Translator: React.FC = () => {
   };
 
   return (
-    <div className="translator">
-      {/* 目标语言选择 */}
-      <div className="language-section">
-        <div className="section-header">
-          <label>目标语言：</label>
-        </div>
-        <Select
-          value={targetLang}
-          onChange={setTargetLang}
-          className="language-select"
-          size="small"
-          options={languages.map((lang) => ({
-            value: lang.code,
-            label: lang.name,
-          }))}
+    <div className="translator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+      <Card size="small" title="翻译设置">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <Text strong>目标语言</Text>
+            <Select
+              value={targetLang || 'en'}
+              onChange={(value) => {
+                if (value) {
+                  setTargetLang(value);
+                }
+              }}
+              style={{ width: '100%' }}
+              size="small"
+              options={languages
+                .filter((lang) => lang.code && lang.name)
+                .map((lang) => ({
+                  value: lang.code,
+                  label: lang.name,
+                }))}
+            />
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              使用免费版 Google 翻译服务
+            </Text>
+          </Space>
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+              <Text strong>页面内翻译</Text>
+              <Switch
+                checked={pageTranslateEnabled ?? true}
+                onChange={(checked) => {
+                  if (typeof checked === 'boolean') {
+                    handlePageTranslateToggle(checked);
+                  }
+                }}
+                size="small"
+              />
+            </Space>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              开启后，在网页上选中文本时会显示翻译按钮
+            </Text>
+          </Space>
+        </Space>
+      </Card>
+
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
         />
-        <div className="service-notice">
-          <span className="service-notice-text">使用免费版 Google 翻译服务</span>
-        </div>
-      </div>
+      )}
 
-      {/* 页面内翻译开关 */}
-      <div className="page-translate-switch-section">
-        <div className="switch-header">
-          <label>页面内翻译：</label>
-          <Switch
-            checked={pageTranslateEnabled}
-            onChange={handlePageTranslateToggle}
-            size="small"
-          />
-        </div>
-        <div className="switch-desc">
-          <span className="switch-desc-text">开启后，在网页上选中文本时会显示翻译按钮</span>
-        </div>
-      </div>
-
-      {/* 错误提示 */}
-      {error && <div className="error">{error}</div>}
-
-      {/* 主内容区域：左中右布局 */}
-      <div className="main-content">
-        {/* 左侧：输入文本区域 */}
-        <div className="input-section">
-          <div className="section-header">
-            <label>输入文本：</label>
-          </div>
-          <textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 auto', minHeight: '300px' }}>
+        {/* 上：输入文本区域 */}
+        <Card
+          size="small"
+          title="输入文本"
+          style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
+          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '6px' }}
+        >
+          <Input.TextArea
+            value={inputText || ''}
+            onChange={(e) => {
+              if (e && e.target) {
+                setInputText(e.target.value || '');
+              }
+            }}
             placeholder="请输入要翻译的文本..."
-            className="input-textarea"
+            rows={12}
+            style={{ resize: 'none', flex: 1 }}
           />
-        </div>
+        </Card>
 
-        {/* 中间：翻译按钮 */}
-        <div className="button-center">
-          <Button
-            type="primary"
-            onClick={handleTranslate}
-            loading={isTranslating}
-            className="translate-btn"
-            size="small"
-          >
-            {isTranslating ? '翻译中...' : '翻译'}
-          </Button>
-          <div className="secondary-actions">
-            <Button onClick={handleSwap} className="swap-btn" size="small" disabled={!translatedText}>
-              交换
-            </Button>
-            <Button onClick={handleClear} className="clear-btn" size="small">
+        {/* 中：翻译按钮 */}
+        <Card size="small" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Space direction="horizontal" size="middle" style={{ width: '100%', justifyContent: 'center' }} wrap>
+            <Button
+              icon={<ClearOutlined />}
+              onClick={handleClear}
+              style={{ minWidth: '100px', width: '33%' }}
+            >
               清空
             </Button>
-          </div>
-        </div>
-
-        {/* 右侧：翻译结果区域 */}
-        <div className="output-section">
-          <div className="section-header">
-            <label>翻译结果：</label>
             <Button
+              icon={<SwapOutlined />}
+              onClick={handleSwap}
+              disabled={!translatedText}
+              style={{ minWidth: '100px', width: '33%' }}
+            >
+              交换
+            </Button>
+            <Button
+              type="primary"
+              icon={<TranslationOutlined />}
+              onClick={handleTranslate}
+              loading={isTranslating}
+              style={{ minWidth: '100px', width: '33%' }}
+            >
+              {isTranslating ? '翻译中...' : '翻译'}
+            </Button>
+          </Space>
+        </Card>
+
+        {/* 下：翻译结果区域 */}
+        <Card
+          size="small"
+          title="翻译结果"
+          extra={
+            <Button
+              icon={<CopyOutlined />}
               onClick={handleCopy}
               disabled={!translatedText}
-              className="copy-btn"
               size="small"
-              title="复制翻译结果"
+              type="default"
             >
-              <span className="copy-btn-text">{copySuccess ? '✓ 已复制' : '📋 复制'}</span>
+              {copySuccess ? '已复制' : '复制'}
             </Button>
-          </div>
-          <div className="output-textarea">
-            {translatedText || <span className="placeholder-text">翻译结果将显示在这里...</span>}
-          </div>
-        </div>
+          }
+          style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
+          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '6px' }}
+        >
+          <Input.TextArea
+            value={translatedText || ''}
+            readOnly
+            placeholder="翻译结果将显示在这里..."
+            rows={12}
+            style={{ resize: 'none', flex: 1 }}
+          />
+        </Card>
       </div>
     </div>
   );

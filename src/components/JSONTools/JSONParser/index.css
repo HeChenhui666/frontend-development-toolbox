@@ -1,7 +1,7 @@
 .json-parser {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   height: 100%;
   min-height: 0;
 }
@@ -10,7 +10,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
   flex-shrink: 0;
 }
@@ -22,9 +22,9 @@
 }
 
 .mode-btn {
-  padding: 5px 12px;
+  padding: 6px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--theme-background, #ffffff);
   color: var(--theme-textSecondary, #64748b);
   font-size: 11px;
@@ -50,9 +50,9 @@
 }
 
 .action-btn {
-  padding: 5px 12px;
+  padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -110,11 +110,11 @@
 }
 
 .copy-btn {
-  padding: 3px 8px;
+  padding: 6px;
   border: none;
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -127,9 +127,9 @@
 .json-textarea {
   flex: 1;
   min-height: 150px;
-  padding: 8px;
+  padding: 6px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   resize: vertical;
@@ -150,10 +150,10 @@
 }
 
 .error {
-  padding: 8px 10px;
+  padding: 6px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));

@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  Input,
+  InputNumber,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
+
+const { Text } = Typography;
 
 type ColorFormat = 'hex' | 'rgb' | 'rgba' | 'hsl' | 'hsla';
 
@@ -193,31 +207,45 @@ const ColorConverter: React.FC = () => {
         break;
     }
     navigator.clipboard.writeText(text);
-    showMessage.success('已复制到剪贴板');
+    antdMessage.success('已复制到剪贴板');
   };
 
   return (
-    <div className="color-converter">
+    <div className="color-converter" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 颜色预览 */}
-      <div className="color-preview-section">
-        <div 
-          className="color-preview"
-          style={{ backgroundColor: hex }}
-        />
-        <div className="color-info">
-          <div className="color-hex">{hex}</div>
-          <div className="color-rgb">RGB({rgb.r}, {rgb.g}, {rgb.b})</div>
-        </div>
-      </div>
+      <Card size="small" title="颜色预览">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <div 
+            style={{ 
+              width: '100%', 
+              height: '80px', 
+              backgroundColor: hex,
+              borderRadius: '4px',
+              border: '1px solid #d9d9d9'
+            }}
+          />
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <Text strong>{hex}</Text>
+            <Text type="secondary">RGB({rgb.r}, {rgb.g}, {rgb.b})</Text>
+          </Space>
+        </Space>
+      </Card>
 
       {/* HEX */}
-      <div className="color-format-section">
-        <div className="format-header">
-          <label>HEX</label>
-          <button onClick={() => copyColor('hex')} className="copy-btn">📋 复制</button>
-        </div>
-        <input
-          type="text"
+      <Card 
+        size="small" 
+        title="HEX"
+        extra={
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => copyColor('hex')}
+          >
+            复制
+          </Button>
+        }
+      >
+        <Input
           value={hex}
           onChange={(e) => {
             const value = e.target.value;
@@ -226,256 +254,246 @@ const ColorConverter: React.FC = () => {
               updateFromHex(value);
             }
           }}
-          className="color-input"
           placeholder="#000000"
+          style={{ fontFamily: 'monospace' }}
         />
-      </div>
+      </Card>
 
       {/* RGB */}
-      <div className="color-format-section">
-        <div className="format-header">
-          <label>RGB</label>
-          <button onClick={() => copyColor('rgb')} className="copy-btn">📋 复制</button>
-        </div>
-        <div className="rgb-inputs">
-          <div className="rgb-input-group">
-            <label>R</label>
-            <input
-              type="number"
-              min="0"
-              max="255"
-              value={rgb.r}
-              onChange={(e) => {
-                const r = Math.max(0, Math.min(255, Number(e.target.value)));
-                updateFromRgb(r, rgb.g, rgb.b);
-              }}
-              className="color-number-input"
-            />
-          </div>
-          <div className="rgb-input-group">
-            <label>G</label>
-            <input
-              type="number"
-              min="0"
-              max="255"
-              value={rgb.g}
-              onChange={(e) => {
-                const g = Math.max(0, Math.min(255, Number(e.target.value)));
-                updateFromRgb(rgb.r, g, rgb.b);
-              }}
-              className="color-number-input"
-            />
-          </div>
-          <div className="rgb-input-group">
-            <label>B</label>
-            <input
-              type="number"
-              min="0"
-              max="255"
-              value={rgb.b}
-              onChange={(e) => {
-                const b = Math.max(0, Math.min(255, Number(e.target.value)));
-                updateFromRgb(rgb.r, rgb.g, b);
-              }}
-              className="color-number-input"
-            />
-          </div>
-        </div>
-      </div>
+      <Card 
+        size="small" 
+        title="RGB"
+        extra={
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => copyColor('rgb')}
+          >
+            复制
+          </Button>
+        }
+      >
+        <Space.Compact style={{ width: '100%' }}>
+          <InputNumber
+            addonBefore="R"
+            min={0}
+            max={255}
+            value={rgb.r}
+            onChange={(value) => {
+              const r = Math.max(0, Math.min(255, value || 0));
+              updateFromRgb(r, rgb.g, rgb.b);
+            }}
+            style={{ flex: 1 }}
+          />
+          <InputNumber
+            addonBefore="G"
+            min={0}
+            max={255}
+            value={rgb.g}
+            onChange={(value) => {
+              const g = Math.max(0, Math.min(255, value || 0));
+              updateFromRgb(rgb.r, g, rgb.b);
+            }}
+            style={{ flex: 1 }}
+          />
+          <InputNumber
+            addonBefore="B"
+            min={0}
+            max={255}
+            value={rgb.b}
+            onChange={(value) => {
+              const b = Math.max(0, Math.min(255, value || 0));
+              updateFromRgb(rgb.r, rgb.g, b);
+            }}
+            style={{ flex: 1 }}
+          />
+        </Space.Compact>
+      </Card>
 
       {/* RGBA */}
-      <div className="color-format-section">
-        <div className="format-header">
-          <label>RGBA</label>
-          <button onClick={() => copyColor('rgba')} className="copy-btn">📋 复制</button>
-        </div>
-        <div className="rgba-inputs">
-          <div className="rgb-inputs">
-            <div className="rgb-input-group">
-              <label>R</label>
-              <input
-                type="number"
-                min="0"
-                max="255"
-                value={rgba.r}
-                onChange={(e) => {
-                  const r = Math.max(0, Math.min(255, Number(e.target.value)));
-                  updateFromRgba(r, rgba.g, rgba.b, rgba.a);
-                }}
-                className="color-number-input"
-              />
-            </div>
-            <div className="rgb-input-group">
-              <label>G</label>
-              <input
-                type="number"
-                min="0"
-                max="255"
-                value={rgba.g}
-                onChange={(e) => {
-                  const g = Math.max(0, Math.min(255, Number(e.target.value)));
-                  updateFromRgba(rgba.r, g, rgba.b, rgba.a);
-                }}
-                className="color-number-input"
-              />
-            </div>
-            <div className="rgb-input-group">
-              <label>B</label>
-              <input
-                type="number"
-                min="0"
-                max="255"
-                value={rgba.b}
-                onChange={(e) => {
-                  const b = Math.max(0, Math.min(255, Number(e.target.value)));
-                  updateFromRgba(rgba.r, rgba.g, b, rgba.a);
-                }}
-                className="color-number-input"
-              />
-            </div>
-          </div>
-          <div className="alpha-input-group">
-            <label>A</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={rgba.a}
-              onChange={(e) => {
-                const a = Math.max(0, Math.min(100, Number(e.target.value)));
-                updateFromRgba(rgba.r, rgba.g, rgba.b, a);
+      <Card 
+        size="small" 
+        title="RGBA"
+        extra={
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => copyColor('rgba')}
+          >
+            复制
+          </Button>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="small">
+          <Space.Compact style={{ width: '100%' }}>
+            <InputNumber
+              addonBefore="R"
+              min={0}
+              max={255}
+              value={rgba.r}
+              onChange={(value) => {
+                const r = Math.max(0, Math.min(255, value || 0));
+                updateFromRgba(r, rgba.g, rgba.b, rgba.a);
               }}
-              className="color-number-input"
+              style={{ flex: 1 }}
             />
-            <span className="alpha-percent">%</span>
-          </div>
-        </div>
-      </div>
+            <InputNumber
+              addonBefore="G"
+              min={0}
+              max={255}
+              value={rgba.g}
+              onChange={(value) => {
+                const g = Math.max(0, Math.min(255, value || 0));
+                updateFromRgba(rgba.r, g, rgba.b, rgba.a);
+              }}
+              style={{ flex: 1 }}
+            />
+            <InputNumber
+              addonBefore="B"
+              min={0}
+              max={255}
+              value={rgba.b}
+              onChange={(value) => {
+                const b = Math.max(0, Math.min(255, value || 0));
+                updateFromRgba(rgba.r, rgba.g, b, rgba.a);
+              }}
+              style={{ flex: 1 }}
+            />
+          </Space.Compact>
+          <InputNumber
+            addonBefore="A"
+            addonAfter="%"
+            min={0}
+            max={100}
+            value={rgba.a}
+            onChange={(value) => {
+              const a = Math.max(0, Math.min(100, value || 0));
+              updateFromRgba(rgba.r, rgba.g, rgba.b, a);
+            }}
+            style={{ width: '100%' }}
+          />
+        </Space>
+      </Card>
 
       {/* HSL */}
-      <div className="color-format-section">
-        <div className="format-header">
-          <label>HSL</label>
-          <button onClick={() => copyColor('hsl')} className="copy-btn">📋 复制</button>
-        </div>
-        <div className="hsl-inputs">
-          <div className="hsl-input-group">
-            <label>H</label>
-            <input
-              type="number"
-              min="0"
-              max="360"
-              value={hsl.h}
-              onChange={(e) => {
-                const h = Math.max(0, Math.min(360, Number(e.target.value)));
-                updateFromHsl(h, hsl.s, hsl.l);
-              }}
-              className="color-number-input"
-            />
-          </div>
-          <div className="hsl-input-group">
-            <label>S</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={hsl.s}
-              onChange={(e) => {
-                const s = Math.max(0, Math.min(100, Number(e.target.value)));
-                updateFromHsl(hsl.h, s, hsl.l);
-              }}
-              className="color-number-input"
-            />
-            <span>%</span>
-          </div>
-          <div className="hsl-input-group">
-            <label>L</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={hsl.l}
-              onChange={(e) => {
-                const l = Math.max(0, Math.min(100, Number(e.target.value)));
-                updateFromHsl(hsl.h, hsl.s, l);
-              }}
-              className="color-number-input"
-            />
-            <span>%</span>
-          </div>
-        </div>
-      </div>
+      <Card 
+        size="small" 
+        title="HSL"
+        extra={
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => copyColor('hsl')}
+          >
+            复制
+          </Button>
+        }
+      >
+        <Space.Compact style={{ width: '100%' }}>
+          <InputNumber
+            addonBefore="H"
+            min={0}
+            max={360}
+            value={hsl.h}
+            onChange={(value) => {
+              const h = Math.max(0, Math.min(360, value || 0));
+              updateFromHsl(h, hsl.s, hsl.l);
+            }}
+            style={{ flex: 1 }}
+          />
+          <InputNumber
+            addonBefore="S"
+            addonAfter="%"
+            min={0}
+            max={100}
+            value={hsl.s}
+            onChange={(value) => {
+              const s = Math.max(0, Math.min(100, value || 0));
+              updateFromHsl(hsl.h, s, hsl.l);
+            }}
+            style={{ flex: 1 }}
+          />
+          <InputNumber
+            addonBefore="L"
+            addonAfter="%"
+            min={0}
+            max={100}
+            value={hsl.l}
+            onChange={(value) => {
+              const l = Math.max(0, Math.min(100, value || 0));
+              updateFromHsl(hsl.h, hsl.s, l);
+            }}
+            style={{ flex: 1 }}
+          />
+        </Space.Compact>
+      </Card>
 
       {/* HSLA */}
-      <div className="color-format-section">
-        <div className="format-header">
-          <label>HSLA</label>
-          <button onClick={() => copyColor('hsla')} className="copy-btn">📋 复制</button>
-        </div>
-        <div className="hsla-inputs">
-          <div className="hsl-inputs">
-            <div className="hsl-input-group">
-              <label>H</label>
-              <input
-                type="number"
-                min="0"
-                max="360"
-                value={hsla.h}
-                onChange={(e) => {
-                  const h = Math.max(0, Math.min(360, Number(e.target.value)));
-                  updateFromHsla(h, hsla.s, hsla.l, hsla.a);
-                }}
-                className="color-number-input"
-              />
-            </div>
-            <div className="hsl-input-group">
-              <label>S</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={hsla.s}
-                onChange={(e) => {
-                  const s = Math.max(0, Math.min(100, Number(e.target.value)));
-                  updateFromHsla(hsla.h, s, hsla.l, hsla.a);
-                }}
-                className="color-number-input"
-              />
-              <span>%</span>
-            </div>
-            <div className="hsl-input-group">
-              <label>L</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={hsla.l}
-                onChange={(e) => {
-                  const l = Math.max(0, Math.min(100, Number(e.target.value)));
-                  updateFromHsla(hsla.h, hsla.s, l, hsla.a);
-                }}
-                className="color-number-input"
-              />
-              <span>%</span>
-            </div>
-          </div>
-          <div className="alpha-input-group">
-            <label>A</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={hsla.a}
-              onChange={(e) => {
-                const a = Math.max(0, Math.min(100, Number(e.target.value)));
-                updateFromHsla(hsla.h, hsla.s, hsla.l, a);
+      <Card 
+        size="small" 
+        title="HSLA"
+        extra={
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => copyColor('hsla')}
+          >
+            复制
+          </Button>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="small">
+          <Space.Compact style={{ width: '100%' }}>
+            <InputNumber
+              addonBefore="H"
+              min={0}
+              max={360}
+              value={hsla.h}
+              onChange={(value) => {
+                const h = Math.max(0, Math.min(360, value || 0));
+                updateFromHsla(h, hsla.s, hsla.l, hsla.a);
               }}
-              className="color-number-input"
+              style={{ flex: 1 }}
             />
-            <span className="alpha-percent">%</span>
-          </div>
-        </div>
-      </div>
+            <InputNumber
+              addonBefore="S"
+              addonAfter="%"
+              min={0}
+              max={100}
+              value={hsla.s}
+              onChange={(value) => {
+                const s = Math.max(0, Math.min(100, value || 0));
+                updateFromHsla(hsla.h, s, hsla.l, hsla.a);
+              }}
+              style={{ flex: 1 }}
+            />
+            <InputNumber
+              addonBefore="L"
+              addonAfter="%"
+              min={0}
+              max={100}
+              value={hsla.l}
+              onChange={(value) => {
+                const l = Math.max(0, Math.min(100, value || 0));
+                updateFromHsla(hsla.h, hsla.s, l, hsla.a);
+              }}
+              style={{ flex: 1 }}
+            />
+          </Space.Compact>
+          <InputNumber
+            addonBefore="A"
+            addonAfter="%"
+            min={0}
+            max={100}
+            value={hsla.a}
+            onChange={(value) => {
+              const a = Math.max(0, Math.min(100, value || 0));
+              updateFromHsla(hsla.h, hsla.s, hsla.l, a);
+            }}
+            style={{ width: '100%' }}
+          />
+        </Space>
+      </Card>
     </div>
   );
 };

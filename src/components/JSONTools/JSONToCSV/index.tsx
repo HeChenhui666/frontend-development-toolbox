@@ -1,4 +1,18 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Alert,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  DownloadOutlined,
+  SwapOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
 
@@ -83,12 +97,12 @@ const JSONToCSV: React.FC = () => {
         }
         const csv = jsonToCSV(parsed);
         setOutputCSV(csv);
-        showMessage.success('✅ 转换成功');
+        antdMessage.success('转换成功');
       } else if (typeof parsed === 'object' && parsed !== null) {
         // 如果是单个对象，转换为单行CSV
         const csv = jsonToCSV([parsed]);
         setOutputCSV(csv);
-        showMessage.success('✅ 转换成功');
+        antdMessage.success('转换成功');
       } else {
         setError('请输入JSON对象或数组');
         setOutputCSV('');
@@ -114,14 +128,14 @@ const JSONToCSV: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showMessage.success('✅ 文件下载成功');
+    antdMessage.success('文件下载成功');
   };
 
   // 复制结果
   const copyResult = () => {
     if (outputCSV) {
       navigator.clipboard.writeText(outputCSV);
-      showMessage.success('已复制到剪贴板');
+      antdMessage.success('已复制到剪贴板');
     }
   };
 
@@ -133,49 +147,79 @@ const JSONToCSV: React.FC = () => {
   };
 
   return (
-    <div className="json-to-csv">
-      <div className="converter-controls">
-        <button onClick={handleConvert} className="action-btn process-btn">
-          转换为CSV
-        </button>
-        <button onClick={clearAll} className="action-btn clear-btn">
-          清空
-        </button>
-      </div>
+    <div className="json-to-csv" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+      <Card size="small">
+        <Space>
+          <Button
+            type="primary"
+            icon={<SwapOutlined />}
+            onClick={handleConvert}
+          >
+            转换为CSV
+          </Button>
+          <Button
+            icon={<ClearOutlined />}
+            onClick={clearAll}
+          >
+            清空
+          </Button>
+        </Space>
+      </Card>
 
-      <div className="json-input-section">
-        <div className="section-header">
-          <label>输入JSON（对象或数组）：</label>
-        </div>
-        <textarea
-          value={inputJson}
-          onChange={(e) => setInputJson(e.target.value)}
+      <Card size="small" title="输入JSON（对象或数组）">
+        <Input.TextArea
+          value={inputJson || ''}
+          onChange={(e) => {
+            if (e && e.target) {
+              setInputJson(e.target.value || '');
+            }
+          }}
           placeholder='请输入JSON数组或对象，例如：[{"name":"张三","age":25},{"name":"李四","age":30}]'
-          className="json-textarea"
+          rows={8}
+          style={{ fontFamily: 'monospace' }}
         />
-      </div>
+      </Card>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
 
       {outputCSV && (
-        <div className="json-output-section">
-          <div className="section-header">
-            <label>转换后的CSV：</label>
-            <div className="output-actions">
-              <button onClick={copyResult} className="copy-btn">
-                📋 复制
-              </button>
-              <button onClick={downloadCSV} className="download-btn">
-                💾 下载
-              </button>
-            </div>
-          </div>
-          <textarea
-            value={outputCSV}
+        <Card 
+          size="small" 
+          title="转换后的CSV"
+          extra={
+            <Space>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={copyResult}
+              >
+                复制
+              </Button>
+              <Button
+                size="small"
+                icon={<DownloadOutlined />}
+                onClick={downloadCSV}
+              >
+                下载
+              </Button>
+            </Space>
+          }
+        >
+          <Input.TextArea
+            value={outputCSV || ''}
             readOnly
-            className="json-textarea output"
+            rows={8}
+            style={{ fontFamily: 'monospace' }}
           />
-        </div>
+        </Card>
       )}
     </div>
   );

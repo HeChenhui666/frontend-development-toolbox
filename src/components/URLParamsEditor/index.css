@@ -2,16 +2,16 @@
 .url-params-editor {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   height: 100%;
   min-height: 0;
   overflow: auto;
 }
 
 .url-display {
-  padding: 8px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
   max-height: 80px;
@@ -22,7 +22,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .url-display-header label {
@@ -32,13 +32,13 @@
 }
 
 .refresh-btn {
-  padding: 3px 6px;
+  padding: 6px;
   border: none;
   background: transparent;
   color: var(--theme-text, #334155);
   cursor: pointer;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: 4px;
   transition: background 0.2s ease;
 }
 
@@ -56,9 +56,9 @@
 
 .url-input {
   width: 100%;
-  padding: 6px 10px;
+  padding: 6px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.25s ease;
@@ -81,7 +81,7 @@
 .base-url-section {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -92,9 +92,9 @@
 }
 
 .base-url-input {
-  padding: 6px 10px;
+  padding: 6px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.25s ease;
@@ -128,11 +128,11 @@
 }
 
 .manage-presets-btn {
-  padding: 3px 8px;
+  padding: 6px;
   background: var(--theme-surface, #f1f5f9);
   color: var(--theme-textSecondary, #475569);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -152,11 +152,11 @@
 }
 
 .preset-param-btn {
-  padding: 5px 10px;
+  padding: 6px;
   background: var(--theme-surface, #f1f5f9);
   color: var(--theme-textSecondary, #475569);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -178,7 +178,7 @@
 .params-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   min-height: 200px;
   max-height: 350px;
@@ -198,11 +198,11 @@
 }
 
 .add-param-btn {
-  padding: 4px 10px;
+  padding: 6px;
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -221,7 +221,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px;
+  padding: 6px;
   min-height: 0;
 }
 
@@ -231,7 +231,7 @@
   gap: 6px;
   padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -245,9 +245,9 @@
 .param-key-input,
 .param-value-input {
   flex: 1;
-  padding: 5px 8px;
+  padding: 6px;
   border: 1px solid var(--theme-inputBorder, #cbd5e1);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.2s ease;
@@ -274,11 +274,11 @@
 .remove-param-btn {
   width: 22px;
   height: 22px;
-  padding: 0;
+  padding: 6px;
   border: none;
   background: var(--theme-error, #ef4444);
   color: var(--theme-buttonText, white);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -301,9 +301,9 @@
 }
 
 .preview-section {
-  padding: 8px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   flex-shrink: 0;
   display: flex;
@@ -312,7 +312,7 @@
 }
 
 .preview-header {
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   flex-shrink: 0;
 }
 
@@ -329,9 +329,9 @@
   overflow-wrap: break-word;
   line-height: 1.5;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  padding: 8px;
+  padding: 6px;
   background: var(--theme-background, rgba(255, 255, 255, 0.7));
-  border-radius: 8px;
+  border-radius: 4px;
   min-height: 32px;
   max-height: 200px;
   overflow-y: auto;
@@ -351,9 +351,9 @@
 .action-btn {
   flex: 1;
   min-width: 80px;
-  padding: 6px 12px;
+  padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -378,10 +378,10 @@
 }
 
 .error {
-  padding: 8px 10px;
+  padding: 6px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
@@ -404,7 +404,7 @@
 
 .preset-manager-modal {
   background: var(--theme-background, #ffffff);
-  border-radius: 8px;
+  border-radius: 4px;
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
@@ -418,7 +418,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 6px;
   border-bottom: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
 }
@@ -427,20 +427,20 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--theme-text, #334155);
-  margin: 0;
+  margin: 6px;
 }
 
 .close-modal-btn {
   width: 24px;
   height: 24px;
-  padding: 0;
+  padding: 6px;
   border: none;
   background: transparent;
   color: var(--theme-textSecondary, #64748b);
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -455,7 +455,7 @@
 .preset-manager-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 6px;
   min-height: 0;
 }
 
@@ -463,7 +463,7 @@
 .preset-editor {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .preset-name-input-group {
@@ -479,9 +479,9 @@
 }
 
 .preset-name-input {
-  padding: 6px 10px;
+  padding: 6px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   transition: all 0.25s ease;
   background: var(--theme-inputBackground, #ffffff);
@@ -497,7 +497,7 @@
 .preset-params-editor {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .preset-params-editor-header {
@@ -513,11 +513,11 @@
 }
 
 .add-preset-param-btn {
-  padding: 4px 10px;
+  padding: 6px;
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
@@ -543,16 +543,16 @@
   gap: 6px;
   padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
 }
 
 .preset-param-key-input,
 .preset-param-value-input {
   flex: 1;
-  padding: 5px 8px;
+  padding: 6px;
   border: 1px solid var(--theme-inputBorder, #cbd5e1);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   transition: all 0.2s ease;
@@ -579,11 +579,11 @@
 .remove-preset-param-btn {
   width: 22px;
   height: 22px;
-  padding: 0;
+  padding: 6px;
   border: none;
   background: var(--theme-error, #ef4444);
   color: var(--theme-buttonText, white);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -601,17 +601,17 @@
 
 .preset-editor-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-end;
-  padding-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid var(--theme-border, #e2e8f0);
 }
 
 .cancel-btn,
 .save-preset-btn {
-  padding: 6px 12px;
+  padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -642,20 +642,20 @@
 .preset-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .preset-list-header {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-end;
 }
 
 .add-preset-btn,
 .reset-presets-btn {
-  padding: 6px 12px;
+  padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -687,7 +687,7 @@
 .preset-list-items {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   max-height: 300px;
   overflow-y: auto;
 }
@@ -696,9 +696,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
   transition: all 0.2s ease;
 }
@@ -712,7 +712,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .preset-item-name {
@@ -724,16 +724,16 @@
 .preset-item-params {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 
 .preset-item-param {
   font-size: 10px;
   color: var(--theme-textSecondary, #64748b);
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  padding: 2px 6px;
+  padding: 6px;
   background: var(--theme-background, #ffffff);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
 }
 
@@ -744,9 +744,9 @@
 
 .edit-preset-btn,
 .delete-preset-btn {
-  padding: 4px 10px;
+  padding: 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;

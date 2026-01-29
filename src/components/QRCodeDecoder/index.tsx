@@ -1,9 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import jsQR from 'jsqr';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  Alert,
+  Upload,
+  message as antdMessage,
+} from 'antd';
+import {
+  FileImageOutlined,
+  CameraOutlined,
+  StopOutlined,
+  CopyOutlined,
+  ClearOutlined,
+  LinkOutlined,
+  CopyOutlined as CopyAllOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../utils/message';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { checkQRCodeFeatures, checkMediaAPIs, checkBasicAPIs } from '../../utils/browserCompatibility';
+
+const { Text } = Typography;
 
 interface QRCodeResult {
   data: string;
@@ -38,7 +58,7 @@ const QRCodeDecoder: React.FC = () => {
       
       if (critical.length > 0) {
         setTimeout(() => {
-          showMessage.warning('当前浏览器可能不完全支持二维码解码功能');
+          antdMessage.warning('当前浏览器可能不完全支持二维码解码功能');
         }, 100);
       }
     };
@@ -48,14 +68,11 @@ const QRCodeDecoder: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleFileSelect = (file: File) => {
     // 验证文件类型
     if (!file.type.startsWith('image/')) {
       setError('请选择图片文件');
-      return;
+      return false;
     }
 
     setError('');
@@ -70,6 +87,7 @@ const QRCodeDecoder: React.FC = () => {
       }
     };
     reader.readAsDataURL(file);
+    return false; // 阻止自动上传
   };
 
   // 识别多个二维码
@@ -161,7 +179,7 @@ const QRCodeDecoder: React.FC = () => {
       if (uniqueResults.length > 0) {
         setDecodedResults(uniqueResults);
         setError('');
-        showMessage.success(`成功识别 ${uniqueResults.length} 个二维码`);
+        antdMessage.success(`成功识别 ${uniqueResults.length} 个二维码`);
       } else {
         setDecodedResults([]);
         setError('未检测到二维码，请确保图片清晰且包含有效的二维码');
@@ -176,7 +194,7 @@ const QRCodeDecoder: React.FC = () => {
   const copyDecodedText = (text: string) => {
     if (text) {
       navigator.clipboard.writeText(text);
-      showMessage.success('已复制到剪贴板');
+      antdMessage.success('已复制到剪贴板');
     }
   };
 
@@ -184,7 +202,7 @@ const QRCodeDecoder: React.FC = () => {
     if (decodedResults.length > 0) {
       const allText = decodedResults.map((r, i) => `二维码 ${i + 1}:\n${r.data}`).join('\n\n');
       navigator.clipboard.writeText(allText);
-      showMessage.success('已复制所有结果到剪贴板');
+      antdMessage.success('已复制所有结果到剪贴板');
     }
   };
 
@@ -192,7 +210,7 @@ const QRCodeDecoder: React.FC = () => {
     if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
       chrome.tabs.create({ url });
     } else {
-      showMessage.warning('解码内容不是有效的URL');
+      antdMessage.warning('解码内容不是有效的URL');
     }
   };
 
@@ -206,31 +224,6 @@ const QRCodeDecoder: React.FC = () => {
     stopScanning();
   };
 
-  // 截屏功能
-  const captureScreenshot = async () => {
-    try {
-      setError('');
-      setDecodedResults([]);
-      
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tabs[0]?.id) {
-        setError('无法获取当前标签页');
-        return;
-      }
-
-      const dataUrl = await chrome.tabs.captureVisibleTab(undefined, {
-        format: 'png',
-        quality: 100
-      });
-
-      setImagePreview(dataUrl);
-      decodeQRCode(dataUrl);
-      showMessage.success('截屏成功');
-    } catch (err) {
-      setError('截屏失败：' + (err instanceof Error ? err.message : '未知错误'));
-      showMessage.error('截屏失败');
-    }
-  };
 
   // 开始摄像头扫码
   const startScanning = async () => {
@@ -247,7 +240,7 @@ const QRCodeDecoder: React.FC = () => {
       if (!navigator.mediaDevices) {
         console.error('navigator.mediaDevices 不可用');
         setError('您的浏览器不支持摄像头访问 API，请使用最新版本的 Chrome、Edge 或 Firefox 浏览器');
-        showMessage.error('浏览器不支持摄像头');
+        antdMessage.error('浏览器不支持摄像头');
         return;
       }
 
@@ -260,7 +253,7 @@ const QRCodeDecoder: React.FC = () => {
         
         if (!getUserMedia) {
           setError('您的浏览器不支持摄像头访问，请使用 Chrome、Edge 或 Firefox 浏览器');
-          showMessage.error('浏览器不支持摄像头');
+          antdMessage.error('浏览器不支持摄像头');
           return;
         }
 
@@ -286,7 +279,7 @@ const QRCodeDecoder: React.FC = () => {
           scanQRCode();
         }, 300);
 
-        showMessage.success('摄像头已启动');
+        antdMessage.success('摄像头已启动');
         return;
       }
 
@@ -320,7 +313,7 @@ const QRCodeDecoder: React.FC = () => {
           console.error('视频播放失败:', playError);
           // 如果自动播放失败，尝试用户交互后播放
           setError('视频播放失败，请点击视频区域重试');
-          showMessage.warning('需要用户交互才能播放视频');
+          antdMessage.warning('需要用户交互才能播放视频');
         }
       }
 
@@ -329,7 +322,7 @@ const QRCodeDecoder: React.FC = () => {
         scanQRCode();
       }, 300); // 每300ms扫描一次
 
-      showMessage.success('摄像头已启动');
+      antdMessage.success('摄像头已启动');
     } catch (err) {
       setIsScanning(false);
       
@@ -372,7 +365,7 @@ const QRCodeDecoder: React.FC = () => {
           scanIntervalRef.current = window.setInterval(() => {
             scanQRCode();
           }, 300);
-          showMessage.success('摄像头已启动');
+          antdMessage.success('摄像头已启动');
           return;
         } catch (retryErr) {
           console.error('使用默认配置也失败:', retryErr);
@@ -383,7 +376,7 @@ const QRCodeDecoder: React.FC = () => {
       }
       
       setError(userMessage);
-      showMessage.error('启动摄像头失败');
+      antdMessage.error('启动摄像头失败');
     }
   };
 
@@ -437,7 +430,7 @@ const QRCodeDecoder: React.FC = () => {
         setDecodedResults(prev => [...prev, newResult]);
         setError('');
         setImagePreview(canvas.toDataURL('image/png'));
-        showMessage.success(`二维码识别成功（已识别 ${decodedResults.length + 1} 个）`);
+        antdMessage.success(`二维码识别成功（已识别 ${decodedResults.length + 1} 个）`);
         
         // 如果识别到第一个二维码，可以选择继续扫描或停止
         // 这里选择继续扫描以识别更多二维码
@@ -456,116 +449,151 @@ const QRCodeDecoder: React.FC = () => {
   }, []);
 
   return (
-    <div className="decoder">
+    <div className="decoder" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="二维码解码"
           requiredFeatures={['Canvas', 'MediaDevices', 'FileReader']}
         />
       )}
-      <div className="file-upload">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="file-input"
-          id="file-input"
-        />
-        <div className="upload-buttons">
-          <label htmlFor="file-input" className="file-label">
-            选择二维码图片
-          </label>
-          <button onClick={captureScreenshot} className="file-label screenshot-btn">
-            截屏识别
-          </button>
+      
+      <Card size="small" title="选择识别方式">
+        <Space wrap>
+          <Upload
+            accept="image/*"
+            beforeUpload={handleFileSelect}
+            showUploadList={false}
+          >
+            <Button icon={<FileImageOutlined />}>
+              选择二维码图片
+            </Button>
+          </Upload>
           {!isScanning ? (
-            <button onClick={startScanning} className="file-label scan-btn">
+            <Button
+              type="primary"
+              icon={<CameraOutlined />}
+              onClick={startScanning}
+            >
               摄像头扫码
-            </button>
+            </Button>
           ) : (
-            <button onClick={stopScanning} className="file-label scan-btn stop-scan">
+            <Button
+              danger
+              icon={<StopOutlined />}
+              onClick={stopScanning}
+            >
               停止扫码
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
+        </Space>
+      </Card>
 
       {isScanning && (
-        <div className="video-container">
-          <video
-            ref={videoRef}
-            className="scan-video"
-            autoPlay
-            playsInline
-            muted
-            onClick={async () => {
-              // 如果视频没有播放，点击后尝试播放
-              if (videoRef.current && videoRef.current.paused) {
-                try {
-                  await videoRef.current.play();
-                  setError('');
-                } catch (err) {
-                  console.error('手动播放失败:', err);
+        <Card size="small" title="摄像头扫描">
+          <div className="video-container" style={{ position: 'relative', width: '100%', maxWidth: '100%' }}>
+            <video
+              ref={videoRef}
+              className="scan-video"
+              autoPlay
+              playsInline
+              muted
+              style={{ width: '100%', maxWidth: '100%', borderRadius: '4px'}}
+              onClick={async () => {
+                // 如果视频没有播放，点击后尝试播放
+                if (videoRef.current && videoRef.current.paused) {
+                  try {
+                    await videoRef.current.play();
+                    setError('');
+                  } catch (err) {
+                    console.error('手动播放失败:', err);
+                  }
                 }
-              }
-            }}
-          />
-          <div className="scan-overlay">
-            <div className="scan-frame"></div>
-            <div className="scan-hint">请将二维码对准扫描框</div>
+              }}
+            />
+            <div className="scan-overlay">
+              <div className="scan-frame"></div>
+              <div className="scan-hint">请将二维码对准扫描框</div>
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
-      {imagePreview && (
-        <div className="image-preview">
-          <img src={imagePreview} alt="Preview" className="preview-image" />
-        </div>
+      {imagePreview && !isScanning && (
+        <Card size="small" title="图片预览">
+          <div style={{ textAlign: 'center' }}>
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px'}}
+            />
+          </div>
+        </Card>
       )}
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
 
       {decodedResults.length > 0 && (
-        <div className="decoded-results">
-          <div className="results-header">
-            <div className="result-label">
-              识别到 {decodedResults.length} 个二维码：
-            </div>
-            {decodedResults.length > 1 && (
-              <button onClick={copyAllDecodedText} className="action-btn copy-all-btn">
+        <Card 
+          size="small" 
+          title={`识别到 ${decodedResults.length} 个二维码`}
+          extra={
+            decodedResults.length > 1 && (
+              <Button
+                size="small"
+                icon={<CopyAllOutlined />}
+                onClick={copyAllDecodedText}
+              >
                 复制全部
-              </button>
-            )}
-          </div>
-          {decodedResults.map((result, index) => (
-            <div key={index} className="decoded-result">
-              <div className="result-index">二维码 {index + 1}</div>
-              <div className="result-text">{result.data}</div>
-              <div className="result-actions">
-                <button 
-                  onClick={() => copyDecodedText(result.data)} 
-                  className="action-btn"
-                >
-                  复制
-                </button>
-                {(result.data.startsWith('http://') || result.data.startsWith('https://')) && (
-                  <button 
-                    onClick={() => openDecodedUrl(result.data)} 
-                    className="action-btn"
-                  >
-                    打开链接
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-          <div className="result-actions">
-            <button onClick={clearAll} className="action-btn secondary">
+              </Button>
+            )
+          }
+        >
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            {decodedResults.map((result, index) => (
+              <Card key={index} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <Text strong>二维码 {index + 1}</Text>
+                  <Text code copyable style={{ wordBreak: 'break-all', display: 'block' }}>
+                    {result.data}
+                  </Text>
+                  <Space>
+                    <Button
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={() => copyDecodedText(result.data)}
+                    >
+                      复制
+                    </Button>
+                    {(result.data.startsWith('http://') || result.data.startsWith('https://')) && (
+                      <Button
+                        size="small"
+                        icon={<LinkOutlined />}
+                        onClick={() => openDecodedUrl(result.data)}
+                      >
+                        打开链接
+                      </Button>
+                    )}
+                  </Space>
+                </Space>
+              </Card>
+            ))}
+            <Button
+              icon={<ClearOutlined />}
+              onClick={clearAll}
+              block
+            >
               清除全部
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Space>
+        </Card>
       )}
     </div>
   );
