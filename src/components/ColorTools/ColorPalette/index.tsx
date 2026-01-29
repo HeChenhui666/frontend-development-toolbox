@@ -165,7 +165,7 @@ const ColorPalette: React.FC = () => {
   };
 
   return (
-    <div className="color-palette" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="color-palette" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="配色设置">
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <Space.Compact style={{ width: '100%' }}>
@@ -173,7 +173,7 @@ const ColorPalette: React.FC = () => {
               type="color"
               value={baseColor}
               onChange={(e) => setBaseColor(e.target.value)}
-              style={{ width: '60px', height: '32px', border: '1px solid #d9d9d9', borderRadius: '4px 0 0 4px', cursor: 'pointer' }}
+              style={{ width: '60px', height: '32px', border: '1px solid #d9d9d9', borderRadius: '4px', cursor: 'pointer' }}
             />
             <Input
               value={baseColor}

@@ -6,6 +6,7 @@ import {
   Typography,
   Alert,
   Tag,
+  Input,
   message as antdMessage,
   Spin,
   Empty,
@@ -20,7 +21,8 @@ import {
 import './index.css';
 import { showMessage } from '../../../utils/message';
 
-const { TextArea, Text } = Typography;
+const { Text } = Typography;
+const { TextArea } = Input;
 
 interface CompatibilityResult {
   property: string;
@@ -258,7 +260,7 @@ const CSSCompatibility: React.FC = () => {
   const browserInfo = getBrowserInfo();
 
   return (
-    <div className="css-compatibility" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="css-compatibility" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="浏览器信息">
         <Space>
           <Text>浏览器：<Text strong>{browserInfo.browser}</Text></Text>

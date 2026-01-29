@@ -77,7 +77,7 @@ const QRCodeGenerator: React.FC = () => {
       setError('');
       const dataUrl = await QRCode.toDataURL(urlToGenerate, {
         width: 200,
-        margin: 1,
+        margin: 6,
         color: {
           dark: '#000000',
           light: '#FFFFFF',
@@ -133,7 +133,7 @@ const QRCodeGenerator: React.FC = () => {
   };
 
   return (
-    <div className="generator" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="generator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="二维码生成"

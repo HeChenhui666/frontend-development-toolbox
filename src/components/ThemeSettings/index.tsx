@@ -35,7 +35,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
 
   const content = (
     <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <div className="theme-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
+      <div className="theme-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '6px'}}>
         {Object.values(themes).map((theme) => (
           <Card
             key={theme.name}
@@ -47,7 +47,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
               position: 'relative',
             }}
             onClick={() => handleThemeChange(theme.name)}
-            bodyStyle={{ padding: '12px' }}
+            bodyStyle={{ padding: '6px'}}
           >
             <Space direction="vertical" style={{ width: '100%' }} size="small" align="center">
               <div className="theme-preview" style={{ width: '100%' }}>
@@ -56,7 +56,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                   style={{
                     background: `linear-gradient(135deg, ${theme.colors.primaryGradient} 0%, ${theme.colors.primaryGradientEnd} 100%)`,
                     height: '40px',
-                    borderRadius: '4px 4px 0 0',
+                    borderRadius: '4px',
                   }}
                 />
                 <div
@@ -67,8 +67,8 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                     borderWidth: '1px',
                     borderStyle: 'solid',
                     borderTop: 'none',
-                    borderRadius: '0 0 4px 4px',
-                    padding: '8px',
+                    borderRadius: '4px',
+                    padding: '6px',
                   }}
                 >
                   <div
@@ -77,7 +77,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                       background: theme.colors.activeBackground,
                       color: theme.colors.active,
                       boxShadow: `0 2px 8px ${theme.colors.active}40`,
-                      padding: '4px 8px',
+                      padding: '6px',
                       borderRadius: '4px',
                       fontSize: '10px',
                       textAlign: 'center',
@@ -98,7 +98,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                     right: '8px',
                     background: 'var(--theme-primary)',
                     color: 'white',
-                    borderRadius: '50%',
+                    borderRadius: '4px',
                     width: '20px',
                     height: '20px',
                     display: 'flex',

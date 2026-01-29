@@ -147,7 +147,7 @@ const JSONToCSV: React.FC = () => {
   };
 
   return (
-    <div className="json-to-csv" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="json-to-csv" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small">
         <Space>
           <Button

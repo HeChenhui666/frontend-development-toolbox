@@ -474,7 +474,7 @@ const QRCodeDecoder: React.FC = () => {
   }, []);
 
   return (
-    <div className="decoder" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="decoder" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="二维码解码"
@@ -528,7 +528,7 @@ const QRCodeDecoder: React.FC = () => {
               autoPlay
               playsInline
               muted
-              style={{ width: '100%', maxWidth: '100%', borderRadius: '4px' }}
+              style={{ width: '100%', maxWidth: '100%', borderRadius: '4px'}}
               onClick={async () => {
                 // 如果视频没有播放，点击后尝试播放
                 if (videoRef.current && videoRef.current.paused) {
@@ -555,7 +555,7 @@ const QRCodeDecoder: React.FC = () => {
             <img 
               src={imagePreview} 
               alt="Preview" 
-              style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
+              style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px'}}
             />
           </div>
         </Card>

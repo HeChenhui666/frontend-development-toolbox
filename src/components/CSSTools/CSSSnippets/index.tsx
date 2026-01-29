@@ -5,6 +5,7 @@ import {
   Space,
   Typography,
   Button,
+  Drawer,
   Empty,
   message as antdMessage,
 } from 'antd';
@@ -12,7 +13,7 @@ import { CopyOutlined } from '@ant-design/icons';
 import './index.css';
 import { CSS_SNIPPETS } from './snippets';
 
-const { Text, Title, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
 type Category = 
   | 'layout'
@@ -46,6 +47,7 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
 const CSSSnippets: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category>('layout');
   const [selectedSnippet, setSelectedSnippet] = useState<string>('');
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
   const snippets = CSS_SNIPPETS[selectedCategory] || [];
   const currentSnippet = snippets.find(s => s.id === selectedSnippet);
@@ -57,13 +59,14 @@ const CSSSnippets: React.FC = () => {
   };
 
   return (
-    <div className="css-snippets" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="css-snippets" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="选择分类">
         <Select
           value={selectedCategory}
           onChange={(value) => {
             setSelectedCategory(value as Category);
             setSelectedSnippet('');
+            setDrawerOpen(false);
           }}
           style={{ width: '100%' }}
           size="small"
@@ -79,7 +82,7 @@ const CSSSnippets: React.FC = () => {
         />
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '12px', flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0 }}>
         <Card size="small" title={`代码片段列表（共 ${snippets.length} 个）`}>
           <Space direction="vertical" style={{ width: '100%' }} size="small">
             {snippets.length > 0 ? (
@@ -93,7 +96,10 @@ const CSSSnippets: React.FC = () => {
                     borderColor: selectedSnippet === snippet.id ? 'var(--theme-primary)' : undefined,
                     borderWidth: selectedSnippet === snippet.id ? 2 : 1,
                   }}
-                  onClick={() => setSelectedSnippet(snippet.id)}
+                  onClick={() => {
+                    setSelectedSnippet(snippet.id);
+                    setDrawerOpen(true);
+                  }}
                 >
                   <Space direction="vertical" size="small" style={{ width: '100%' }}>
                     <Text strong>{snippet.title}</Text>
@@ -110,43 +116,46 @@ const CSSSnippets: React.FC = () => {
             )}
           </Space>
         </Card>
-
-        <Card
-          size="small"
-          title={currentSnippet ? currentSnippet.title : '代码详情'}
-          extra={
-            currentSnippet && (
-              <Button
-                icon={<CopyOutlined />}
-                onClick={() => copyCode(currentSnippet.code)}
-                size="small"
-              >
-                复制代码
-              </Button>
-            )
-          }
-        >
-          {currentSnippet ? (
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              {currentSnippet.description && (
-                <Paragraph type="secondary">{currentSnippet.description}</Paragraph>
-              )}
-              <Card size="small" style={{ background: '#f5f5f5' }}>
-                <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                  <code>{currentSnippet.code}</code>
-                </pre>
-              </Card>
-              {currentSnippet.example && (
-                <Card size="small" title="示例效果">
-                  <div dangerouslySetInnerHTML={{ __html: currentSnippet.example }} />
-                </Card>
-              )}
-            </Space>
-          ) : (
-            <Empty description="请从左侧选择一个代码片段" />
-          )}
-        </Card>
       </div>
+
+      <Drawer
+        open={drawerOpen}
+        placement="right"
+        width="80%"
+        title={currentSnippet ? currentSnippet.title : '代码详情'}
+        onClose={() => setDrawerOpen(false)}
+        extra={
+          currentSnippet && (
+            <Button
+              icon={<CopyOutlined />}
+              onClick={() => copyCode(currentSnippet.code)}
+              size="small"
+            >
+              复制代码
+            </Button>
+          )
+        }
+      >
+        {currentSnippet ? (
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            {currentSnippet.description && (
+              <Paragraph type="secondary">{currentSnippet.description}</Paragraph>
+            )}
+            <Card size="small" style={{ background: '#f5f5f5' }}>
+              <pre style={{ margin: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                <code>{currentSnippet.code}</code>
+              </pre>
+            </Card>
+            {currentSnippet.example && (
+              <Card size="small" title="示例效果">
+                <div dangerouslySetInnerHTML={{ __html: currentSnippet.example }} />
+              </Card>
+            )}
+          </Space>
+        ) : (
+          <Empty description="请从左侧选择一个代码片段" />
+        )}
+      </Drawer>
     </div>
   );
 };

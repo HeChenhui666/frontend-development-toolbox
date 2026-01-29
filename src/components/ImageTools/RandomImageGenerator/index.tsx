@@ -96,7 +96,7 @@ const RandomImageGenerator: React.FC = () => {
 
 
   return (
-    <div className="random-image-generator" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="random-image-generator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="图片参数设置">
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <Space.Compact style={{ width: '100%' }}>
@@ -178,7 +178,7 @@ const RandomImageGenerator: React.FC = () => {
               <img
                 src={imageUrl}
                 alt={`随机图片 ${width}x${height}`}
-                style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
+                style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px'}}
                 onError={() => {
                   antdMessage.error('图片加载失败，请重试');
                 }}
@@ -191,7 +191,7 @@ const RandomImageGenerator: React.FC = () => {
       <Alert
         message="使用说明"
         description={
-          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+          <ul style={{ margin: 6, paddingLeft: '6px'}}>
             <li>输入宽度和高度（1-5000像素）</li>
             <li>选择图片格式（默认JPG或WebP）</li>
             <li>点击"生成随机图片"按钮生成图片</li>

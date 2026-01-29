@@ -4,6 +4,7 @@ import {
   Button,
   Space,
   Typography,
+  Input,
   Alert,
   Segmented,
   Upload,
@@ -18,9 +19,9 @@ import {
   UnlockOutlined,
 } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../../utils/message';
 
-const { TextArea } = Typography;
+const { Text } = Typography;
+const { TextArea } = Input;
 
 type Mode = 'text' | 'image';
 
@@ -199,7 +200,7 @@ const Base64Encoder: React.FC = () => {
   };
 
   return (
-    <div className="base64-encoder" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12', overflowY: 'auto' }}>
+    <div className="base64-encoder" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="选择模式">
         <Segmented
           options={[
@@ -348,7 +349,7 @@ const Base64Encoder: React.FC = () => {
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
+                    style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px'}}
                   />
                 </div>
                 {base64String && (

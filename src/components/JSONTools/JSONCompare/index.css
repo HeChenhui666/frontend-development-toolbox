@@ -1,7 +1,7 @@
 .json-compare {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -14,11 +14,11 @@
 }
 
 .compare-btn {
-  padding: 6px 14px;
+  padding: 6px;
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -31,11 +31,11 @@
 }
 
 .clear-btn {
-  padding: 6px 14px;
+  padding: 6px;
   background: var(--theme-error, #ef4444);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -48,7 +48,7 @@
 
 .json-inputs {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   flex: 0 0 auto;
   min-height: 200px;
   max-height: 250px;
@@ -78,9 +78,9 @@
 .json-textarea {
   flex: 1;
   min-height: 150px;
-  padding: 8px;
+  padding: 6px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   resize: vertical;
@@ -96,10 +96,10 @@
 }
 
 .error {
-  padding: 8px 10px;
+  padding: 6px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
@@ -109,7 +109,7 @@
 .diff-results {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -119,12 +119,12 @@
 .diff-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .diff-item {
-  padding: 10px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
   background: var(--theme-surface, #f8f9fa);
   flex-shrink: 0;
@@ -145,15 +145,15 @@
 .diff-path {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
   font-size: 11px;
   font-weight: 600;
 }
 
 .diff-type-badge {
-  padding: 2px 6px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
@@ -181,8 +181,8 @@
 
 .diff-value {
   padding: 6px;
-  border-radius: 8px;
-  margin-top: 4px;
+  border-radius: 4px;
+  margin-top: 6px;
   font-size: 10px;
 }
 
@@ -211,10 +211,10 @@
 }
 
 .diff-value pre {
-  margin: 4px 0 0 0;
-  padding: 4px;
+  margin: 6px;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.7);
-  border-radius: 8px;
+  border-radius: 4px;
   overflow-x: auto;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   font-size: 10px;

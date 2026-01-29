@@ -211,7 +211,7 @@ const ColorConverter: React.FC = () => {
   };
 
   return (
-    <div className="color-converter" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="color-converter" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 颜色预览 */}
       <Card size="small" title="颜色预览">
         <Space direction="vertical" style={{ width: '100%' }} size="middle">

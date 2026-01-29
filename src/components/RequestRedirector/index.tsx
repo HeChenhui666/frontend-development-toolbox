@@ -315,7 +315,7 @@ const RequestRedirector: React.FC = () => {
 
 
   return (
-    <div className="request-redirector" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="request-redirector" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="请求重定向"
@@ -325,15 +325,15 @@ const RequestRedirector: React.FC = () => {
 
       <Card
         size="small"
-        style={{ marginBottom: '12px', flexShrink: 0 }}
+        style={{ marginBottom: '6px', flexShrink: 0 }}
         title={<Text strong>请求重定向规则</Text>}
       >
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '6px'}}>
           <Text type="secondary" style={{ fontSize: '12px' }}>
             配置URL重定向规则，支持URL到URL映射和正则表达式匹配
           </Text>
         </div>
-        <Space wrap style={{ marginBottom: '12px' }}>
+        <Space wrap style={{ marginBottom: '6px'}}>
           <Button
             size="small"
             onClick={handleApplyRules}
@@ -353,12 +353,12 @@ const RequestRedirector: React.FC = () => {
         </Space>
         <Collapse size="small" ghost>
           <Panel header="使用说明" key="usage">
-            <Paragraph style={{ marginBottom: '8px' }}>
+            <Paragraph style={{ marginBottom: '6px'}}>
               <Text strong>URL映射</Text>：将源URL重定向到目标URL
             </Paragraph>
-            <Paragraph style={{ marginBottom: '8px' }}>
+            <Paragraph style={{ marginBottom: '6px'}}>
               <Text strong>正则表达式映射</Text>：支持通配符和正则表达式匹配，可使用捕获组替换
-              <ul style={{ marginTop: '4px', paddingLeft: '20px' }}>
+              <ul style={{ marginTop: '6px', paddingLeft: '6px'}}>
                 <li><code>*</code> 匹配单个路径段（如：<code>assets-super-buyer/*/pages</code>）</li>
                 <li><code>**</code> 匹配任意路径（如：<code>**/assets-super-buyer/**</code>）</li>
                 <li>支持正则表达式（如：<code>^https://.*/assets-super-buyer/(.*)/pages/(.*)$</code>）</li>
@@ -366,15 +366,15 @@ const RequestRedirector: React.FC = () => {
                 <li>示例：<code>^/**/assets-super-buyer/*/pages/**</code> → <code>http://localhost:3000/dev/pages/$3</code></li>
               </ul>
             </Paragraph>
-            <Paragraph style={{ marginBottom: '8px' }}>
+            <Paragraph style={{ marginBottom: '6px'}}>
               <Text strong>优先级</Text>：数字越大优先级越高，高优先级规则会先匹配
             </Paragraph>
-            <Paragraph type="warning" style={{ marginBottom: '4px', fontSize: '12px' }}>
+            <Paragraph type="warning" style={{ marginBottom: '6px', fontSize: '12px' }}>
               💡 提示：如果看到304状态码，说明浏览器使用了缓存。请使用 <strong>Ctrl+Shift+R</strong>（Windows）或 <strong>Cmd+Shift+R</strong>（Mac）强制刷新。
             </Paragraph>
-            <Paragraph type="warning" style={{ marginBottom: '4px', fontSize: '12px' }}>
+            <Paragraph type="warning" style={{ marginBottom: '6px', fontSize: '12px' }}>
               ⚠️ <strong>重要说明</strong>：重定向规则匹配的是<strong>资源请求URL</strong>（如 index.js、index.css），不是页面URL。
-              <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
+              <ul style={{ margin: '6px', paddingLeft: '6px'}}>
                 <li>规则会在<strong>所有页面</strong>的匹配资源请求上生效</li>
                 <li>例如：规则匹配 <code>https://example.com/file.js</code>，那么所有页面加载该文件时都会被重定向</li>
                 <li>不需要为每个页面单独配置规则</li>
@@ -382,7 +382,7 @@ const RequestRedirector: React.FC = () => {
             </Paragraph>
             <Paragraph type="warning" style={{ fontSize: '12px' }}>
               🔍 调试方法：
-              <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
+              <ul style={{ margin: '6px', paddingLeft: '6px'}}>
                 <li>在<strong>任意页面</strong>打开开发者工具（F12）</li>
                 <li>查看<strong>Network（网络）</strong>面板，检查资源请求是否被重定向</li>
                 <li>检查规则中的资源类型是否包含请求类型（如SCRIPT、STYLESHEET）</li>
@@ -397,7 +397,7 @@ const RequestRedirector: React.FC = () => {
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description="暂无重定向规则"
-            style={{ marginTop: '40px' }}
+            style={{ marginTop: '6px'}}
           >
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               添加规则
@@ -455,7 +455,7 @@ const RequestRedirector: React.FC = () => {
                 }
               >
                 <Space direction="vertical" style={{ width: '100%' }} size="small">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px'}}>
                     <Text type="secondary" style={{ minWidth: '40px', fontSize: '12px' }}>源:</Text>
                     <Tooltip title={rule.source} placement="top">
                       <Text
@@ -473,7 +473,7 @@ const RequestRedirector: React.FC = () => {
                       </Text>
                     </Tooltip>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px'}}>
                     <Text type="secondary" style={{ minWidth: '40px', fontSize: '12px' }}>目标:</Text>
                     <Tooltip title={rule.target} placement="top">
                       <Text

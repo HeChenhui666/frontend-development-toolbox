@@ -528,7 +528,7 @@ const RegexTester: React.FC = () => {
   }, [selectedPreset]);
 
   return (
-    <div className='regex-tester' style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className='regex-tester' style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="正则表达式测试"

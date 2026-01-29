@@ -46,8 +46,8 @@
   position: relative;
   z-index: 1;
   background: var(--theme-background, rgba(255, 255, 255, 0.95));
-  border-radius: 8px;
-  padding: 30px;
+  border-radius: 4px;
+  padding: 6px;
   max-width: 420px;
   width: 90%;
   max-height: 90vh;
@@ -72,8 +72,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
   border-bottom: 2px solid var(--theme-border, #e8ecf0);
 }
 
@@ -81,7 +81,7 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--theme-primary, #667eea);
-  margin: 0;
+  margin: 6px;
   letter-spacing: -0.3px;
 }
 
@@ -91,13 +91,13 @@
   font-size: 24px;
   color: var(--theme-textMuted, #94a3b8);
   cursor: pointer;
-  padding: 0;
+  padding: 6px;
   width: 30px;
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
@@ -112,7 +112,7 @@
 
 .easter-egg-icon {
   font-size: 80px;
-  margin-bottom: 15px;
+  margin-bottom: 6px;
   animation: bounce 1s ease-in-out infinite;
 }
 
@@ -129,42 +129,42 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--theme-text, #334155);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .easter-egg-body > p {
   font-size: 13px;
   color: var(--theme-textSecondary, #64748b);
   line-height: 1.6;
-  margin-bottom: 20px;
+  margin-bottom: 6px;
 }
 
 .games-list-section {
-  margin: 20px 0;
+  margin: 6px;
 }
 
 .games-list-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--theme-text, #334155);
-  margin: 0 0 12px 0;
+  margin: 6px;
   text-align: left;
 }
 
 .games-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .game-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 6px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
   border: 1px solid var(--theme-border, #e8ecf0);
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -191,7 +191,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--theme-text, #334155);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .game-card-description {
@@ -229,7 +229,7 @@
 
 .game-modal-content {
   background: var(--theme-background, white);
-  border-radius: 8px;
+  border-radius: 4px;
   max-width: 90vw;
   max-height: 85vh;
   width: 100%;
@@ -256,7 +256,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 6px;
   border-bottom: 1px solid var(--theme-border, #e8ecf0);
   background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
   color: var(--theme-buttonText, white);
@@ -265,10 +265,10 @@
 .game-modal-header h3 {
   font-size: 18px;
   font-weight: 700;
-  margin: 0;
+  margin: 6px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .game-modal-icon {
@@ -281,8 +281,8 @@
   color: white;
   font-size: 20px;
   cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   transition: all 0.2s ease;
   width: 32px;
   height: 32px;
@@ -296,7 +296,7 @@
 }
 
 .game-modal-body {
-  padding: 16px;
+  padding: 6px;
   overflow-y: auto;
   max-height: calc(85vh - 70px);
   background: var(--theme-surface, #f8f9fa);
@@ -305,7 +305,7 @@
 /* 贪吃蛇游戏特殊样式 - 防止滚动 */
 .game-modal-body.no-scroll {
   overflow: hidden;
-  padding: 12px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
 }
@@ -313,18 +313,18 @@
 .easter-egg-features {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 25px;
-  padding: 20px;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 6px;
   font-size: 13px;
   color: var(--theme-textSecondary, #475569);
   font-weight: 500;
@@ -335,8 +335,8 @@
 }
 
 .easter-egg-footer {
-  margin-top: 20px;
-  padding-top: 20px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid var(--theme-border, #e8ecf0);
 }
 

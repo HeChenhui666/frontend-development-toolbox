@@ -166,7 +166,7 @@ const JSONCompare: React.FC = () => {
   };
 
   return (
-    <div className="json-compare" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="json-compare" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small">
         <Space>
           <Button
@@ -185,7 +185,7 @@ const JSONCompare: React.FC = () => {
         </Space>
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px'}}>
         <Card size="small" title="JSON 1">
           <Input.TextArea
             value={json1 || ''}
@@ -242,7 +242,7 @@ const JSONCompare: React.FC = () => {
                       message={
                         <Space direction="vertical" size="small" style={{ width: '100%' }}>
                           <strong>旧值：</strong>
-                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.oldValue)}</pre>
+                          <pre style={{ margin: 6, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.oldValue)}</pre>
                         </Space>
                       }
                       type="error"
@@ -254,7 +254,7 @@ const JSONCompare: React.FC = () => {
                       message={
                         <Space direction="vertical" size="small" style={{ width: '100%' }}>
                           <strong>新值：</strong>
-                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.newValue)}</pre>
+                          <pre style={{ margin: 6, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.newValue)}</pre>
                         </Space>
                       }
                       type="success"
@@ -267,7 +267,7 @@ const JSONCompare: React.FC = () => {
                         message={
                           <Space direction="vertical" size="small" style={{ width: '100%' }}>
                             <strong>旧值：</strong>
-                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.oldValue)}</pre>
+                            <pre style={{ margin: 6, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.oldValue)}</pre>
                           </Space>
                         }
                         type="error"
@@ -277,7 +277,7 @@ const JSONCompare: React.FC = () => {
                         message={
                           <Space direction="vertical" size="small" style={{ width: '100%' }}>
                             <strong>新值：</strong>
-                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.newValue)}</pre>
+                            <pre style={{ margin: 6, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.newValue)}</pre>
                           </Space>
                         }
                         type="success"

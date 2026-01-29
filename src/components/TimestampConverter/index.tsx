@@ -172,7 +172,7 @@ const TimestampConverter: React.FC = () => {
   };
 
   return (
-    <div className="timestamp-converter" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="timestamp-converter" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 实时时间显示 */}
       <Card 
         size="small" 

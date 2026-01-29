@@ -2,18 +2,18 @@
 .decoder {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .file-upload {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .upload-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -34,11 +34,11 @@
 }
 
 .file-label {
-  padding: 8px 16px;
+  padding: 6px;
   background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -55,9 +55,9 @@
 .image-preview {
   display: flex;
   justify-content: center;
-  padding: 12px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e8ecf0);
   max-height: 200px;
   overflow: hidden;
@@ -66,7 +66,7 @@
 .preview-image {
   max-width: 100%;
   max-height: 180px;
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   object-fit: contain;
 }
@@ -74,26 +74,26 @@
 .decoded-results {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .copy-all-btn {
-  padding: 4px 10px !important;
+  padding: 6px;
   font-size: 10px !important;
 }
 
 .decoded-result {
-  padding: 10px;
+  padding: 6px;
   background: var(--theme-surface, #f8f9fa);
   border: 1.5px solid var(--theme-primary, #667eea);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 2px 6px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
 }
 
@@ -101,7 +101,7 @@
   font-size: 10px;
   font-weight: 600;
   color: var(--theme-textSecondary, #757575);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -114,12 +114,12 @@
 }
 
 .result-text {
-  padding: 8px;
+  padding: 6px;
   background: var(--theme-background, white);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   word-break: break-all;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   border: 1px solid var(--theme-border, #e0e0e0);
   color: var(--theme-text, #333);
   max-height: 100px;
@@ -133,11 +133,11 @@
 }
 
 .action-btn {
-  padding: 5px 12px;
+  padding: 6px;
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -157,10 +157,10 @@
 }
 
 .error {
-  padding: 8px 10px;
+  padding: 6px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
@@ -171,7 +171,7 @@
   width: 100%;
   max-width: 100%;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--theme-border, #e8ecf0);
   overflow: hidden;
   aspect-ratio: 4 / 3;
@@ -201,7 +201,7 @@
   width: 200px;
   height: 200px;
   border: 3px solid var(--theme-primary, #667eea);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
   position: relative;
 }
@@ -220,7 +220,7 @@
   left: -3px;
   border-right: none;
   border-bottom: none;
-  border-top-left-radius: 8px;
+  border-top-left-radius: 4px;
 }
 
 .scan-frame::after {
@@ -228,16 +228,16 @@
   right: -3px;
   border-left: none;
   border-top: none;
-  border-bottom-right-radius: 8px;
+  border-bottom-right-radius: 4px;
 }
 
 .scan-hint {
-  margin-top: 20px;
+  margin-top: 6px;
   color: white;
   font-size: 12px;
   font-weight: 500;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.5);
-  padding: 6px 12px;
+  padding: 6px;
   border-radius: 4px;
 }

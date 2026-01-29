@@ -28,7 +28,7 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
       title={
         <Space>
           <span style={{ fontSize: '24px' }}>🎉</span>
-          <Title level={3} style={{ margin: 0 }}>恭喜发现彩蛋！</Title>
+          <Title level={3} style={{ margin: 6}}>恭喜发现彩蛋！</Title>
         </Space>
       }
       open={true}
@@ -44,7 +44,7 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
       <Space direction="vertical" style={{ width: '100%' }} size="large" align="center">
         <Space direction="vertical" size="small" align="center">
           <Text style={{ fontSize: '48px' }}>🎊</Text>
-          <Title level={4} style={{ margin: 0 }}>你找到了隐藏页面！</Title>
+          <Title level={4} style={{ margin: 6}}>你找到了隐藏页面！</Title>
           <Paragraph type="secondary">看来你是一个细心的人，能够发现这个隐藏的彩蛋。</Paragraph>
         </Space>
 

@@ -46,18 +46,18 @@ async function translateText(text: string, targetLang: string = 'zh'): Promise<s
     const response = await fetch(
       `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
     );
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     // 安全地访问嵌套数组
     if (data && Array.isArray(data) && data[0] && Array.isArray(data[0]) && data[0][0] && Array.isArray(data[0][0]) && data[0][0][0]) {
       return data[0][0][0];
     }
-    
+
     throw new Error('翻译结果格式不正确');
   } catch (error) {
     console.error('翻译失败:', error);
@@ -128,7 +128,7 @@ const Translator: React.FC = () => {
   const handlePageTranslateToggle = async (checked: boolean) => {
     setPageTranslateEnabledState(checked);
     await setPageTranslateEnabled(checked);
-    
+
     // 通知所有标签页的content script
     if (typeof chrome !== 'undefined' && chrome.tabs) {
       chrome.tabs.query({}, (tabs) => {
@@ -218,7 +218,7 @@ const Translator: React.FC = () => {
   };
 
   return (
-    <div className="translator" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="translator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="翻译设置">
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <Space direction="vertical" style={{ width: '100%' }} size="small">
@@ -273,13 +273,13 @@ const Translator: React.FC = () => {
         />
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: '1 1 auto', minHeight: '300px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 auto', minHeight: '300px' }}>
         {/* 上：输入文本区域 */}
-        <Card 
-          size="small" 
-          title="输入文本" 
+        <Card
+          size="small"
+          title="输入文本"
           style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
-          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '12px' }}
+          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '6px' }}
         >
           <Input.TextArea
             value={inputText || ''}
@@ -298,35 +298,35 @@ const Translator: React.FC = () => {
         <Card size="small" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Space direction="horizontal" size="middle" style={{ width: '100%', justifyContent: 'center' }} wrap>
             <Button
-              type="primary"
-              icon={<TranslationOutlined />}
-              onClick={handleTranslate}
-              loading={isTranslating}
-              style={{ width: '160px' }}
+              icon={<ClearOutlined />}
+              onClick={handleClear}
+              style={{ minWidth: '100px', width: '33%' }}
             >
-              {isTranslating ? '翻译中...' : '翻译'}
+              清空
             </Button>
             <Button
               icon={<SwapOutlined />}
               onClick={handleSwap}
               disabled={!translatedText}
-              style={{ width: '160px' }}
+              style={{ minWidth: '100px', width: '33%' }}
             >
               交换
             </Button>
             <Button
-              icon={<ClearOutlined />}
-              onClick={handleClear}
-              style={{ width: '160px' }}
+              type="primary"
+              icon={<TranslationOutlined />}
+              onClick={handleTranslate}
+              loading={isTranslating}
+              style={{ minWidth: '100px', width: '33%' }}
             >
-              清空
+              {isTranslating ? '翻译中...' : '翻译'}
             </Button>
           </Space>
         </Card>
 
         {/* 下：翻译结果区域 */}
-        <Card 
-          size="small" 
+        <Card
+          size="small"
           title="翻译结果"
           extra={
             <Button
@@ -340,7 +340,7 @@ const Translator: React.FC = () => {
             </Button>
           }
           style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
-          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '12px' }}
+          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '6px' }}
         >
           <Input.TextArea
             value={translatedText || ''}

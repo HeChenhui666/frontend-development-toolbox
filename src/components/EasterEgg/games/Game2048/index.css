@@ -1,28 +1,28 @@
 .game-2048 {
   width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 6px;
 }
 
 .game-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 10px;
-  gap: 10px;
+  margin-bottom: 6px;
+  gap: 6px;
 }
 
 .game-title h2 {
   font-size: 18px;
   font-weight: 700;
   color: var(--theme-primary, #667eea);
-  margin: 0 0 2px 0;
+  margin: 6px;
 }
 
 .game-hint {
   font-size: 10px;
   color: var(--theme-textMuted, #94a3b8);
-  margin: 0;
+  margin: 6px;
 }
 
 .game-info {
@@ -35,8 +35,8 @@
 .score-container {
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   text-align: center;
   min-width: 70px;
 }
@@ -44,7 +44,7 @@
 .score-label {
   font-size: 9px;
   opacity: 0.9;
-  margin-bottom: 1px;
+  margin-bottom: 6px;
 }
 
 .score-value {
@@ -56,8 +56,8 @@
   background: var(--theme-surface, #f8f9fa);
   border: 1px solid var(--theme-border, #e8ecf0);
   color: var(--theme-textSecondary, #64748b);
-  padding: 5px 10px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -84,13 +84,13 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .game-over-content {
   background: var(--theme-background, white);
-  padding: 16px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -98,21 +98,21 @@
 .game-over-content h3 {
   font-size: 16px;
   color: var(--theme-text, #334155);
-  margin: 0 0 8px 0;
+  margin: 6px;
 }
 
 .game-over-content p {
   font-size: 12px;
   color: var(--theme-textSecondary, #64748b);
-  margin: 0 0 12px 0;
+  margin: 6px;
 }
 
 .game-over-content button {
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  padding: 6px 14px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   font-size: 11px;
   cursor: pointer;
   font-weight: 600;
@@ -127,20 +127,20 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
-  gap: 5px;
+  gap: 6px;
   background: #bbada0;
-  padding: 5px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   width: 100%;
   max-width: 280px;
-  margin: 0 auto;
+  margin: 6px;
   aspect-ratio: 1;
   position: relative;
 }
 
 .game-cell {
   background: #cdc1b4;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +155,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 4px;
   font-weight: 700;
   animation: tileAppear 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

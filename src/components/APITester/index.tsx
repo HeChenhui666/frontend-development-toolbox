@@ -479,7 +479,7 @@ const APITester = () => {
                     >
                       {i + 1}. {t.name}
                       {isSystemPreset && (
-                        <Text type="secondary" style={{ marginLeft: '4px', fontSize: '11px' }}>
+                        <Text type="secondary" style={{ marginLeft: '6px', fontSize: '11px' }}>
                           (预设)
                         </Text>
                       )}

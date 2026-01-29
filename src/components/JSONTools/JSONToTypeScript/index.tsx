@@ -140,7 +140,7 @@ const JSONToTypeScript: React.FC = () => {
   };
 
   return (
-    <div className="json-to-typescript" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <div className="json-to-typescript" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       <Card size="small" title="生成配置">
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <Space.Compact style={{ width: '100%' }}>

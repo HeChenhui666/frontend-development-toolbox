@@ -247,7 +247,7 @@ const GradientGenerator: React.FC = () => {
   const cssCode = generateCSS();
 
   return (
-    <Card className="gradient-generator" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+    <Card className="gradient-generator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 主预览区域 */}
       <Card size="small" title="渐变预览">
         <div 

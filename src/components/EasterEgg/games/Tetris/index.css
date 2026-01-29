@@ -1,15 +1,15 @@
 .tetris {
   width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 6px;
 }
 
 .tetris-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 10px;
-  gap: 10px;
+  margin-bottom: 6px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -17,13 +17,13 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--theme-primary, #667eea);
-  margin: 0 0 2px 0;
+  margin: 6px;
 }
 
 .tetris-hint {
   font-size: 9px;
   color: var(--theme-textMuted, #94a3b8);
-  margin: 0;
+  margin: 6px;
 }
 
 .tetris-info {
@@ -36,7 +36,7 @@
 .info-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 11px;
 }
 
@@ -56,13 +56,13 @@
   background: var(--theme-surface, #f8f9fa);
   border: 1px solid var(--theme-border, #e8ecf0);
   color: var(--theme-textSecondary, #64748b);
-  padding: 5px 10px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .restart-button:hover {
@@ -81,7 +81,7 @@
   flex-direction: column;
   border: 2px solid #334155;
   background: #1e293b;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
@@ -118,14 +118,14 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .game-over-content,
 .pause-content {
   background: var(--theme-background, white);
-  padding: 16px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -133,21 +133,21 @@
 .game-over-content h3 {
   font-size: 16px;
   color: var(--theme-text, #334155);
-  margin: 0 0 8px 0;
+  margin: 6px;
 }
 
 .game-over-content p {
   font-size: 12px;
   color: var(--theme-textSecondary, #64748b);
-  margin: 0 0 12px 0;
+  margin: 6px;
 }
 
 .game-over-content button {
   background: var(--theme-buttonPrimary, #667eea);
   color: var(--theme-buttonText, white);
   border: none;
-  padding: 6px 14px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 4px;
   font-size: 11px;
   cursor: pointer;
   font-weight: 600;
@@ -162,6 +162,6 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--theme-primary, #667eea);
-  padding: 12px 20px;
+  padding: 6px;
 }
 

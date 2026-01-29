@@ -434,7 +434,7 @@ const URLParamsEditor: React.FC = () => {
   };
 
   return (
-    <div className='url-params-editor' style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div className='url-params-editor' style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px'}}>
       <Card size="small" title="当前URL">
         <Space.Compact style={{ width: '100%' }}>
           <Input
@@ -522,12 +522,12 @@ const URLParamsEditor: React.FC = () => {
                 value={newPresetName}
                 onChange={(e) => setNewPresetName(e.target.value)}
                 placeholder='输入预设名称'
-                style={{ marginTop: '8px' }}
+                style={{ marginTop: '6px'}}
               />
             </div>
 
             <div>
-              <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: '6px'}}>
                 <Text strong>参数列表</Text>
                 <Button
                   size="small"
@@ -592,7 +592,7 @@ const URLParamsEditor: React.FC = () => {
                   <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                     <div>
                       <Text strong>{preset.name}</Text>
-                      <div style={{ marginTop: '4px' }}>
+                      <div style={{ marginTop: '6px'}}>
                         <Space wrap>
                           {preset.params.map((p, i) => (
                             <Tag key={i}>{p.key}={p.value}</Tag>
