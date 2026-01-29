@@ -15,7 +15,7 @@ import { FUNCTION_SNIPPETS } from './snippets';
 
 const { Text, Paragraph } = Typography;
 
-type Category = 'data' | 'dom' | 'async' | 'storage';
+type Category = 'data' | 'dom' | 'async' | 'storage' | 'tools';
 
 interface CategoryOption {
   value: Category;
@@ -28,6 +28,7 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
   { value: 'dom', label: 'DOM操作类', icon: '🧩' },
   { value: 'async', label: '异步处理类', icon: '⏳' },
   { value: 'storage', label: '存储与缓存类', icon: '🗄️' },
+  { value: 'tools', label: '工具函数类', icon: '🧰' },
 ];
 
 const CommonFunctions: React.FC = () => {

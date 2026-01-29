@@ -10,6 +10,7 @@ export interface FunctionSnippetsByCategory {
   dom: FunctionSnippet[];
   async: FunctionSnippet[];
   storage: FunctionSnippet[];
+  tools: FunctionSnippet[];
 }
 
 export const FUNCTION_SNIPPETS: FunctionSnippetsByCategory = {
@@ -19,6 +20,25 @@ export const FUNCTION_SNIPPETS: FunctionSnippetsByCategory = {
       title: '空值判断',
       description: '判断是否为 null 或 undefined',
       code: `const isNil = (value) => value === null || value === undefined;`,
+    },
+    {
+      id: 'is-true',
+      title: '宽松真值判断',
+      description: "支持 'T'/'true' 各种大小写、数字/数字字符串、对象等",
+      code: `function isTrue(value) {
+  if (value === true) return true;
+  if (value === false || value == null) return false;
+  var type = typeof value;
+  if (type === 'number') return value > 0;
+  if (type === 'string') {
+    var str = value.replace(/^\\s+|\\s+$/g, '').toLowerCase(); // trim + toLowerCase
+    if (str === 't' || str === 'true') return true;
+    if (/^-?\\d+(\\.\\d+)?$/.test(str)) return parseFloat(str) > 0;
+    return false;
+  }
+  if (type === 'object') return true; // 对象/数组/函数都视为 true
+  return false;
+}`,
     },
     {
       id: 'is-plain-object',
@@ -807,6 +827,118 @@ const getCache = (key) => {
     sessionStorage.removeItem(key);
   },
 }; // 兼容：JSON 需 ES5+`,
+    },
+  ],
+  tools: [
+    {
+      id: 'get-query-param',
+      title: '获取 URL 参数（ES5兼容版）',
+      description: '不依赖 URLSearchParams',
+      code: `function getQueryParam(url, key) {
+  var queryIndex = url.indexOf('?');
+  if (queryIndex === -1) return null;
+  var hashIndex = url.indexOf('#', queryIndex);
+  var query = url.slice(queryIndex + 1, hashIndex === -1 ? url.length : hashIndex);
+  var pairs = query.split('&');
+  for (var i = 0; i < pairs.length; i += 1) {
+    if (!pairs[i]) continue;
+    var parts = pairs[i].split('=');
+    var name = decodeURIComponent(parts[0] || '');
+    if (name === key) return decodeURIComponent(parts[1] || '');
+  }
+  return null;
+}`,
+    },
+    {
+      id: 'parse-query',
+      title: '解析查询参数（ES5兼容版）',
+      description: '将 query string 转为对象',
+      code: `function parseQuery(query) {
+  var result = {};
+  if (!query) return result;
+  var str = query.charAt(0) === '?' ? query.slice(1) : query;
+  var pairs = str.split('&');
+  for (var i = 0; i < pairs.length; i += 1) {
+    if (!pairs[i]) continue;
+    var parts = pairs[i].split('=');
+    var key = decodeURIComponent(parts[0] || '');
+    var value = decodeURIComponent(parts[1] || '');
+    if (key) result[key] = value;
+  }
+  return result;
+}`,
+    },
+    {
+      id: 'stringify-query',
+      title: '对象转 query string（ES5兼容版）',
+      description: '忽略 undefined / 函数',
+      code: `function stringifyQuery(obj) {
+  var parts = [];
+  for (var key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+    var value = obj[key];
+    if (value === undefined || typeof value === 'function') continue;
+    parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(value)));
+  }
+  return parts.join('&');
+}`,
+    },
+    {
+      id: 'parse-url',
+      title: '解析 URL（ES5兼容版）',
+      description: '使用 <a> 标签解析，兼容旧浏览器',
+      code: `function parseUrl(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  return {
+    href: a.href,
+    protocol: a.protocol,
+    host: a.host,
+    hostname: a.hostname,
+    port: a.port,
+    pathname: a.pathname.charAt(0) === '/' ? a.pathname : '/' + a.pathname,
+    search: a.search,
+    hash: a.hash,
+  };
+}`,
+    },
+    {
+      id: 'get-hash-param',
+      title: '获取 hash 参数（ES5兼容版）',
+      description: '适用于 #/path?foo=bar 的场景',
+      code: `function getHashParam(url, key) {
+  var hashIndex = url.indexOf('#');
+  if (hashIndex === -1) return null;
+  var hash = url.slice(hashIndex + 1);
+  var queryIndex = hash.indexOf('?');
+  if (queryIndex === -1) return null;
+  var query = hash.slice(queryIndex + 1);
+  return getQueryParam('?' + query, key);
+}`,
+    },
+    {
+      id: 'safe-json-parse',
+      title: '安全 JSON 解析（ES5兼容版）',
+      description: '解析失败返回默认值',
+      code: `function safeJsonParse(str, fallback) {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return fallback;
+  }
+}`,
+    },
+    {
+      id: 'format-bytes',
+      title: '字节大小格式化（ES5兼容版）',
+      description: '把字节数转为 KB/MB/GB',
+      code: `function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  var k = 1024;
+  var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  var i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+}`,
     },
   ],
 };
