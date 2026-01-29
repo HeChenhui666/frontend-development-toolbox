@@ -1,8 +1,7 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo, useDeferredValue } from 'react';
 import { ConfigProvider, theme as antdTheme, Popover, Button } from 'antd';
 import './App.css';
-import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab } from './utils/userPreferences';
-import { getSavedTheme } from './utils/theme';
+import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab, DefaultTab } from './utils/userPreferences';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -21,20 +20,9 @@ const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
 // 定义功能模块类型
-type FeatureTab =
-  | 'qrcode'
-  | 'urlparams'
-  | 'timestamp'
-  | 'gradient'
-  | 'json'
-  | 'regex'
-  | 'randomimage'
-  | 'css'
-  | 'translator'
-  | 'apitester'
-  | 'redirector'
-  | 'future1'
-  | 'future2';
+type FeatureTab = DefaultTab | 'future1' | 'future2';
+
+const isPersistedTab = (tab: FeatureTab): tab is DefaultTab => tab !== 'future1' && tab !== 'future2';
 
 // 定义功能配置
 interface FeatureMeta {
@@ -226,6 +214,7 @@ const App: React.FC = () => {
       setActiveTab(tab);
     });
     setAllTabsOpen(false);
+    shouldScrollToActiveTab.current = true;
   }, []);
 
   // 滚动活动tab到容器中间
@@ -331,20 +320,26 @@ const App: React.FC = () => {
 
   // 保存当前活动的tab（使用 startTransition 避免阻塞UI）
   useEffect(() => {
-    startTransition(() => {
-      saveActiveTab(activeTab);
-    });
+    if (isPersistedTab(activeTab)) {
+      startTransition(() => {
+        saveActiveTab(activeTab);
+      });
+    }
   }, [activeTab]);
 
   // 页面关闭或隐藏时保存当前tab（同步保存，不使用 startTransition）
   useEffect(() => {
     const handleBeforeUnload = () => {
-      saveActiveTab(activeTab);
+      if (isPersistedTab(activeTab)) {
+        saveActiveTab(activeTab);
+      }
     };
     
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        saveActiveTab(activeTab);
+        if (isPersistedTab(activeTab)) {
+          saveActiveTab(activeTab);
+        }
       }
     };
 
