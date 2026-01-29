@@ -1,6 +1,10 @@
 import React, { useState, memo, useCallback } from 'react';
+import { Modal, Card, Space, Typography, Button } from 'antd';
+import { CloseOutlined, RightOutlined } from '@ant-design/icons';
 import './index.css';
 import { games, GameConfig } from './games/gamesConfig';
+
+const { Title, Paragraph, Text } = Typography;
 
 interface EasterEggProps {
   onClose: () => void;
@@ -20,66 +24,92 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
   const GameComponent = selectedGame?.component;
 
   return (
-    <div className="easter-egg">
-      <div className="easter-egg-content">
-        <div className="easter-egg-header">
-          <h1>🎉 恭喜发现彩蛋！</h1>
-          <button className="close-button" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-        <div className="easter-egg-body">
-          <div className="easter-egg-icon">🎊</div>
-          <h2>你找到了隐藏页面！</h2>
-          <p>看来你是一个细心的人，能够发现这个隐藏的彩蛋。</p>
-          
-          <div className="games-list-section">
-            <h3 className="games-list-title">🎮 小游戏</h3>
-            <div className="games-list">
-              {games.map((game) => (
-                <button
-                  key={game.id}
-                  className="game-card"
-                  onClick={() => handleGameClick(game)}
-                >
-                  <div className="game-card-icon">{game.icon}</div>
-                  <div className="game-card-info">
-                    <div className="game-card-name">{game.name}</div>
-                    <div className="game-card-description">{game.description}</div>
-                  </div>
-                  <div className="game-card-arrow">→</div>
-                </button>
-              ))}
-            </div>
-          </div>
+    <Modal
+      title={
+        <Space>
+          <span style={{ fontSize: '24px' }}>🎉</span>
+          <Title level={3} style={{ margin: 0 }}>恭喜发现彩蛋！</Title>
+        </Space>
+      }
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+      centered
+      destroyOnClose
+      maskClosable={true}
+      getContainer={() => document.body}
+      closeIcon={<CloseOutlined />}
+    >
+      <Space direction="vertical" style={{ width: '100%' }} size="large" align="center">
+        <Space direction="vertical" size="small" align="center">
+          <Text style={{ fontSize: '48px' }}>🎊</Text>
+          <Title level={4} style={{ margin: 0 }}>你找到了隐藏页面！</Title>
+          <Paragraph type="secondary">看来你是一个细心的人，能够发现这个隐藏的彩蛋。</Paragraph>
+        </Space>
 
-          <div className="easter-egg-footer">
-            <p className="footer-text">感谢使用工具箱！</p>
-            <p className="footer-subtext">选择一个游戏开始吧~</p>
-          </div>
-        </div>
-      </div>
+        <Card title="🎮 小游戏" style={{ width: '100%' }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            {games.map((game) => (
+              <Card
+                key={game.id}
+                hoverable
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleGameClick(game)}
+              >
+                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                  <Space size="middle">
+                    <Text style={{ fontSize: '32px' }}>{game.icon}</Text>
+                    <Space direction="vertical" size="small">
+                      <Text strong>{game.name}</Text>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {game.description}
+                      </Text>
+                    </Space>
+                  </Space>
+                  <RightOutlined />
+                </Space>
+              </Card>
+            ))}
+          </Space>
+        </Card>
+
+        <Space direction="vertical" size="small" align="center">
+          <Text strong>感谢使用工具箱！</Text>
+          <Text type="secondary">选择一个游戏开始吧~</Text>
+        </Space>
+      </Space>
 
       {/* 游戏弹窗 */}
       {selectedGame && GameComponent && (
-        <div className="game-modal-overlay" onClick={handleCloseGame}>
-          <div className="game-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="game-modal-header">
-              <h3>
-                <span className="game-modal-icon">{selectedGame.icon}</span>
-                {selectedGame.name}
-              </h3>
-              <button className="game-modal-close" onClick={handleCloseGame}>
-                ✕
-              </button>
-            </div>
-            <div className={`game-modal-body ${selectedGame.id === 'Snake' ? 'no-scroll' : ''}`}>
-              <GameComponent />
-            </div>
-          </div>
-        </div>
+        <Modal
+          title={
+            <Space>
+              <span style={{ fontSize: '20px' }}>{selectedGame.icon}</span>
+              <Text strong>{selectedGame.name}</Text>
+            </Space>
+          }
+          open={true}
+          onCancel={handleCloseGame}
+          footer={null}
+          width={selectedGame.id === 'Snake' ? 600 : 800}
+          centered
+          destroyOnClose
+          maskClosable={true}
+          getContainer={() => document.body}
+          closeIcon={<CloseOutlined />}
+          style={{
+            maxHeight: selectedGame.id === 'Snake' ? '90vh' : undefined,
+          }}
+          bodyStyle={{
+            maxHeight: selectedGame.id === 'Snake' ? 'calc(90vh - 120px)' : undefined,
+            overflowY: selectedGame.id === 'Snake' ? 'auto' : undefined,
+          }}
+        >
+          <GameComponent />
+        </Modal>
       )}
-    </div>
+    </Modal>
   );
 });
 

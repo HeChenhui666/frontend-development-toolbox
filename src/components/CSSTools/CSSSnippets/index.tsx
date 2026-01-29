@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
-import { Select } from 'antd';
+import {
+  Select,
+  Card,
+  Space,
+  Typography,
+  Button,
+  Empty,
+  message as antdMessage,
+} from 'antd';
+import { CopyOutlined } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../../utils/message';
 import { CSS_SNIPPETS } from './snippets';
+
+const { Text, Title, Paragraph } = Typography;
 
 type Category = 
   | 'layout'
@@ -43,12 +53,12 @@ const CSSSnippets: React.FC = () => {
   // 复制代码
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    showMessage.success('已复制到剪贴板');
+    antdMessage.success('已复制到剪贴板');
   };
 
   return (
-    <div className="css-snippets">
-      <div className="category-selector">
+    <div className="css-snippets" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <Card size="small" title="选择分类">
         <Select
           value={selectedCategory}
           onChange={(value) => {
@@ -57,81 +67,85 @@ const CSSSnippets: React.FC = () => {
           }}
           style={{ width: '100%' }}
           size="small"
-          className="category-select"
-        >
-          {CATEGORY_OPTIONS.map((option) => (
-            <Select.Option key={option.value} value={option.value}>
-              <span className="category-option">
-                <span className="category-icon">{option.icon}</span>
+          options={CATEGORY_OPTIONS.map((option) => ({
+            value: option.value,
+            label: (
+              <Space>
+                <span>{option.icon}</span>
                 <span>{option.label}</span>
-              </span>
-            </Select.Option>
-          ))}
-        </Select>
-      </div>
+              </Space>
+            ),
+          }))}
+        />
+      </Card>
 
-      <div className="snippets-container">
-        <div className="snippets-list">
-          <div className="snippets-header">
-            <label>代码片段列表：</label>
-            <span className="snippets-count">共 {snippets.length} 个</span>
-          </div>
-          <div className="snippets-items">
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '12px', flex: 1, minHeight: 0 }}>
+        <Card size="small" title={`代码片段列表（共 ${snippets.length} 个）`}>
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
             {snippets.length > 0 ? (
               snippets.map((snippet) => (
-                <div
+                <Card
                   key={snippet.id}
-                  className={`snippet-item ${selectedSnippet === snippet.id ? 'active' : ''}`}
+                  size="small"
+                  hoverable
+                  style={{
+                    cursor: 'pointer',
+                    borderColor: selectedSnippet === snippet.id ? 'var(--theme-primary)' : undefined,
+                    borderWidth: selectedSnippet === snippet.id ? 2 : 1,
+                  }}
                   onClick={() => setSelectedSnippet(snippet.id)}
                 >
-                  <div className="snippet-title">{snippet.title}</div>
-                  {snippet.description && (
-                    <div className="snippet-desc">{snippet.description}</div>
-                  )}
-                </div>
+                  <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <Text strong>{snippet.title}</Text>
+                    {snippet.description && (
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {snippet.description}
+                      </Text>
+                    )}
+                  </Space>
+                </Card>
               ))
             ) : (
-              <div className="empty-state">该分类暂无代码片段</div>
+              <Empty description="该分类暂无代码片段" />
             )}
-          </div>
-        </div>
+          </Space>
+        </Card>
 
-        {currentSnippet && (
-          <div className="snippet-detail">
-          <div className="detail-header">
-            <div className="detail-title-section">
-              <h3 className="detail-title">{currentSnippet.title}</h3>
+        <Card
+          size="small"
+          title={currentSnippet ? currentSnippet.title : '代码详情'}
+          extra={
+            currentSnippet && (
+              <Button
+                icon={<CopyOutlined />}
+                onClick={() => copyCode(currentSnippet.code)}
+                size="small"
+              >
+                复制代码
+              </Button>
+            )
+          }
+        >
+          {currentSnippet ? (
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
               {currentSnippet.description && (
-                <p className="detail-description">{currentSnippet.description}</p>
+                <Paragraph type="secondary">{currentSnippet.description}</Paragraph>
               )}
-            </div>
-            <button
-              onClick={() => copyCode(currentSnippet.code)}
-              className="copy-code-btn"
-            >
-              📋 复制代码
-            </button>
-          </div>
-          <div className="code-preview">
-            <pre className="code-block">
-              <code>{currentSnippet.code}</code>
-            </pre>
-          </div>
-          {currentSnippet.example && (
-            <div className="example-section">
-              <div className="example-header">示例效果：</div>
-              <div className="example-content" dangerouslySetInnerHTML={{ __html: currentSnippet.example }} />
-            </div>
+              <Card size="small" style={{ background: '#f5f5f5' }}>
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                  <code>{currentSnippet.code}</code>
+                </pre>
+              </Card>
+              {currentSnippet.example && (
+                <Card size="small" title="示例效果">
+                  <div dangerouslySetInnerHTML={{ __html: currentSnippet.example }} />
+                </Card>
+              )}
+            </Space>
+          ) : (
+            <Empty description="请从左侧选择一个代码片段" />
           )}
-          </div>
-        )}
-
-        {!selectedSnippet && (
-          <div className="empty-detail">
-            <div className="empty-icon">📝</div>
-            <div className="empty-text">请从左侧选择一个代码片段</div>
-          </div>
-        )}
+        </Card>
       </div>
     </div>
   );

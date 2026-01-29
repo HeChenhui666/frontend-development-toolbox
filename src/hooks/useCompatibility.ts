@@ -69,29 +69,38 @@ export function useCompatibility(
       }
 
       // 如果指定了必需功能，只检查这些功能
-      let relevantChecks: CompatibilityCheck[] = allChecks;
+      let relevantChecks: CompatibilityCheck[] = allChecks.filter((check) => check && check.feature);
       if (requiredFeatures.length > 0) {
-        relevantChecks = allChecks.filter((check) =>
+        relevantChecks = relevantChecks.filter((check) =>
           requiredFeatures.some((feature) =>
-            check.feature.toLowerCase().includes(feature.toLowerCase())
+            check.feature && check.feature.toLowerCase().includes(feature.toLowerCase())
           )
         );
       }
 
-      const unsupported = relevantChecks.filter((check) => !check.supported);
-      const critical = unsupported.filter((check) => !check.fallback);
+      const unsupported = relevantChecks.filter((check) => check && !check.supported);
+      const critical = unsupported.filter((check) => check && !check.fallback);
 
       setIssues(unsupported);
       setIsCompatible(critical.length === 0);
 
       // 获取浏览器信息（只获取一次，避免重复检测）
-      const { browser } = checkAllFeatures();
-      setBrowserInfo(browser);
+      try {
+        const result = checkAllFeatures();
+        if (result && result.browser) {
+          setBrowserInfo(result.browser);
+        }
+      } catch (error) {
+        console.error('Failed to get browser info:', error);
+      }
 
       // 显示警告消息（延迟显示，避免阻塞）
       if (showWarning && unsupported.length > 0) {
         setTimeout(() => {
-          const criticalNames = critical.map((c) => c.feature).join('、');
+          const criticalNames = critical
+            .filter((c) => c && c.feature)
+            .map((c) => c.feature)
+            .join('、');
           if (criticalNames) {
             showMessage.warning(
               `${featureName}: 检测到不兼容的功能（${criticalNames}），可能影响使用`

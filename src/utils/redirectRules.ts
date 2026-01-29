@@ -116,6 +116,21 @@ export async function toggleRuleEnabled(id: string, enabled: boolean): Promise<b
 }
 
 /**
+ * 检查是否是正则表达式模式（包含通配符或正则特征）
+ */
+function isRegexPattern(pattern: string): boolean {
+  // 检查是否包含通配符
+  if (pattern.includes('*') || pattern.includes('**')) {
+    return true;
+  }
+  // 检查是否包含正则表达式特征
+  if (pattern.startsWith('^') || pattern.includes('(') || pattern.includes('[')) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * 验证规则格式
  */
 export function validateRule(rule: Partial<RedirectRule>): { valid: boolean; error?: string } {
@@ -124,18 +139,31 @@ export function validateRule(rule: Partial<RedirectRule>): { valid: boolean; err
   }
   
   if (!rule.source || !rule.source.trim()) {
-    return { valid: false, error: '源URL不能为空' };
+    return { valid: false, error: '源URL或正则表达式不能为空' };
   }
   
   if (!rule.target || !rule.target.trim()) {
     return { valid: false, error: '目标URL不能为空' };
   }
   
-  // 验证URL格式
-  try {
-    new URL(rule.target);
-  } catch (e) {
-    return { valid: false, error: '目标URL格式无效' };
+  const isRegex = isRegexPattern(rule.source);
+  
+  // 如果是正则模式，不强制验证目标URL格式（因为可能包含捕获组引用）
+  if (!isRegex) {
+    // 简单URL模式：验证目标URL格式
+    try {
+      new URL(rule.target);
+    } catch (e) {
+      return { valid: false, error: '目标URL格式无效' };
+    }
+  } else {
+    // 正则模式：验证正则表达式是否有效
+    try {
+      const testPattern = convertPatternToRegex(rule.source);
+      new RegExp(testPattern);
+    } catch (e) {
+      return { valid: false, error: '源正则表达式格式无效' };
+    }
   }
   
   return { valid: true };
@@ -148,14 +176,58 @@ const RULE_ID_BASE = 10000;
 const RULE_ID_MAX = 20000;
 
 /**
+ * 将通配符模式转换为正则表达式
+ * @param pattern 源模式，支持通配符语法：* 匹配单个路径段，** 匹配任意路径
+ * @returns 转换后的正则表达式字符串（不包含 ^ 和 $）
+ */
+function convertPatternToRegex(pattern: string): string {
+  // 清理源URL（移除前后空格）
+  let regexPattern = pattern.trim();
+  
+  // 如果源规则以 ^ 开头，说明是正则表达式格式
+  if (regexPattern.startsWith('^')) {
+    // 移除开头的 ^，因为我们会自动添加
+    regexPattern = regexPattern.slice(1).trim();
+  }
+  
+  // 处理通配符转换
+  // ** 表示匹配任意路径（包括斜杠），转换为 (.*)
+  // * 表示匹配单个路径段（不包括斜杠），转换为 ([^/]*)
+  // 注意：需要先标记所有通配符，再统一转换，避免已转换的捕获组被再次处理
+  // 先标记所有通配符
+  regexPattern = regexPattern
+    .replace(/\*\*/g, '___DOUBLE_STAR___') // 临时标记双星号
+    .replace(/\*/g, '___SINGLE_STAR___'); // 临时标记单星号
+  
+  // 特殊处理：如果以 /** 开头（现在是 /___DOUBLE_STAR___），应该匹配协议和域名部分
+  if (regexPattern.startsWith('/___DOUBLE_STAR___')) {
+    // 将开头的 /___DOUBLE_STAR___ 转换为 (.*)，匹配协议和域名（包括结尾斜杠）
+    // 注意：这里匹配的是整个协议+域名+路径前缀，所以不需要额外的斜杠
+    regexPattern = regexPattern.replace(/^\/___DOUBLE_STAR___/, '(.*)');
+  } else if (regexPattern.startsWith('___DOUBLE_STAR___')) {
+    // 如果直接以 ** 开头，也转换为 (.*)
+    regexPattern = regexPattern.replace(/^___DOUBLE_STAR___/, '(.*)');
+  }
+  
+  // 转换剩余的通配符标记
+  regexPattern = regexPattern
+    .replace(/___DOUBLE_STAR___/g, '(.*)') // 双星号转换为捕获组，匹配任意字符包括斜杠
+    .replace(/___SINGLE_STAR___/g, '([^/]*)'); // 单星号转换为捕获组，匹配非斜杠字符
+  
+  // 如果源规则以 $ 结尾，移除它（我们会自动添加）
+  if (regexPattern.endsWith('$')) {
+    regexPattern = regexPattern.slice(0, -1);
+  }
+  
+  return regexPattern;
+}
+
+/**
  * 将规则转换为 declarativeNetRequest 格式
  */
 export function convertToDeclarativeNetRequestRule(rule: RedirectRule, index: number): chrome.declarativeNetRequest.Rule {
   // 使用固定范围生成ID，避免冲突
   const ruleId = Math.min(RULE_ID_BASE + index, RULE_ID_MAX);
-  
-  // URL映射：清理目标URL
-  const redirectUrl = rule.target.trim();
   
   // 构建条件 - 使用标准资源类型配置
   const condition: chrome.declarativeNetRequest.RuleCondition = {
@@ -170,22 +242,72 @@ export function convertToDeclarativeNetRequestRule(rule: RedirectRule, index: nu
     ],
   };
   
-  // URL映射：对于完整URL，必须使用 regexFilter 进行精确匹配
-  // urlFilter 是前缀匹配，不适合完整URL的精确匹配
-  // 清理URL（移除前后空格）
-  const cleanUrl = rule.source.trim();
-  // 转义特殊字符，确保精确匹配
-  const escapedUrl = cleanUrl
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  condition.regexFilter = `^${escapedUrl}$`;
+  const isRegex = isRegexPattern(rule.source);
+  let redirectUrl: string | undefined;
+  let regexSubstitution: string | undefined;
+  
+  if (isRegex) {
+    // 正则表达式模式：使用 regexFilter 和 regexSubstitution
+    const regexPattern = convertPatternToRegex(rule.source);
+    condition.regexFilter = `^${regexPattern}$`;
+    
+    // 检查目标是否包含捕获组引用（$1, $2等）
+    if (rule.target.includes('$')) {
+      // 使用 regexSubstitution 支持捕获组替换
+      // 将 $1, $2 等转换为 \1, \2（Chrome API 使用反斜杠）
+      regexSubstitution = rule.target
+        .trim()
+        .replace(/\$(\d+)/g, '\\$1');
+      
+      // 如果目标URL缺少协议，添加 http://
+      if (!regexSubstitution.match(/^https?:\/\//)) {
+        regexSubstitution = `http://${regexSubstitution}`;
+      }
+      
+      console.log(`[重定向] 正则映射替换 - 源: "${rule.source}"`);
+      console.log(`[重定向] 转换后正则: ${condition.regexFilter}`);
+      console.log(`[重定向] 目标: "${rule.target}"`);
+      console.log(`[重定向] 转换后替换: ${regexSubstitution}`);
+    } else {
+      // 没有捕获组，直接使用目标URL
+      redirectUrl = rule.target.trim();
+      // 如果目标URL缺少协议，添加 http://
+      if (!redirectUrl.match(/^https?:\/\//)) {
+        redirectUrl = `http://${redirectUrl}`;
+      }
+    }
+  } else {
+    // 简单URL映射：对于完整URL，必须使用 regexFilter 进行精确匹配
+    // urlFilter 是前缀匹配，不适合完整URL的精确匹配
+    // 清理URL（移除前后空格）
+    const cleanUrl = rule.source.trim();
+    // 转义特殊字符，确保精确匹配
+    const escapedUrl = cleanUrl
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    condition.regexFilter = `^${escapedUrl}$`;
+    
+    // 简单URL映射：清理目标URL
+    redirectUrl = rule.target.trim();
+  }
   
   // 构建重定向动作
   const redirectAction: chrome.declarativeNetRequest.RuleAction = {
     type: chrome.declarativeNetRequest.RuleActionType.REDIRECT,
-    redirect: {
-      url: redirectUrl,
-    } as chrome.declarativeNetRequest.Redirect,
   };
+  
+  if (regexSubstitution) {
+    // 使用 regexSubstitution 支持捕获组替换
+    redirectAction.redirect = {
+      regexSubstitution: regexSubstitution,
+    } as chrome.declarativeNetRequest.Redirect;
+  } else if (redirectUrl) {
+    // 使用简单URL重定向
+    redirectAction.redirect = {
+      url: redirectUrl,
+    } as chrome.declarativeNetRequest.Redirect;
+  } else {
+    throw new Error('无效的重定向目标');
+  }
   
   return {
     id: ruleId,

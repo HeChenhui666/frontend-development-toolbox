@@ -1,9 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Typography,
+  Alert,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  DownloadOutlined,
+  QrcodeOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../utils/message';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { checkQRCodeFeatures, checkBasicAPIs } from '../../utils/browserCompatibility';
+
+const { Text } = Typography;
 
 const QRCodeGenerator: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -22,7 +38,7 @@ const QRCodeGenerator: React.FC = () => {
       
       if (critical.length > 0) {
         setTimeout(() => {
-          showMessage.warning('当前浏览器可能不完全支持二维码生成功能');
+          antdMessage.warning('当前浏览器可能不完全支持二维码生成功能');
         }, 100);
       }
     };
@@ -94,7 +110,7 @@ const QRCodeGenerator: React.FC = () => {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
-        showMessage.success('URL已复制到剪贴板');
+        antdMessage.success('URL已复制到剪贴板');
       } else {
         // 降级方案：使用 document.execCommand
         const textArea = document.createElement('textarea');
@@ -105,52 +121,91 @@ const QRCodeGenerator: React.FC = () => {
         textArea.select();
         try {
           document.execCommand('copy');
-          showMessage.success('URL已复制到剪贴板');
+          antdMessage.success('URL已复制到剪贴板');
         } catch (err) {
-          showMessage.error('复制失败，请手动复制');
+          antdMessage.error('复制失败，请手动复制');
         }
         document.body.removeChild(textArea);
       }
     } catch (err) {
-      showMessage.error('复制失败，请手动复制');
+      antdMessage.error('复制失败，请手动复制');
     }
   };
 
   return (
-    <div className="generator">
+    <div className="generator" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="二维码生成"
           requiredFeatures={['Canvas', 'Image']}
         />
       )}
-      <div className="input-group">
-        <label htmlFor="url-input">URL地址：</label>
-        <div className="input-wrapper">
-          <input
-            id="url-input"
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="输入或粘贴URL"
-            className="url-input"
-          />
-          <button onClick={copyUrl} className="copy-btn" title="复制当前标签页URL">
-            📋
-          </button>
-        </div>
-      </div>
-      <button onClick={generateQRCode} className="generate-btn">
-        生成二维码
-      </button>
-      {error && <div className="error">{error}</div>}
+      <Card 
+        size="small" 
+        title={
+          <Space>
+            <QrcodeOutlined />
+            <Text strong>生成二维码</Text>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="输入或粘贴URL"
+              onPressEnter={generateQRCode}
+            />
+            <Button
+              icon={<CopyOutlined />}
+              onClick={copyUrl}
+              title="复制当前标签页URL"
+            />
+          </Space.Compact>
+          <Button
+            type="primary"
+            icon={<QrcodeOutlined />}
+            onClick={generateQRCode}
+            block
+          >
+            生成二维码
+          </Button>
+        </Space>
+      </Card>
+
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
+
       {qrCodeDataUrl && (
-        <div className="qr-result">
-          <img src={qrCodeDataUrl} alt="QR Code" className="qr-image" />
-          <button onClick={downloadQRCode} className="download-btn">
-            下载二维码
-          </button>
-        </div>
+        <Card 
+          size="small" 
+          title="二维码预览"
+          extra={
+            <Button
+              size="small"
+              icon={<DownloadOutlined />}
+              onClick={downloadQRCode}
+            >
+              下载
+            </Button>
+          }
+        >
+          <div style={{ textAlign: 'center' }}>
+            <img 
+              src={qrCodeDataUrl} 
+              alt="QR Code" 
+              style={{ maxWidth: '100%', height: 'auto' }}
+            />
+          </div>
+        </Card>
       )}
     </div>
   );

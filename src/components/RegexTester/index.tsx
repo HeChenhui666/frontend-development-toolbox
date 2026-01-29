@@ -1,9 +1,28 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Select } from 'antd';
+import {
+  Select,
+  Input,
+  Button,
+  Space,
+  Card,
+  Typography,
+  Alert,
+  Checkbox,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import RandExp from 'randexp';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { useCompatibility } from '../../hooks/useCompatibility';
 import './index.css';
+
+const { Text } = Typography;
 
 type ActionType = 'extract' | 'filter' | 'remove' | 'replace' | 'transform';
 
@@ -470,9 +489,10 @@ const RegexTester: React.FC = () => {
     if (!actionResult) return;
     try {
       await navigator.clipboard.writeText(actionResult);
-      // 可以添加一个提示
+      antdMessage.success('已复制到剪贴板');
     } catch (err) {
       console.error('复制失败:', err);
+      antdMessage.error('复制失败');
     }
   }, [actionResult]);
 
@@ -492,7 +512,7 @@ const RegexTester: React.FC = () => {
     PRESET_REGEXES.map((preset) => ({
       value: preset.name,
       label: preset.name,
-    })), []
+    })).filter((option) => option.value && option.label), []
   );
 
   // 使用 useMemo 缓存当前预设的描述
@@ -508,52 +528,57 @@ const RegexTester: React.FC = () => {
   }, [selectedPreset]);
 
   return (
-    <div className='regex-tester'>
+    <div className='regex-tester' style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
       {!isCompatible && (
         <CompatibilityWarning
           featureName="正则表达式测试"
           requiredFeatures={['RegExp']}
         />
       )}
+      
       {/* 预设正则表达式 */}
-      <div className='preset-section'>
-        <div className='section-header'>
-          <label>预设正则表达式：</label>
-        </div>
-        <Select
-          placeholder='选择预设正则表达式'
-          value={selectedPreset || undefined}
-          onChange={handlePresetChange}
-          onClear={() => {
-            setSelectedPreset('');
-            setRegexPattern('');
-          }}
-          allowClear
-          showSearch
-          filterOption={(input, option) => {
-            const preset = PRESET_REGEXES.find((p) => p.name === option?.value);
-            const label = (option?.label ?? '').toLowerCase();
-            const description = preset?.description?.toLowerCase() ?? '';
-            const searchText = input.toLowerCase();
-            return label.includes(searchText) || description.includes(searchText);
-          }}
-          className='preset-select'
-          size='small'
-          options={presetOptions}
-        />
-        {currentPresetDescription && (
-          <div className='preset-description'>{currentPresetDescription}</div>
-        )}
-      </div>
+      <Card size="small" title="预设正则表达式">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Select
+            placeholder='选择预设正则表达式'
+            value={selectedPreset || null}
+            onChange={(value) => {
+              if (value) {
+                handlePresetChange(value);
+              }
+            }}
+            onClear={() => {
+              setSelectedPreset('');
+              setRegexPattern('');
+            }}
+            allowClear
+            showSearch
+            filterOption={(input, option) => {
+              if (!option || !option.value) return false;
+              const preset = PRESET_REGEXES.find((p) => p.name === option.value);
+              const label = String(option.label || option.value || '').toLowerCase();
+              const description = preset?.description?.toLowerCase() ?? '';
+              const searchText = input.toLowerCase();
+              return label.includes(searchText) || description.includes(searchText);
+            }}
+            style={{ width: '100%' }}
+            size='small'
+            options={presetOptions}
+          />
+          {currentPresetDescription && (
+            <Text type="secondary" style={{ fontSize: '12px' }}>{currentPresetDescription}</Text>
+          )}
+        </Space>
+      </Card>
 
       {/* 正则表达式输入 */}
-      <div className='regex-input-section'>
-        <div className='section-header'>
-          <label>正则表达式：</label>
-          <div className='flags-control'>
-            <label className='flag-label'>
-              <input
-                type='checkbox'
+      <Card 
+        size="small" 
+        title={
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Text strong>正则表达式</Text>
+            <Space>
+              <Checkbox
                 checked={flags.includes('g')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -562,12 +587,10 @@ const RegexTester: React.FC = () => {
                     setFlags(flags.replace(/g/g, ''));
                   }
                 }}
-              />
-              <span>全局(g)</span>
-            </label>
-            <label className='flag-label'>
-              <input
-                type='checkbox'
+              >
+                全局(g)
+              </Checkbox>
+              <Checkbox
                 checked={flags.includes('i')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -576,12 +599,10 @@ const RegexTester: React.FC = () => {
                     setFlags(flags.replace(/i/g, ''));
                   }
                 }}
-              />
-              <span>忽略大小写(i)</span>
-            </label>
-            <label className='flag-label'>
-              <input
-                type='checkbox'
+              >
+                忽略大小写(i)
+              </Checkbox>
+              <Checkbox
                 checked={flags.includes('m')}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -590,94 +611,120 @@ const RegexTester: React.FC = () => {
                     setFlags(flags.replace(/m/g, ''));
                   }
                 }}
-              />
-              <span>多行(m)</span>
-            </label>
-          </div>
-        </div>
-        <div className='input-wrapper'>
-          <input
-            type='text'
-            value={regexPattern}
-            onChange={(e) => {
-              setRegexPattern(e.target.value);
-              setSelectedPreset('');
-            }}
-            placeholder='输入正则表达式，例如: ^\\d+$'
-            className={`regex-input ${!isValid ? 'error' : ''}`}
-          />
-          <div className='button-group'>
-            <button onClick={testRegex} className='test-btn'>
-              测试
-            </button>
-            <button
+              >
+                多行(m)
+              </Checkbox>
+            </Space>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              value={regexPattern || ''}
+              onChange={(e) => {
+                if (e && e.target) {
+                  setRegexPattern(e.target.value || '');
+                  setSelectedPreset('');
+                }
+              }}
+              placeholder='输入正则表达式，例如: ^\\d+$'
+              status={!isValid ? 'error' : ''}
+              onPressEnter={testRegex}
+            />
+            <Button onClick={testRegex} type="primary">测试</Button>
+            <Button
+              icon={<ThunderboltOutlined />}
               onClick={handleGenerateText}
-              className='generate-btn'
               title='生成符合正则表达式的随机文本'
               disabled={!regexPattern.trim()}
             >
               生成
-            </button>
-          </div>
-        </div>
-        {currentPresetDescription && (
-          <div className='preset-description'>{currentPresetDescription}</div>
-        )}
-      </div>
+            </Button>
+          </Space.Compact>
+        </Space>
+      </Card>
 
       {/* 测试文本输入 */}
-      <div className='test-text-section'>
-        <div className='section-header'>
-          <label>测试文本：</label>
-        </div>
-        <textarea
-          value={testText}
-          onChange={(e) => setTestText(e.target.value)}
+      <Card size="small" title="测试文本">
+        <Input.TextArea
+          value={testText || ''}
+          onChange={(e) => {
+            if (e && e.target) {
+              setTestText(e.target.value || '');
+            }
+          }}
           placeholder='输入要测试的文本...'
-          className='test-textarea'
+          rows={4}
         />
-      </div>
+      </Card>
 
       {/* 错误提示 */}
-      {error && <div className='error'>{error}</div>}
-
-      {/* 操作区域 */}
-      {currentPreset && currentPreset.hasAction && (
-        <div className='action-section'>
-          <div className='section-header'>
-            <label>操作结果：</label>
-            {actionResult && (
-              <button onClick={copyActionResult} className='copy-action-btn' title='复制结果'>
-                📋 复制
-              </button>
-            )}
-          </div>
-          <div className='action-result'>
-            {actionResult ? (
-              <div className='action-result-content'>{actionResult}</div>
-            ) : (
-              <div className='action-result-placeholder'>操作结果将显示在这里...</div>
-            )}
-          </div>
-        </div>
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
       )}
 
       {/* 匹配结果 */}
       {isMatch !== null && (
-        <div className='results-section'>
-          <div className={`match-result ${isMatch ? 'success' : 'failure'}`}>
-            <span className='result-icon'>{isMatch ? '✓' : '✗'}</span>
-            <span className='result-text'>{isMatch ? '匹配成功' : '匹配失败'}</span>
-          </div>
-        </div>
+        <Alert
+          message={
+            <Space>
+              {isMatch ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+              <Text>{isMatch ? '匹配成功' : '匹配失败'}</Text>
+            </Space>
+          }
+          type={isMatch ? 'success' : 'error'}
+          showIcon={false}
+        />
+      )}
+
+      {/* 操作区域 */}
+      {currentPreset && currentPreset.hasAction && (
+        <Card 
+          size="small" 
+          title={
+            <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+              <Text strong>操作结果</Text>
+              {actionResult && (
+                <Button
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={copyActionResult}
+                >
+                  复制
+                </Button>
+              )}
+            </Space>
+          }
+        >
+          {actionResult ? (
+            <Input.TextArea
+              value={actionResult || ''}
+              readOnly
+              rows={4}
+            />
+          ) : (
+            <Text type="secondary" style={{ fontSize: '12px' }}>操作结果将显示在这里...</Text>
+          )}
+        </Card>
       )}
 
       {/* 操作按钮 */}
-      <div className='actions'>
-        <button onClick={clearAll} className='clear-btn'>
+      <Card size="small">
+        <Button
+          icon={<ClearOutlined />}
+          onClick={clearAll}
+          block
+        >
           清空
-        </button>
-      </div>
+        </Button>
+      </Card>
     </div>
   );
 };

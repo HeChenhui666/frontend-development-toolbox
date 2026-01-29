@@ -1,4 +1,17 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Alert,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
 
@@ -103,7 +116,7 @@ const JSONToTypeScript: React.FC = () => {
       const parsed = JSON.parse(inputJson);
       const tsInterface = generateTypeScript(parsed, interfaceName);
       setOutputTypeScript(tsInterface);
-      showMessage.success('✅ TypeScript接口生成成功');
+      antdMessage.success('TypeScript接口生成成功');
     } catch (err) {
       setError(`JSON格式错误: ${err instanceof Error ? err.message : '未知错误'}`);
       setOutputTypeScript('');
@@ -114,7 +127,7 @@ const JSONToTypeScript: React.FC = () => {
   const copyResult = () => {
     if (outputTypeScript) {
       navigator.clipboard.writeText(outputTypeScript);
-      showMessage.success('已复制到剪贴板');
+      antdMessage.success('已复制到剪贴板');
     }
   };
 
@@ -127,56 +140,84 @@ const JSONToTypeScript: React.FC = () => {
   };
 
   return (
-    <div className="json-to-typescript">
-      <div className="generator-controls">
-        <div className="interface-name-input">
-          <label>接口名称：</label>
-          <input
-            type="text"
-            value={interfaceName}
-            onChange={(e) => setInterfaceName(e.target.value)}
-            placeholder="Root"
-            className="name-input"
-          />
-        </div>
-        <div className="action-buttons">
-          <button onClick={handleGenerate} className="action-btn process-btn">
-            生成TypeScript
-          </button>
-          <button onClick={clearAll} className="action-btn clear-btn">
-            清空
-          </button>
-        </div>
-      </div>
+    <div className="json-to-typescript" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <Card size="small" title="生成配置">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              addonBefore="接口名称"
+              value={interfaceName || ''}
+              onChange={(e) => {
+                if (e && e.target) {
+                  setInterfaceName(e.target.value || '');
+                }
+              }}
+              placeholder="Root"
+            />
+          </Space.Compact>
+          <Space>
+            <Button
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              onClick={handleGenerate}
+            >
+              生成TypeScript
+            </Button>
+            <Button
+              icon={<ClearOutlined />}
+              onClick={clearAll}
+            >
+              清空
+            </Button>
+          </Space>
+        </Space>
+      </Card>
 
-      <div className="json-input-section">
-        <div className="section-header">
-          <label>输入JSON：</label>
-        </div>
-        <textarea
-          value={inputJson}
-          onChange={(e) => setInputJson(e.target.value)}
+      <Card size="small" title="输入JSON">
+        <Input.TextArea
+          value={inputJson || ''}
+          onChange={(e) => {
+            if (e && e.target) {
+              setInputJson(e.target.value || '');
+            }
+          }}
           placeholder="请输入JSON字符串..."
-          className="json-textarea"
+          rows={8}
+          style={{ fontFamily: 'monospace' }}
         />
-      </div>
+      </Card>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
 
       {outputTypeScript && (
-        <div className="json-output-section">
-          <div className="section-header">
-            <label>生成的TypeScript接口：</label>
-            <button onClick={copyResult} className="copy-btn">
-              📋 复制
-            </button>
-          </div>
-          <textarea
-            value={outputTypeScript}
+        <Card 
+          size="small" 
+          title="生成的TypeScript接口"
+          extra={
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={copyResult}
+            >
+              复制
+            </Button>
+          }
+        >
+          <Input.TextArea
+            value={outputTypeScript || ''}
             readOnly
-            className="json-textarea output"
+            rows={8}
+            style={{ fontFamily: 'monospace' }}
           />
-        </div>
+        </Card>
       )}
     </div>
   );

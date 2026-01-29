@@ -1,6 +1,26 @@
 import React, { useState, useRef } from 'react';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  Alert,
+  Segmented,
+  Upload,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  DownloadOutlined,
+  FileImageOutlined,
+  LockOutlined,
+  UnlockOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
+
+const { TextArea } = Typography;
 
 type Mode = 'text' | 'image';
 
@@ -24,7 +44,7 @@ const Base64Encoder: React.FC = () => {
       setError('');
       const encoded = btoa(unescape(encodeURIComponent(inputText)));
       setOutputText(encoded);
-      showMessage.success('编码成功');
+      antdMessage.success('编码成功');
     } catch (err) {
       setError('编码失败');
       setOutputText('');
@@ -42,7 +62,7 @@ const Base64Encoder: React.FC = () => {
       setError('');
       const decoded = decodeURIComponent(escape(atob(inputText.trim())));
       setOutputText(decoded);
-      showMessage.success('解码成功');
+      antdMessage.success('解码成功');
     } catch (err) {
       setError('解码失败，请检查Base64字符串是否正确');
       setOutputText('');
@@ -50,20 +70,17 @@ const Base64Encoder: React.FC = () => {
   };
 
   // 图片转Base64
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUpload = (file: File) => {
     // 检查文件类型
     if (!file.type.startsWith('image/')) {
       setError('请选择图片文件');
-      return;
+      return false;
     }
 
     // 检查文件大小（限制10MB）
     if (file.size > 10 * 1024 * 1024) {
       setError('图片大小不能超过10MB');
-      return;
+      return false;
     }
 
     const reader = new FileReader();
@@ -72,12 +89,13 @@ const Base64Encoder: React.FC = () => {
       setBase64String(result);
       setImagePreview(result);
       setError('');
-      showMessage.success('图片转换成功');
+      antdMessage.success('图片转换成功');
     };
     reader.onerror = () => {
       setError('图片读取失败');
     };
     reader.readAsDataURL(file);
+    return false; // 阻止自动上传
   };
 
   // Base64转图片
@@ -131,7 +149,7 @@ const Base64Encoder: React.FC = () => {
       const dataUrl = `data:${mimeType};base64,${base64}`;
       setImagePreview(dataUrl);
       setBase64String(dataUrl);
-      showMessage.success('Base64转换成功');
+      antdMessage.success('Base64转换成功');
     } catch (err) {
       setError('Base64字符串无效或格式错误');
       setImagePreview('');
@@ -144,14 +162,14 @@ const Base64Encoder: React.FC = () => {
     const textToCopy = mode === 'text' ? outputText : base64String;
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy);
-      showMessage.success('已复制到剪贴板');
+      antdMessage.success('已复制到剪贴板');
     }
   };
 
   // 下载图片
   const downloadImage = () => {
     if (!imagePreview) {
-      showMessage.warning('没有可下载的图片');
+      antdMessage.warning('没有可下载的图片');
       return;
     }
 
@@ -162,9 +180,9 @@ const Base64Encoder: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showMessage.success('图片下载成功');
+      antdMessage.success('图片下载成功');
     } catch (err) {
-      showMessage.error('图片下载失败');
+      antdMessage.error('图片下载失败');
     }
   };
 
@@ -181,142 +199,173 @@ const Base64Encoder: React.FC = () => {
   };
 
   return (
-    <div className="base64-encoder">
-      <div className="mode-selector">
-        <button
-          className={`mode-btn ${mode === 'text' ? 'active' : ''}`}
-          onClick={() => {
-            setMode('text');
+    <div className="base64-encoder" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12', overflowY: 'auto' }}>
+      <Card size="small" title="选择模式">
+        <Segmented
+          options={[
+            { label: '文本编码/解码', value: 'text', icon: <LockOutlined /> },
+            { label: '图片转换', value: 'image', icon: <FileImageOutlined /> },
+          ]}
+          value={mode}
+          onChange={(value) => {
+            setMode(value as Mode);
             clearAll();
           }}
-        >
-          📝 文本编码/解码
-        </button>
-        <button
-          className={`mode-btn ${mode === 'image' ? 'active' : ''}`}
-          onClick={() => {
-            setMode('image');
-            clearAll();
-          }}
-        >
-          🖼️ 图片转换
-        </button>
-      </div>
+          block
+        />
+      </Card>
 
       {mode === 'text' ? (
         <>
-          <div className="input-section">
-            <div className="section-header">
-              <label>输入文本：</label>
-              <div className="action-buttons">
-                <button onClick={encodeText} className="action-btn encode-btn">
+          <Card
+            size="small"
+            title="输入文本"
+            extra={
+              <Space>
+                <Button onClick={encodeText} icon={<LockOutlined />}>
                   编码
-                </button>
-                <button onClick={decodeText} className="action-btn decode-btn">
+                </Button>
+                <Button onClick={decodeText} icon={<UnlockOutlined />}>
                   解码
-                </button>
-                <button onClick={clearAll} className="action-btn clear-btn">
+                </Button>
+                <Button icon={<ClearOutlined />} onClick={clearAll}>
                   清空
-                </button>
-              </div>
-            </div>
-            <textarea
+                </Button>
+              </Space>
+            }
+          >
+            <TextArea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="请输入要编码或解码的文本..."
-              className="text-input"
+              rows={6}
             />
-          </div>
+          </Card>
 
-          {error && <div className="error">{error}</div>}
+          {error && (
+            <Alert
+              message={error}
+              type="error"
+              showIcon
+              closable
+              onClose={() => setError('')}
+            />
+          )}
 
           {outputText && (
-            <div className="output-section">
-              <div className="section-header">
-                <label>输出结果：</label>
-                <button onClick={copyResult} className="copy-btn">
-                  📋 复制
-                </button>
-              </div>
-              <textarea
+            <Card
+              size="small"
+              title="输出结果"
+              extra={
+                <Button
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={copyResult}
+                >
+                  复制
+                </Button>
+              }
+            >
+              <TextArea
                 value={outputText}
                 readOnly
-                className="text-input output"
+                rows={6}
               />
-            </div>
+            </Card>
           )}
         </>
       ) : (
         <>
-          <div className="image-upload-section">
-            <div className="section-header">
-              <label>图片转Base64：</label>
-            </div>
-            <div className="upload-area">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="file-input"
-                id="image-upload"
-              />
-              <label htmlFor="image-upload" className="upload-label">
-                <span className="upload-icon">📁</span>
-                <span>选择图片文件</span>
-              </label>
-            </div>
-          </div>
+          <Card size="small" title="图片转Base64">
+            <Upload
+              accept="image/*"
+              beforeUpload={handleImageUpload}
+              showUploadList={false}
+            >
+              <Button icon={<FileImageOutlined />} block>
+                选择图片文件
+              </Button>
+            </Upload>
+          </Card>
 
-          <div className="base64-input-section">
-            <div className="section-header">
-              <label>Base64转图片：</label>
-              <div className="action-buttons">
-                <button onClick={handleBase64ToImage} className="action-btn convert-btn">
+          <Card
+            size="small"
+            title="Base64转图片"
+            extra={
+              <Space>
+                <Button onClick={handleBase64ToImage}>
                   转换
-                </button>
-                <button onClick={clearAll} className="action-btn clear-btn">
+                </Button>
+                <Button icon={<ClearOutlined />} onClick={clearAll}>
                   清空
-                </button>
-              </div>
-            </div>
-            <textarea
+                </Button>
+              </Space>
+            }
+          >
+            <TextArea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="请输入Base64字符串（支持带或不带data:image前缀）..."
-              className="text-input"
+              rows={6}
             />
-          </div>
+          </Card>
 
-          {error && <div className="error">{error}</div>}
+          {error && (
+            <Alert
+              message={error}
+              type="error"
+              showIcon
+              closable
+              onClose={() => setError('')}
+            />
+          )}
 
           {imagePreview && (
-            <div className="image-preview-section">
-              <div className="section-header">
-                <label>图片预览：</label>
-                <div className="preview-actions">
-                  <button onClick={copyResult} className="copy-btn">
-                    📋 复制Base64
-                  </button>
-                  <button onClick={downloadImage} className="download-btn">
-                    💾 下载图片
-                  </button>
+            <Card
+              size="small"
+              title="图片预览"
+              extra={
+                <Space>
+                  <Button
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={copyResult}
+                  >
+                    复制Base64
+                  </Button>
+                  <Button
+                    size="small"
+                    icon={<DownloadOutlined />}
+                    onClick={downloadImage}
+                  >
+                    下载图片
+                  </Button>
+                </Space>
+              }
+            >
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div style={{ textAlign: 'center' }}>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
+                  />
                 </div>
-              </div>
-              <div className="image-preview-container">
-                <img src={imagePreview} alt="Preview" className="preview-image" />
-              </div>
-              {base64String && (
-                <div className="base64-display">
-                  <div className="base64-label">Base64字符串：</div>
-                  <div className="base64-value" title={base64String}>
-                    {base64String.length > 200
-                      ? `${base64String.substring(0, 200)}...`
-                      : base64String}
-                  </div>
-                </div>
-              )}
-            </div>
+                {base64String && (
+                  <Alert
+                    message={
+                      <Text code style={{ wordBreak: 'break-all', fontSize: '12px' }}>
+                        {base64String.length > 200
+                          ? `${base64String.substring(0, 200)}...`
+                          : base64String}
+                      </Text>
+                    }
+                    type="info"
+                    showIcon={false}
+                  />
+                )}
+              </Space>
+            </Card>
           )}
         </>
       )}

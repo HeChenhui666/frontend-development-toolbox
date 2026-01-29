@@ -71,21 +71,25 @@ const JSONTools: React.FC = () => {
       )}
       <div className="tool-selector">
         <Select
-          value={activeSubTab}
-          onChange={handleSubTabChange}
+          value={activeSubTab || 'parser'}
+          onChange={(value) => {
+            if (value) {
+              handleSubTabChange(value as JSONSubTab);
+            }
+          }}
           style={{ width: '100%' }}
           size="small"
           className="json-tool-select"
-        >
-          {TOOL_OPTIONS.map((option) => (
-            <Select.Option key={option.value} value={option.value}>
+          options={TOOL_OPTIONS.map((option) => ({
+            value: option.value,
+            label: (
               <span className="tool-option">
                 <span className="tool-option-icon">{option.icon}</span>
                 <span className="tool-option-label">{option.label}</span>
               </span>
-            </Select.Option>
-          ))}
-        </Select>
+            ),
+          }))}
+        />
       </div>
       <div className="sub-content">
         {renderContent}

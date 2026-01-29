@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  Alert,
+  Tag,
+  message as antdMessage,
+  Spin,
+  Empty,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  SearchOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
+
+const { TextArea, Text } = Typography;
 
 interface CompatibilityResult {
   property: string;
@@ -110,7 +130,7 @@ const CSSCompatibility: React.FC = () => {
   // 解析CSS并检测
   const checkCompatibility = () => {
     if (!cssInput.trim()) {
-      showMessage.warning('请输入要检测的CSS代码');
+      antdMessage.warning('请输入要检测的CSS代码');
       return;
     }
 
@@ -175,12 +195,12 @@ const CSSCompatibility: React.FC = () => {
       setResults(results);
       if (results.length > 0) {
         const supportedCount = results.filter(r => r.supported).length;
-        showMessage.success(`检测完成：${supportedCount}/${results.length} 项支持`);
+        antdMessage.success(`检测完成：${supportedCount}/${results.length} 项支持`);
       } else {
-        showMessage.warning('未检测到有效的CSS属性或值');
+        antdMessage.warning('未检测到有效的CSS属性或值');
       }
     } catch (error) {
-      showMessage.error('检测过程中出现错误');
+      antdMessage.error('检测过程中出现错误');
       setResults([]);
     } finally {
       setIsChecking(false);
@@ -196,7 +216,7 @@ const CSSCompatibility: React.FC = () => {
   // 复制结果
   const copyResults = () => {
     if (results.length === 0) {
-      showMessage.warning('没有可复制的结果');
+      antdMessage.warning('没有可复制的结果');
       return;
     }
 
@@ -205,7 +225,7 @@ const CSSCompatibility: React.FC = () => {
       .join('\n');
 
     navigator.clipboard.writeText(resultText);
-    showMessage.success('结果已复制到剪贴板');
+    antdMessage.success('结果已复制到剪贴板');
   };
 
   // 获取浏览器信息
@@ -238,80 +258,99 @@ const CSSCompatibility: React.FC = () => {
   const browserInfo = getBrowserInfo();
 
   return (
-    <div className="css-compatibility">
-      <div className="browser-info">
-        <div className="info-item">
-          <span className="info-label">浏览器：</span>
-          <span className="info-value">{browserInfo.browser}</span>
-        </div>
-        <div className="info-item">
-          <span className="info-label">版本：</span>
-          <span className="info-value">{browserInfo.version}</span>
-        </div>
-      </div>
+    <div className="css-compatibility" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <Card size="small" title="浏览器信息">
+        <Space>
+          <Text>浏览器：<Text strong>{browserInfo.browser}</Text></Text>
+          <Text>版本：<Text strong>{browserInfo.version}</Text></Text>
+        </Space>
+      </Card>
 
-      <div className="input-section">
-        <div className="section-header">
-          <label>输入CSS代码：</label>
-          <div className="action-buttons">
-            <button
+      <Card 
+        size="small" 
+        title="输入CSS代码"
+        extra={
+          <Space>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
               onClick={checkCompatibility}
-              className="action-btn check-btn"
-              disabled={isChecking}
+              loading={isChecking}
             >
-              {isChecking ? '检测中...' : '🔍 检测兼容性'}
-            </button>
-            <button onClick={clearAll} className="action-btn clear-btn">
+              检测兼容性
+            </Button>
+            <Button
+              icon={<ClearOutlined />}
+              onClick={clearAll}
+            >
               清空
-            </button>
-          </div>
-        </div>
-        <textarea
+            </Button>
+          </Space>
+        }
+      >
+        <TextArea
           value={cssInput}
           onChange={(e) => setCssInput(e.target.value)}
           placeholder="请输入CSS代码，例如：display: flex; backdrop-filter: blur(10px);"
-          className="css-input"
+          rows={6}
+          style={{ fontFamily: 'monospace' }}
         />
-      </div>
+      </Card>
 
       {results.length > 0 && (
-        <div className="results-section">
-          <div className="section-header">
-            <label>检测结果：</label>
-            <button onClick={copyResults} className="copy-btn">
-              📋 复制结果
-            </button>
-          </div>
-          <div className="results-list">
+        <Card 
+          size="small" 
+          title="检测结果"
+          extra={
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={copyResults}
+            >
+              复制结果
+            </Button>
+          }
+        >
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
             {results.map((result, index) => (
-              <div
+              <Alert
                 key={index}
-                className={`result-item ${result.supported ? 'supported' : 'unsupported'}`}
-              >
-                <div className="result-header">
-                  <span className="result-icon">
-                    {result.supported ? '✅' : '❌'}
-                  </span>
-                  <span className="result-property">{result.property}</span>
-                  {result.prefix && (
-                    <span className="result-prefix">需要前缀: {result.prefix}</span>
-                  )}
-                </div>
-                {result.notes && (
-                  <div className="result-notes">{result.notes}</div>
-                )}
-              </div>
+                message={
+                  <Space>
+                    {result.supported ? (
+                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                    ) : (
+                      <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                    )}
+                    <Text strong>{result.property}</Text>
+                    {result.prefix && (
+                      <Tag color="warning">需要前缀: {result.prefix}</Tag>
+                    )}
+                  </Space>
+                }
+                description={result.notes}
+                type={result.supported ? 'success' : 'error'}
+                showIcon={false}
+              />
             ))}
-          </div>
-        </div>
+          </Space>
+        </Card>
       )}
 
       {results.length === 0 && !isChecking && (
-        <div className="empty-state">
-          <div className="empty-icon">🔍</div>
-          <div className="empty-text">输入CSS代码后点击"检测兼容性"按钮</div>
-          <div className="empty-hint">支持检测CSS属性和CSS函数（如 calc、clamp、linear-gradient 等）</div>
-        </div>
+        <Card size="small">
+          <Empty
+            description={
+              <Space direction="vertical" size="small">
+                <Text>输入CSS代码后点击"检测兼容性"按钮</Text>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  支持检测CSS属性和CSS函数（如 calc、clamp、linear-gradient 等）
+                </Text>
+              </Space>
+            }
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </Card>
       )}
     </div>
   );

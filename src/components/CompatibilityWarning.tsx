@@ -29,36 +29,44 @@ const CompatibilityWarning: React.FC<CompatibilityWarningProps> = ({
   const [hasChecked, setHasChecked] = useState<boolean>(false);
 
   useEffect(() => {
-    const { checks, hasCriticalIssues } = checkAllFeatures();
+    try {
+      const result = checkAllFeatures();
+      const checks: CompatibilityCheck[] = result?.checks || [];
 
-    // 如果指定了必需功能，只检查这些功能
-    let relevantChecks: CompatibilityCheck[] = checks;
-    if (requiredFeatures.length > 0) {
-      relevantChecks = checks.filter((check) =>
-        requiredFeatures.some((feature) =>
-          check.feature.toLowerCase().includes(feature.toLowerCase())
-        )
-      );
-    }
-
-    const unsupported = relevantChecks.filter((check) => !check.supported);
-    const critical = unsupported.filter((check) => !check.fallback);
-
-    setIssues(unsupported);
-    setIsCompatible(critical.length === 0);
-    setHasChecked(true);
-
-    // 调用回调
-    if (onCheck) {
-      onCheck(critical.length === 0, unsupported);
-    }
-
-    // 显示警告消息
-    if (showWarning && unsupported.length > 0) {
-      const message = generateCompatibilityMessage(unsupported);
-      if (message) {
-        showMessage.warning(`${featureName}: ${message}`);
+      // 如果指定了必需功能，只检查这些功能
+      let relevantChecks: CompatibilityCheck[] = checks.filter((check) => check && check.feature);
+      if (requiredFeatures.length > 0) {
+        relevantChecks = relevantChecks.filter((check) =>
+          requiredFeatures.some((feature) =>
+            check.feature && check.feature.toLowerCase().includes(feature.toLowerCase())
+          )
+        );
       }
+
+      const unsupported = relevantChecks.filter((check) => check && !check.supported);
+      const critical = unsupported.filter((check) => check && !check.fallback);
+
+      setIssues(unsupported);
+      setIsCompatible(critical.length === 0);
+      setHasChecked(true);
+
+      // 调用回调
+      if (onCheck) {
+        onCheck(critical.length === 0, unsupported);
+      }
+
+      // 显示警告消息
+      if (showWarning && unsupported.length > 0) {
+        const message = generateCompatibilityMessage(unsupported);
+        if (message) {
+          showMessage.warning(`${featureName}: ${message}`);
+        }
+      }
+    } catch (error) {
+      console.error('Compatibility check failed:', error);
+      setHasChecked(true);
+      setIsCompatible(true);
+      setIssues([]);
     }
   }, [featureName, requiredFeatures, onCheck, showWarning]);
 
@@ -77,13 +85,13 @@ const CompatibilityWarning: React.FC<CompatibilityWarningProps> = ({
           {featureName} 在当前浏览器中可能无法完全正常工作
         </p>
         <ul className="warning-issues">
-          {issues.map((issue, index) => (
+          {issues.filter((issue) => issue && issue.feature).map((issue, index) => (
             <li key={index} className="warning-issue">
-              <span className="issue-feature">{issue.feature}</span>
-              {issue.message && (
+              <span className="issue-feature">{issue?.feature || '未知功能'}</span>
+              {issue?.message && (
                 <span className="issue-message">: {issue.message}</span>
               )}
-              {issue.fallback && (
+              {issue?.fallback && (
                 <span className="issue-fallback"> ({issue.fallback})</span>
               )}
             </li>

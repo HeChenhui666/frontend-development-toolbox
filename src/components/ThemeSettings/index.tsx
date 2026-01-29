@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Modal, Card, Space, Typography, Button } from 'antd';
+import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { getSavedTheme, saveTheme, applyTheme, themes, ThemeName } from '../../utils/theme';
 import './index.css';
+
+const { Text } = Typography;
 
 interface ThemeSettingsProps {
   onClose: () => void;
@@ -19,6 +23,8 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
     setCurrentTheme(theme);
     applyTheme(theme);
     saveTheme(theme);
+    // 触发自定义事件，通知其他组件主题已更改
+    window.dispatchEvent(new CustomEvent('themeChanged'));
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -28,28 +34,29 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
   };
 
   const content = (
-    <>
-      {!embedded && (
-        <div className="theme-settings-header">
-          <h3>主题设置</h3>
-          <button className="theme-settings-close" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-      )}
-      <div className="theme-settings-content">
-        <div className="theme-options">
-          {Object.values(themes).map((theme) => (
-            <div
-              key={theme.name}
-              className={`theme-option ${currentTheme === theme.name ? 'active' : ''}`}
-              onClick={() => handleThemeChange(theme.name)}
-            >
-              <div className="theme-preview">
+    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <div className="theme-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
+        {Object.values(themes).map((theme) => (
+          <Card
+            key={theme.name}
+            hoverable
+            style={{
+              cursor: 'pointer',
+              borderColor: currentTheme === theme.name ? 'var(--theme-primary)' : undefined,
+              borderWidth: currentTheme === theme.name ? 2 : 1,
+              position: 'relative',
+            }}
+            onClick={() => handleThemeChange(theme.name)}
+            bodyStyle={{ padding: '12px' }}
+          >
+            <Space direction="vertical" style={{ width: '100%' }} size="small" align="center">
+              <div className="theme-preview" style={{ width: '100%' }}>
                 <div
                   className="theme-preview-gradient"
                   style={{
                     background: `linear-gradient(135deg, ${theme.colors.primaryGradient} 0%, ${theme.colors.primaryGradientEnd} 100%)`,
+                    height: '40px',
+                    borderRadius: '4px 4px 0 0',
                   }}
                 />
                 <div
@@ -57,6 +64,11 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                   style={{
                     background: theme.colors.surface,
                     borderColor: theme.colors.border,
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                    borderTop: 'none',
+                    borderRadius: '0 0 4px 4px',
+                    padding: '8px',
                   }}
                 >
                   <div
@@ -65,21 +77,44 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                       background: theme.colors.activeBackground,
                       color: theme.colors.active,
                       boxShadow: `0 2px 8px ${theme.colors.active}40`,
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      textAlign: 'center',
                     }}
                   >
-                    <span style={{ fontSize: '10px' }}>示例</span>
+                    示例
                   </div>
                 </div>
               </div>
-              <div className="theme-name">{theme.displayName}</div>
+              <Text style={{ fontSize: '12px', textAlign: 'center', display: 'block', width: '100%' }}>
+                {theme.displayName}
+              </Text>
               {currentTheme === theme.name && (
-                <div className="theme-checkmark">✓</div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'var(--theme-primary)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                  }}
+                >
+                  <CheckOutlined />
+                </div>
               )}
-            </div>
-          ))}
-        </div>
+            </Space>
+          </Card>
+        ))}
       </div>
-    </>
+    </Space>
   );
 
   if (embedded) {
@@ -87,11 +122,20 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
   }
 
   return (
-    <div className="theme-settings-overlay" onClick={handleOverlayClick}>
-      <div className="theme-settings-modal" onClick={(e) => e.stopPropagation()}>
-        {content}
-      </div>
-    </div>
+    <Modal
+      title="主题设置"
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      width={600}
+      centered
+      destroyOnClose
+      maskClosable={true}
+      getContainer={() => document.body}
+      closeIcon={<CloseOutlined />}
+    >
+      {content}
+    </Modal>
   );
 };
 

@@ -1,7 +1,8 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo, useDeferredValue } from 'react';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme as antdTheme } from 'antd';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab } from './utils/userPreferences';
+import { getSavedTheme } from './utils/theme';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -331,8 +332,82 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // 获取 CSS 变量值的辅助函数
+  const getCSSVariable = useCallback((varName: string) => {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || undefined;
+  }, []);
+
+  // 监听主题变化，动态更新 antd 主题
+  const [themeVersion, setThemeVersion] = useState(0);
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeVersion((prev) => prev + 1);
+    };
+
+    // 监听 storage 变化（主题切换时）
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app-theme') {
+        handleThemeChange();
+      }
+    };
+
+    // 监听自定义事件（主题切换时触发）
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('themeChanged', handleThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
+
+  // 每次主题版本变化时重新计算主题配置
+  const dynamicThemeConfig = useMemo(() => {
+    return {
+      algorithm: antdTheme.defaultAlgorithm,
+      token: {
+        colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        colorSuccess: getCSSVariable('--theme-success'),
+        colorError: getCSSVariable('--theme-error'),
+        colorWarning: '#faad14',
+        colorInfo: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        borderRadius: 6,
+        colorBgContainer: getCSSVariable('--theme-background'),
+        colorText: getCSSVariable('--theme-text'),
+        colorTextSecondary: getCSSVariable('--theme-textSecondary'),
+        colorBorder: getCSSVariable('--theme-border'),
+        colorBorderSecondary: getCSSVariable('--theme-borderLight'),
+      },
+      components: {
+        Button: {
+          primaryColor: getCSSVariable('--theme-buttonText') || '#ffffff',
+          colorPrimary: getCSSVariable('--theme-buttonPrimary') || getCSSVariable('--theme-primary'),
+          colorPrimaryHover: getCSSVariable('--theme-buttonPrimaryHover'),
+          colorPrimaryActive: getCSSVariable('--theme-buttonPrimaryHover'),
+        },
+        Card: {
+          colorBgContainer: getCSSVariable('--theme-surface') || getCSSVariable('--theme-background'),
+          colorBorderSecondary: getCSSVariable('--theme-border'),
+        },
+        Input: {
+          colorBgContainer: getCSSVariable('--theme-inputBackground') || getCSSVariable('--theme-background'),
+          colorBorder: getCSSVariable('--theme-inputBorder') || getCSSVariable('--theme-border'),
+          colorText: getCSSVariable('--theme-inputText') || getCSSVariable('--theme-text'),
+          activeBorderColor: getCSSVariable('--theme-inputFocusBorder') || getCSSVariable('--theme-primary'),
+        },
+        Switch: {
+          colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+          colorPrimaryHover: getCSSVariable('--theme-buttonPrimaryHover'),
+        },
+        Tag: {
+          colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        },
+      },
+    };
+  }, [themeVersion, getCSSVariable]);
+
   return (
-    <ConfigProvider>
+    <ConfigProvider theme={dynamicThemeConfig}>
       <div className={`app ${isPopupMode ? 'app-popup' : 'app-standalone'}`}>
         <div className='header'>
           <div className='header-content'>

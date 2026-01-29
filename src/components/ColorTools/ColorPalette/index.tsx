@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Button,
+  Space,
+  Typography,
+  Input,
+  Select,
+  message as antdMessage,
+  Empty,
+} from 'antd';
+import {
+  CopyOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
+
+const { Text } = Typography;
 
 type PaletteType = 'complementary' | 'triadic' | 'analogous' | 'split' | 'square' | 'monochromatic';
 
@@ -69,7 +85,7 @@ const ColorPalette: React.FC = () => {
   // 生成配色方案
   const generatePalette = (): void => {
     if (!/^#[0-9A-Fa-f]{6}$/.test(baseColor)) {
-      showMessage.error('请输入有效的HEX颜色值');
+      antdMessage.error('请输入有效的HEX颜色值');
       return;
     }
 
@@ -136,7 +152,7 @@ const ColorPalette: React.FC = () => {
   // 复制颜色
   const copyColor = (color: string) => {
     navigator.clipboard.writeText(color);
-    showMessage.success('已复制到剪贴板');
+    antdMessage.success('已复制到剪贴板');
   };
 
   // 复制所有颜色
@@ -144,90 +160,105 @@ const ColorPalette: React.FC = () => {
     if (generatedPalette) {
       const colorsText = generatedPalette.colors.join(', ');
       navigator.clipboard.writeText(colorsText);
-      showMessage.success('已复制所有颜色到剪贴板');
+      antdMessage.success('已复制所有颜色到剪贴板');
     }
   };
 
   return (
-    <div className="color-palette">
-      <div className="palette-controls">
-        <div className="color-input-section">
-          <label>基础颜色：</label>
-          <div className="color-input-group">
+    <div className="color-palette" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <Card size="small" title="配色设置">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space.Compact style={{ width: '100%' }}>
             <input
               type="color"
               value={baseColor}
               onChange={(e) => setBaseColor(e.target.value)}
-              className="color-picker-input"
+              style={{ width: '60px', height: '32px', border: '1px solid #d9d9d9', borderRadius: '4px 0 0 4px', cursor: 'pointer' }}
             />
-            <input
-              type="text"
+            <Input
               value={baseColor}
               onChange={(e) => {
                 const value = e.target.value;
                 setBaseColor(value);
               }}
-              className="color-text-input"
               placeholder="#000000"
+              style={{ flex: 1, fontFamily: 'monospace' }}
             />
-          </div>
-        </div>
-
-        <div className="palette-type-section">
-          <label>配色方案：</label>
-          <select
+          </Space.Compact>
+          <Select
             value={paletteType}
-            onChange={(e) => setPaletteType(e.target.value as PaletteType)}
-            className="palette-type-select"
+            onChange={(value) => setPaletteType(value)}
+            style={{ width: '100%' }}
+            options={[
+              { label: '互补色', value: 'complementary' },
+              { label: '三元色', value: 'triadic' },
+              { label: '类似色', value: 'analogous' },
+              { label: '分裂互补色', value: 'split' },
+              { label: '四色配色', value: 'square' },
+              { label: '单色系', value: 'monochromatic' },
+            ]}
+          />
+          <Button
+            type="primary"
+            icon={<ThunderboltOutlined />}
+            onClick={generatePalette}
+            block
           >
-            <option value="complementary">互补色</option>
-            <option value="triadic">三元色</option>
-            <option value="analogous">类似色</option>
-            <option value="split">分裂互补色</option>
-            <option value="square">四色配色</option>
-            <option value="monochromatic">单色系</option>
-          </select>
-        </div>
+            生成配色
+          </Button>
+        </Space>
+      </Card>
 
-        <button onClick={generatePalette} className="generate-btn">
-          生成配色
-        </button>
-      </div>
-
-      {generatedPalette && (
-        <div className="palette-result">
-          <div className="result-header">
-            <span className="result-type">{generatedPalette.type}配色方案</span>
-            <button onClick={copyAllColors} className="copy-all-btn">
-              📋 复制全部
-            </button>
-          </div>
-          <div className="color-swatches">
+      {generatedPalette ? (
+        <Card 
+          size="small" 
+          title={`${generatedPalette.type}配色方案`}
+          extra={
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={copyAllColors}
+            >
+              复制全部
+            </Button>
+          }
+        >
+          <Space wrap style={{ width: '100%' }}>
             {generatedPalette.colors.map((color, index) => (
-              <div key={index} className="color-swatch">
-                <div
-                  className="swatch-preview"
-                  style={{ backgroundColor: color }}
-                />
-                <div className="swatch-info">
-                  <div className="swatch-hex">{color}</div>
-                  <button
+              <Card key={index} size="small" style={{ width: '120px' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div
+                    style={{ 
+                      width: '100%', 
+                      height: '60px', 
+                      backgroundColor: color,
+                      borderRadius: '4px',
+                      border: '1px solid #d9d9d9'
+                    }}
+                  />
+                  <Text code style={{ fontSize: '12px', display: 'block', textAlign: 'center' }}>
+                    {color}
+                  </Text>
+                  <Button
+                    size="small"
+                    icon={<CopyOutlined />}
                     onClick={() => copyColor(color)}
-                    className="swatch-copy-btn"
+                    block
                   >
                     复制
-                  </button>
-                </div>
-              </div>
+                  </Button>
+                </Space>
+              </Card>
             ))}
-          </div>
-        </div>
-      )}
-
-      {!generatedPalette && (
-        <div className="palette-placeholder">
-          <p>选择基础颜色和配色方案，然后点击"生成配色"按钮</p>
-        </div>
+          </Space>
+        </Card>
+      ) : (
+        <Card size="small">
+          <Empty
+            description="选择基础颜色和配色方案，然后点击'生成配色'按钮"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </Card>
       )}
     </div>
   );

@@ -1,4 +1,18 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Alert,
+  Tag,
+  message as antdMessage,
+} from 'antd';
+import {
+  ClearOutlined,
+  SwapOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
 
@@ -124,7 +138,7 @@ const JSONCompare: React.FC = () => {
       setDiffs(differences);
 
       if (differences.length === 0) {
-        showMessage.success('✅ 两个JSON完全相同');
+        antdMessage.success('两个JSON完全相同');
       }
     } catch (err) {
       setError(`JSON格式错误: ${err instanceof Error ? err.message : '未知错误'}`);
@@ -152,84 +166,130 @@ const JSONCompare: React.FC = () => {
   };
 
   return (
-    <div className="json-compare">
-      <div className="compare-controls">
-        <button onClick={handleCompare} className="compare-btn">
-          开始比对
-        </button>
-        <button onClick={clearAll} className="clear-btn">
-          清空
-        </button>
-      </div>
+    <div className="json-compare" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <Card size="small">
+        <Space>
+          <Button
+            type="primary"
+            icon={<SwapOutlined />}
+            onClick={handleCompare}
+          >
+            开始比对
+          </Button>
+          <Button
+            icon={<ClearOutlined />}
+            onClick={clearAll}
+          >
+            清空
+          </Button>
+        </Space>
+      </Card>
 
-      <div className="json-inputs">
-        <div className="json-input-group">
-          <div className="section-header">
-            <label>JSON 1：</label>
-          </div>
-          <textarea
-            value={json1}
-            onChange={(e) => setJson1(e.target.value)}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <Card size="small" title="JSON 1">
+          <Input.TextArea
+            value={json1 || ''}
+            onChange={(e) => {
+              if (e && e.target) {
+                setJson1(e.target.value || '');
+              }
+            }}
             placeholder="请输入第一组JSON..."
-            className="json-textarea"
+            rows={10}
+            style={{ fontFamily: 'monospace' }}
           />
-        </div>
+        </Card>
 
-        <div className="json-input-group">
-          <div className="section-header">
-            <label>JSON 2：</label>
-          </div>
-          <textarea
-            value={json2}
-            onChange={(e) => setJson2(e.target.value)}
+        <Card size="small" title="JSON 2">
+          <Input.TextArea
+            value={json2 || ''}
+            onChange={(e) => {
+              if (e && e.target) {
+                setJson2(e.target.value || '');
+              }
+            }}
             placeholder="请输入第二组JSON..."
-            className="json-textarea"
+            rows={10}
+            style={{ fontFamily: 'monospace' }}
           />
-        </div>
+        </Card>
       </div>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
 
       {diffs.length > 0 && (
-        <div className="diff-results">
-          <div className="section-header">
-            <label>差异结果（共 {diffs.length} 处）：</label>
-          </div>
-          <div className="diff-list">
+        <Card size="small" title={`差异结果（共 ${diffs.length} 处）`}>
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
             {diffs.map((diff, index) => (
-              <div key={index} className={`diff-item ${diff.type}`}>
-                <div className="diff-path">
-                  <span className="diff-type-badge">{diff.type === 'added' ? '新增' : diff.type === 'removed' ? '删除' : '修改'}</span>
-                  <span className="diff-path-text">{diff.path}</span>
-                </div>
-                {diff.type === 'removed' && (
-                  <div className="diff-value removed">
-                    <span className="diff-label">旧值：</span>
-                    <pre>{formatValue(diff.oldValue)}</pre>
-                  </div>
-                )}
-                {diff.type === 'added' && (
-                  <div className="diff-value added">
-                    <span className="diff-label">新值：</span>
-                    <pre>{formatValue(diff.newValue)}</pre>
-                  </div>
-                )}
-                {diff.type === 'modified' && (
-                  <>
-                    <div className="diff-value removed">
-                      <span className="diff-label">旧值：</span>
-                      <pre>{formatValue(diff.oldValue)}</pre>
-                    </div>
-                    <div className="diff-value added">
-                      <span className="diff-label">新值：</span>
-                      <pre>{formatValue(diff.newValue)}</pre>
-                    </div>
-                  </>
-                )}
-              </div>
+              <Card key={index} size="small" style={{ borderLeft: `4px solid ${diff.type === 'added' ? '#52c41a' : diff.type === 'removed' ? '#ff4d4f' : '#1890ff'}` }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <Space>
+                    <Tag color={diff.type === 'added' ? 'success' : diff.type === 'removed' ? 'error' : 'processing'}>
+                      {diff.type === 'added' ? '新增' : diff.type === 'removed' ? '删除' : '修改'}
+                    </Tag>
+                    <code>{diff.path}</code>
+                  </Space>
+                  {diff.type === 'removed' && (
+                    <Alert
+                      message={
+                        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                          <strong>旧值：</strong>
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.oldValue)}</pre>
+                        </Space>
+                      }
+                      type="error"
+                      showIcon={false}
+                    />
+                  )}
+                  {diff.type === 'added' && (
+                    <Alert
+                      message={
+                        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                          <strong>新值：</strong>
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.newValue)}</pre>
+                        </Space>
+                      }
+                      type="success"
+                      showIcon={false}
+                    />
+                  )}
+                  {diff.type === 'modified' && (
+                    <Space direction="vertical" style={{ width: '100%' }} size="small">
+                      <Alert
+                        message={
+                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <strong>旧值：</strong>
+                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.oldValue)}</pre>
+                          </Space>
+                        }
+                        type="error"
+                        showIcon={false}
+                      />
+                      <Alert
+                        message={
+                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <strong>新值：</strong>
+                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>{formatValue(diff.newValue)}</pre>
+                          </Space>
+                        }
+                        type="success"
+                        showIcon={false}
+                      />
+                    </Space>
+                  )}
+                </Space>
+              </Card>
             ))}
-          </div>
-        </div>
+          </Space>
+        </Card>
       )}
     </div>
   );

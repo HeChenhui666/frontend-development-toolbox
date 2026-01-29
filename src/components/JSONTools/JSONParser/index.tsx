@@ -1,4 +1,18 @@
 import React, { useState } from 'react';
+import {
+  Card,
+  Input,
+  Button,
+  Space,
+  Alert,
+  Segmented,
+  message as antdMessage,
+} from 'antd';
+import {
+  CopyOutlined,
+  ClearOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import './index.css';
 import { showMessage } from '../../../utils/message';
 
@@ -119,7 +133,7 @@ const JSONParser: React.FC = () => {
   const copyResult = () => {
     if (outputJson) {
       navigator.clipboard.writeText(outputJson);
-      showMessage.success('已复制到剪贴板');
+      antdMessage.success('已复制到剪贴板');
     }
   };
 
@@ -131,72 +145,87 @@ const JSONParser: React.FC = () => {
   };
 
   return (
-    <div className="json-parser">
-      <div className="parser-controls">
-        <div className="mode-buttons">
-          <button
-            className={`mode-btn ${mode === 'format' ? 'active' : ''}`}
-            onClick={() => setMode('format')}
-          >
-            格式化
-          </button>
-          <button
-            className={`mode-btn ${mode === 'minify' ? 'active' : ''}`}
-            onClick={() => setMode('minify')}
-          >
-            压缩
-          </button>
-          <button
-            className={`mode-btn ${mode === 'escape' ? 'active' : ''}`}
-            onClick={() => setMode('escape')}
-          >
-            转义
-          </button>
-          <button
-            className={`mode-btn ${mode === 'unescape' ? 'active' : ''}`}
-            onClick={() => setMode('unescape')}
-          >
-            去转义
-          </button>
-        </div>
-        <div className="action-buttons">
-          <button onClick={handleValidate} className="action-btn validate-btn">
-            校验并处理
-          </button>
-          <button onClick={clearAll} className="action-btn clear-btn">
-            清空
-          </button>
-        </div>
-      </div>
+    <div className="json-parser" style={{ padding: '12px', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <Card size="small" title="处理模式">
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Segmented
+            options={[
+              { label: '格式化', value: 'format' },
+              { label: '压缩', value: 'minify' },
+              { label: '转义', value: 'escape' },
+              { label: '去转义', value: 'unescape' },
+            ]}
+            value={mode || 'format'}
+            onChange={(value) => {
+              if (value) {
+                setMode(value as typeof mode);
+              }
+            }}
+            block
+          />
+          <Space>
+            <Button
+              type="primary"
+              icon={<CheckCircleOutlined />}
+              onClick={handleValidate}
+            >
+              校验并处理
+            </Button>
+            <Button
+              icon={<ClearOutlined />}
+              onClick={clearAll}
+            >
+              清空
+            </Button>
+          </Space>
+        </Space>
+      </Card>
 
-      <div className="json-input-section">
-        <div className="section-header">
-          <label>输入JSON：</label>
-        </div>
-        <textarea
-          value={inputJson}
-          onChange={(e) => setInputJson(e.target.value)}
+      <Card size="small" title="输入JSON">
+        <Input.TextArea
+          value={inputJson || ''}
+          onChange={(e) => {
+            if (e && e.target) {
+              setInputJson(e.target.value || '');
+            }
+          }}
           placeholder="请输入JSON字符串..."
-          className="json-textarea"
+          rows={8}
+          style={{ fontFamily: 'monospace' }}
         />
-      </div>
+      </Card>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError('')}
+        />
+      )}
 
       {outputJson && (
-        <div className="json-output-section">
-          <div className="section-header">
-            <label>输出结果：</label>
-            <button onClick={copyResult} className="copy-btn">
-              📋 复制
-            </button>
-          </div>
-          <textarea
-            value={outputJson}
+        <Card 
+          size="small" 
+          title="输出结果"
+          extra={
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={copyResult}
+            >
+              复制
+            </Button>
+          }
+        >
+          <Input.TextArea
+            value={outputJson || ''}
             readOnly
-            className="json-textarea output"
+            rows={8}
+            style={{ fontFamily: 'monospace' }}
           />
-        </div>
+        </Card>
       )}
     </div>
   );

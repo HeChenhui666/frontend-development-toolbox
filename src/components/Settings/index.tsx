@@ -1,6 +1,34 @@
 import React, { useState, useEffect, memo, useCallback } from 'react';
-import { Select, Button, Modal } from 'antd';
+import {
+  Select,
+  Button,
+  Modal,
+  Card,
+  Space,
+  Typography,
+  Progress,
+  Tabs,
+  message as antdMessage,
+  Input,
+} from 'antd';
+import {
+  SettingOutlined,
+  BgColorsOutlined,
+  CloseOutlined,
+  ExportOutlined,
+  ImportOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  ReloadOutlined,
+  GithubOutlined,
+  BugOutlined,
+  BookOutlined,
+  DragOutlined,
+} from '@ant-design/icons';
 import ThemeSettings from '../ThemeSettings';
+import TextArea from 'antd/es/input/TextArea';
+
+const { Text, Link } = Typography;
 import {
   getDefaultTab,
   saveDefaultTab,
@@ -17,7 +45,6 @@ import {
   type FeatureTab,
   type CacheType,
 } from '../../utils/userPreferences';
-import { showMessage } from '../../utils/message';
 import './index.css';
 
 const APP_VERSION = import.meta.env.APP_VERSION || '';
@@ -136,9 +163,9 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
         setRemoteVersion(finalRemoteVersion);
         // 如果远程版本更新，显示提示
         if (compareVersions(finalRemoteVersion, APP_VERSION) > 0) {
-          showMessage.info(`发现新版本v${finalRemoteVersion}！可前往GitHub拉取最新代码。`);
+          antdMessage.info(`发现新版本v${finalRemoteVersion}！可前往GitHub拉取最新代码。`);
         } else {
-          showMessage.success('当前已是最新版本');
+          antdMessage.success('当前已是最新版本');
         }
       } else {
         throw new Error('无法获取远程版本号');
@@ -146,7 +173,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '检查更新失败';
       setUpdateCheckError(errorMessage);
-      showMessage.error(`检查更新失败: ${errorMessage}`);
+      antdMessage.error(`检查更新失败: ${errorMessage}`);
       console.error('Update check failed:', error);
     } finally {
       setIsCheckingUpdate(false);
@@ -156,19 +183,8 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
   const handleDefaultTabChange = useCallback((tab: DefaultTab) => {
     setDefaultTab(tab);
     saveDefaultTab(tab);
-    showMessage.success('默认标签页已更新');
-  }, [
-    getCacheTypeInfo,
-    getDefaultTab,
-    getStorageInfo,
-    getTabOrder,
-    importUserConfig,
-    setCacheTypeInfo,
-    setDefaultTab,
-    setStorageInfo,
-    setTabOrder,
-    showMessage,
-  ]);
+    antdMessage.success('默认标签页已更新');
+  }, []);
 
   // 导出配置（下载文件） - 使用 useCallback 优化
   const handleExportConfig = useCallback(() => {
@@ -183,9 +199,9 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      showMessage.success('配置已导出');
+      antdMessage.success('配置已导出');
     } catch (error) {
-      showMessage.error('导出配置失败');
+      antdMessage.error('导出配置失败');
       console.error('Export failed:', error);
     }
   }, []);
@@ -195,9 +211,9 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
     try {
       const configJson = exportUserConfig();
       await navigator.clipboard.writeText(configJson);
-      showMessage.success('配置已复制到剪贴板');
+      antdMessage.success('配置已复制到剪贴板');
     } catch (error) {
-      showMessage.error('复制配置失败');
+      antdMessage.error('复制配置失败');
       console.error('Copy failed:', error);
       // 降级方案：使用传统方法
       try {
@@ -209,9 +225,9 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        showMessage.success('配置已复制到剪贴板');
+        antdMessage.success('配置已复制到剪贴板');
       } catch (fallbackError) {
-        showMessage.error('复制配置失败');
+        antdMessage.error('复制配置失败');
         console.error('Fallback copy failed:', fallbackError);
       }
     }
@@ -239,7 +255,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
               const result = importUserConfig(jsonString);
 
               if (result.success) {
-                showMessage.success(result.message);
+                antdMessage.success(result.message);
                 // 更新存储信息
                 setStorageInfo(getStorageInfo());
                 setCacheTypeInfo(getCacheTypeInfo());
@@ -251,15 +267,15 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                   window.location.reload();
                 }, 1000);
               } else {
-                showMessage.error(result.message);
+                antdMessage.error(result.message);
               }
             } catch (error) {
-              showMessage.error('读取文件失败');
+              antdMessage.error('读取文件失败');
               console.error('Import failed:', error);
             }
           };
           reader.onerror = () => {
-            showMessage.error('读取文件失败');
+            antdMessage.error('读取文件失败');
           };
           reader.readAsText(file);
         };
@@ -329,17 +345,12 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                     <p style={{ marginBottom: '8px', fontSize: '12px', color: '#64748b' }}>
                       自动读取剪贴板失败，请手动粘贴配置JSON：
                     </p>
-                    <textarea
+                    <TextArea
                       id='config-input-textarea'
                       style={{
-                        width: '100%',
                         minHeight: '200px',
-                        padding: '8px',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '4px',
                         fontFamily: 'monospace',
                         fontSize: '11px',
-                        resize: 'vertical',
                       }}
                       placeholder='请粘贴配置JSON...'
                       onChange={(e) => {
@@ -362,7 +373,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                 width: 500,
                 onOk: () => {
                   if (!inputValue || !inputValue.trim()) {
-                    showMessage.error('请输入配置JSON');
+                    antdMessage.error('请输入配置JSON');
                     resolve();
                     return;
                   }
@@ -370,7 +381,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                   const result = importUserConfig(inputValue.trim());
 
                   if (result.success) {
-                    showMessage.success(result.message);
+                    antdMessage.success(result.message);
                     // 更新存储信息
                     setStorageInfo(getStorageInfo());
                     setCacheTypeInfo(getCacheTypeInfo());
@@ -382,7 +393,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                       window.location.reload();
                     }, 1000);
                   } else {
-                    showMessage.error(result.message);
+                    antdMessage.error(result.message);
                   }
                   resolve();
                 },
@@ -397,7 +408,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
           const result = importUserConfig(configText);
 
           if (result.success) {
-            showMessage.success(result.message);
+            antdMessage.success(result.message);
             // 更新存储信息
             setStorageInfo(getStorageInfo());
             setCacheTypeInfo(getCacheTypeInfo());
@@ -409,11 +420,11 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
               window.location.reload();
             }, 1000);
           } else {
-            showMessage.error(result.message);
+            antdMessage.error(result.message);
           }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : '未知错误';
-          showMessage.error(`导入失败: ${errorMessage}`);
+          antdMessage.error(`导入失败: ${errorMessage}`);
           console.error('Import from clipboard failed:', error);
         }
       },
@@ -431,13 +442,13 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
           clearAllCache();
           setStorageInfo(getStorageInfo());
           setCacheTypeInfo(getCacheTypeInfo());
-          showMessage.success('缓存已清除');
+          antdMessage.success('缓存已清除');
           // 重新加载页面以应用默认设置
           setTimeout(() => {
             window.location.reload();
           }, 1000);
         } catch (error) {
-          showMessage.error('清除缓存失败');
+          antdMessage.error('清除缓存失败');
         }
       },
     });
@@ -462,7 +473,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
           clearCacheByType(type);
           setStorageInfo(getStorageInfo());
           setCacheTypeInfo(getCacheTypeInfo());
-          showMessage.success(`${typeNames[type]}已清除`);
+          antdMessage.success(`${typeNames[type]}已清除`);
           if (type === 'theme' || type === 'preferences') {
             // 如果清除主题或偏好，需要刷新页面
             setTimeout(() => {
@@ -470,7 +481,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
             }, 1000);
           }
         } catch (error) {
-          showMessage.error('清除失败');
+          antdMessage.error('清除失败');
         }
       },
     });
@@ -503,7 +514,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
     const event = new CustomEvent('tabOrderChanged', { bubbles: true });
     window.dispatchEvent(event);
     console.log('Tab order saved and event dispatched:', tabOrder);
-    showMessage.success('标签页顺序已更新');
+    antdMessage.success('标签页顺序已更新');
     setShowTabOrderManager(false);
   };
 
@@ -517,7 +528,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
         resetTabOrder();
         const defaultOrder = getTabOrder();
         setTabOrder(defaultOrder);
-        showMessage.success('标签页顺序已重置');
+        antdMessage.success('标签页顺序已重置');
       },
     });
   };
@@ -587,280 +598,267 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
   };
 
   return (
-    <div className='settings-overlay' onClick={handleOverlayClick}>
-      <div className='settings-modal' onClick={(e) => e.stopPropagation()}>
-        <div className='settings-header'>
-          <h3>设置</h3>
-          <button className='settings-close' onClick={onClose}>
-            ✕
-          </button>
-        </div>
-        <div className='settings-content'>
-          <div className='settings-sidebar'>
-            <button
-              className={`settings-sidebar-item ${activeTab === 'general' ? 'active' : ''}`}
-              onClick={() => setActiveTab('general')}
-            >
-              <span className='settings-sidebar-icon'>⚙️</span>
-              <span>通用</span>
-            </button>
-            <button
-              className={`settings-sidebar-item ${activeTab === 'theme' ? 'active' : ''}`}
-              onClick={() => setActiveTab('theme')}
-            >
-              <span className='settings-sidebar-icon'>🎨</span>
-              <span>主题</span>
-            </button>
-          </div>
-          <div className='settings-main'>
-            {activeTab === 'general' && (
-              <div className='settings-section'>
-                {/* 标签页排序 */}
-                <div className='settings-item'>
-                  <div className='settings-item-header'>
-                    <label className='settings-item-label'>标签页排序</label>
-                    <span className='settings-item-desc'>自定义功能标签页的显示顺序</span>
-                  </div>
-                  <div className='settings-item-content'>
-                    <div className='tab-order-actions'>
-                      <Button onClick={handleOpenTabOrderManager} type='primary' size='small'>
-                        管理排序
-                      </Button>
-                      <Button onClick={handleResetTabOrder} size='small'>
-                        重置为默认
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+    <Modal
+      title="设置"
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+      centered
+      destroyOnClose
+      maskClosable={true}
+      getContainer={() => document.body}
+      closeIcon={<CloseOutlined />}
+    >
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as SettingsTab)}
+        items={[
+          {
+            key: 'general',
+            label: (
+              <Space>
+                <SettingOutlined />
+                <span>通用</span>
+              </Space>
+            ),
+            children: (
+              <div className='settings-main'>
+                <Space direction="vertical" style={{ width: '100%' }} size="large">
+                  {/* 标签页排序 */}
+                  <Card size="small" title="标签页排序">
+                    <Space direction="vertical" style={{ width: '100%' }} size="small">
+                      <Text type="secondary">自定义功能标签页的显示顺序</Text>
+                      <Space>
+                        <Button onClick={handleOpenTabOrderManager} type='primary' size='small'>
+                          管理排序
+                        </Button>
+                        <Button onClick={handleResetTabOrder} size='small'>
+                          重置为默认
+                        </Button>
+                      </Space>
+                    </Space>
+                  </Card>
 
-                {/* 默认功能标签页 */}
-                <div className='settings-item'>
-                  <div className='settings-item-header'>
-                    <label className='settings-item-label'>默认功能标签页</label>
-                    <span className='settings-item-desc'>设置打开扩展时默认显示的功能</span>
-                  </div>
-                  <div className='settings-item-content'>
-                    <Select
-                      value={defaultTab}
-                      onChange={(value) => handleDefaultTabChange(value as DefaultTab)}
-                      style={{ width: '100%' }}
-                      size='small'
-                    >
-                      {tabOrder.map((tab) => (
-                        <Select.Option key={tab} value={tab}>
-                          {TAB_NAMES[tab]}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-
-                {/* 数据管理 */}
-                <div className='settings-item'>
-                  <div className='settings-item-header'>
-                    <label className='settings-item-label'>数据管理</label>
-                    <span className='settings-item-desc'>管理缓存数据和存储空间</span>
-                  </div>
-                  <div className='settings-item-content'>
-                    <div className='storage-info'>
-                      <div className='storage-stats'>
-                        <span>已使用: {formatBytes(storageInfo.used)}</span>
-                        <span>总容量: {formatBytes(storageInfo.total)}</span>
-                      </div>
-                      <div className='storage-progress'>
-                        <div
-                          className='storage-progress-bar'
-                          style={{
-                            width: `${(storageInfo.used / storageInfo.total) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* 详细存储信息 */}
-                    <div className='storage-details'>
-                      <Button
-                        type='text'
+                  {/* 默认功能标签页 */}
+                  <Card size="small" title="默认功能标签页">
+                    <Space direction="vertical" style={{ width: '100%' }} size="small">
+                      <Text type="secondary">设置打开扩展时默认显示的功能</Text>
+                      <Select
+                        value={defaultTab}
+                        onChange={(value) => handleDefaultTabChange(value as DefaultTab)}
+                        style={{ width: '100%' }}
                         size='small'
-                        onClick={() => setShowStorageDetails(!showStorageDetails)}
-                        style={{ padding: 0, height: 'auto', fontSize: '12px' }}
-                      >
-                        {showStorageDetails ? '▼ 隐藏详情' : '▶ 查看详情'}
-                      </Button>
+                        options={tabOrder.map((tab) => ({
+                          value: tab,
+                          label: TAB_NAMES[tab],
+                        }))}
+                      />
+                    </Space>
+                  </Card>
 
-                      {showStorageDetails && (
-                        <div className='storage-details-list'>
-                          {Object.entries(cacheTypeInfo).map(([type, info]) => (
-                            <div key={type} className='storage-detail-item'>
-                              <div className='storage-detail-header'>
-                                <span className='storage-detail-name'>{info.name}</span>
-                                <span className='storage-detail-size'>{formatBytes(info.size)}</span>
-                              </div>
-                              <Button
-                                type='text'
-                                danger
-                                size='small'
-                                onClick={() => handleClearCacheByType(type as CacheType)}
-                                disabled={info.size === 0}
-                                style={{ padding: '2px 8px', height: '24px', fontSize: '11px' }}
-                              >
-                                清除
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  {/* 数据管理 */}
+                  <Card size="small" title="数据管理">
+                    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                      <Text type="secondary">管理缓存数据和存储空间</Text>
+                      
+                      <Space direction="vertical" style={{ width: '100%' }} size="small">
+                        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                          <Text>已使用: {formatBytes(storageInfo.used)}</Text>
+                          <Text>总容量: {formatBytes(storageInfo.total)}</Text>
+                        </Space>
+                        <Progress
+                          percent={Math.round((storageInfo.used / storageInfo.total) * 100)}
+                          size="small"
+                        />
+                      </Space>
 
-                    <div className='storage-actions'>
-                      <div className='storage-actions-row'>
-                        <Button onClick={handleExportConfig} size='small' type='primary'>
-                          📥 导出配置
+                      {/* 详细存储信息 */}
+                      <Space direction="vertical" style={{ width: '100%' }} size="small">
+                        <Button
+                          type='text'
+                          size='small'
+                          onClick={() => setShowStorageDetails(!showStorageDetails)}
+                          style={{ padding: 0, height: 'auto', fontSize: '12px' }}
+                        >
+                          {showStorageDetails ? '▼ 隐藏详情' : '▶ 查看详情'}
                         </Button>
-                        <Button onClick={handleCopyConfig} size='small'>
-                          📋 复制配置
-                        </Button>
-                      </div>
-                      <div className='storage-actions-row'>
-                        <Button onClick={handleImportConfig} size='small'>
-                          📤 导入配置
-                        </Button>
-                        <Button onClick={handleImportFromClipboard} size='small'>
-                          📋 从剪贴板导入
-                        </Button>
-                      </div>
-                      <div className='storage-actions-row'>
-                        <Button onClick={handleClearCache} danger size='small'>
+
+                        {showStorageDetails && (
+                          <Space direction="vertical" style={{ width: '100%' }} size="small">
+                            {Object.entries(cacheTypeInfo).map(([type, info]) => (
+                              <Card key={type} size="small" style={{ margin: 0 }}>
+                                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                                  <Space>
+                                    <Text>{info.name}</Text>
+                                    <Text type="secondary">{formatBytes(info.size)}</Text>
+                                  </Space>
+                                  <Button
+                                    type='text'
+                                    danger
+                                    size='small'
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => handleClearCacheByType(type as CacheType)}
+                                    disabled={info.size === 0}
+                                  >
+                                    清除
+                                  </Button>
+                                </Space>
+                              </Card>
+                            ))}
+                          </Space>
+                        )}
+                      </Space>
+
+                      <Space direction="vertical" style={{ width: '100%' }} size="small">
+                        <Space wrap>
+                          <Button onClick={handleExportConfig} size='small' type='primary' icon={<ExportOutlined />}>
+                            导出配置
+                          </Button>
+                          <Button onClick={handleCopyConfig} size='small' icon={<CopyOutlined />}>
+                            复制配置
+                          </Button>
+                          <Button onClick={handleImportConfig} size='small' icon={<ImportOutlined />}>
+                            导入配置
+                          </Button>
+                          <Button onClick={handleImportFromClipboard} size='small' icon={<CopyOutlined />}>
+                            从剪贴板导入
+                          </Button>
+                        </Space>
+                        <Button onClick={handleClearCache} danger size='small' icon={<DeleteOutlined />} block>
                           清除所有缓存
                         </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                      </Space>
+                    </Space>
+                  </Card>
 
-                {/* 关于信息 */}
-                <div className='settings-item'>
-                  <div className='settings-item-header'>
-                    <label className='settings-item-label'>关于</label>
-                    <span className='settings-item-desc'>版本信息和相关链接</span>
-                  </div>
-                  <div className='settings-item-content'>
-                    <div className='about-info'>
-                      <div className='about-version'>
-                        <span className='about-label'>版本:</span>
-                        <span className='about-value'>v{APP_VERSION}</span>
-                        {remoteVersion && (
-                          <span
-                            className={`about-remote-version ${
-                              compareVersions(remoteVersion, APP_VERSION) > 0 ? 'update-available' : ''
-                            }`}
-                          >
-                            {compareVersions(remoteVersion, APP_VERSION) > 0 ? (
-                              <> 🆕 最新版本: v{remoteVersion}</>
-                            ) : (
-                              <> ✓ 已是最新</>
-                            )}
-                          </span>
+                  {/* 关于信息 */}
+                  <Card size="small" title="关于">
+                    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                      <Text type="secondary">版本信息和相关链接</Text>
+                      
+                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                        <Space>
+                          <Text strong>版本:</Text>
+                          <Text>v{APP_VERSION}</Text>
+                          {remoteVersion && (
+                            <Text
+                              type={compareVersions(remoteVersion, APP_VERSION) > 0 ? 'warning' : 'success'}
+                            >
+                              {compareVersions(remoteVersion, APP_VERSION) > 0 ? (
+                                <>🆕 最新版本: v{remoteVersion}</>
+                              ) : (
+                                <>✓ 已是最新</>
+                              )}
+                            </Text>
+                          )}
+                        </Space>
+                        {updateCheckError && (
+                          <Text type="danger" style={{ fontSize: '12px' }}>
+                            检查更新失败: {updateCheckError}
+                          </Text>
                         )}
-                      </div>
-                      {updateCheckError && (
-                        <div className='about-update-error' style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
-                          检查更新失败: {updateCheckError}
-                        </div>
-                      )}
-                      <div className='about-actions' style={{ marginTop: '12px' }}>
                         <Button
                           onClick={checkForUpdate}
                           loading={isCheckingUpdate}
                           size='small'
                           type={remoteVersion && compareVersions(remoteVersion, APP_VERSION) > 0 ? 'primary' : 'default'}
+                          icon={<ReloadOutlined />}
                         >
                           {isCheckingUpdate ? '检查中...' : '检查更新'}
                         </Button>
-                      </div>
-                      <div className='about-links'>
-                        <a href={GITHUB_URL} target='_blank' rel='noopener noreferrer' className='about-link'>
-                          📦 GitHub 仓库
-                        </a>
-                        <a
+                      </Space>
+
+                      <Space wrap>
+                        <Link href={GITHUB_URL} target='_blank' rel='noopener noreferrer' icon={<GithubOutlined />}>
+                          GitHub 仓库
+                        </Link>
+                        <Link
                           href={`${GITHUB_URL}/issues`}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className='about-link'
+                          icon={<BugOutlined />}
                         >
-                          🐛 问题反馈
-                        </a>
-                        <a
+                          问题反馈
+                        </Link>
+                        <Link
                           href={`${GITHUB_URL}#readme`}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className='about-link'
+                          icon={<BookOutlined />}
                         >
-                          📖 使用文档
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                          使用文档
+                        </Link>
+                      </Space>
+                    </Space>
+                  </Card>
+                </Space>
               </div>
-            )}
-            {activeTab === 'theme' && (
+            ),
+          },
+          {
+            key: 'theme',
+            label: (
+              <Space>
+                <BgColorsOutlined />
+                <span>主题</span>
+              </Space>
+            ),
+            children: (
               <div className='settings-section'>
-                <h4 className='settings-section-title'>主题设置</h4>
-                <div className='settings-section-content'>
-                  <ThemeSettings onClose={() => {}} embedded={true} />
-                </div>
+                <ThemeSettings onClose={() => {}} embedded={true} />
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Tab Order Manager Modal */}
-      {showTabOrderManager && (
-        <div className='tab-order-manager-overlay' onClick={handleCloseTabOrderManager}>
-          <div className='tab-order-manager-modal' onClick={(e) => e.stopPropagation()}>
-            <div className='tab-order-manager-header'>
-              <h4>管理标签页顺序</h4>
-              <button className='tab-order-manager-close' onClick={handleCloseTabOrderManager}>
-                ✕
-              </button>
-            </div>
-            <div className='tab-order-manager-content'>
-              <p className='tab-order-manager-hint'>拖拽列表项调整功能标签页的显示顺序。</p>
-              <div className='tab-order-list'>
-                {tabOrder.map((tab, index) => (
-                  <div
-                    key={tab}
-                    className={`tab-order-item ${draggedIndex === index ? 'dragging' : ''} ${
-                      dragOverIndex === index ? 'drag-over' : ''
-                    }`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <span className='tab-order-handle'>☰</span>
-                    <span className='tab-order-name'>{TAB_NAMES[tab]}</span>
-                    <span className='tab-order-index'>{index + 1}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className='tab-order-manager-footer'>
-              <Button onClick={handleCloseTabOrderManager} size='small'>
-                取消
-              </Button>
-              <Button onClick={handleSaveTabOrder} type='primary' size='small'>
-                保存
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Modal
+        title="管理标签页顺序"
+        open={showTabOrderManager}
+        onCancel={handleCloseTabOrderManager}
+        onOk={handleSaveTabOrder}
+        okText="保存"
+        cancelText="取消"
+        width={500}
+        centered
+        destroyOnClose
+        maskClosable={true}
+        getContainer={() => document.body}
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Text type="secondary">拖拽列表项调整功能标签页的显示顺序。</Text>
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            {tabOrder.map((tab, index) => (
+              <Card
+                key={tab}
+                size="small"
+                style={{
+                  cursor: 'move',
+                  opacity: draggedIndex === index ? 0.5 : 1,
+                  borderColor: dragOverIndex === index ? 'var(--theme-primary)' : undefined,
+                }}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+              >
+                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                  <Space>
+                    <DragOutlined />
+                    <Text>{TAB_NAMES[tab]}</Text>
+                  </Space>
+                  <Text type="secondary">#{index + 1}</Text>
+                </Space>
+              </Card>
+            ))}
+          </Space>
+        </Space>
+      </Modal>
+    </Modal>
   );
 });
 
