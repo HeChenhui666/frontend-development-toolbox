@@ -16,6 +16,7 @@ const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
 const APITester = lazy(() => import('./components/APITester'));
 const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
+const CommonFunctions = lazy(() => import('./components/CommonFunctions'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -40,6 +41,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   gradient: { id: 'gradient', name: '颜色工具', icon: '🎨' },
   regex: { id: 'regex', name: '正则', icon: '🔤' },
   css: { id: 'css', name: 'CSS预设', icon: '🎨' },
+  functions: { id: 'functions', name: '常用函数', icon: '🧰' },
   translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
   apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
   redirector: { id: 'redirector', name: '请求重定向', icon: '🔄' },
@@ -158,6 +160,7 @@ const App: React.FC = () => {
       gradient: <ColorTools />,
       regex: <RegexTester />,
       css: <CSSTools />,
+      functions: <CommonFunctions />,
       translator: <Translator />,
       apitester: <APITester />,
       redirector: <RequestRedirector />,

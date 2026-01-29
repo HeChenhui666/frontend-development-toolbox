@@ -1,4 +1,16 @@
-export type DefaultTab = 'qrcode' | 'urlparams' | 'timestamp' | 'gradient' | 'json' | 'regex' | 'randomimage' | 'css' | 'translator' | 'apitester' | 'redirector';
+export type DefaultTab =
+  | 'qrcode'
+  | 'urlparams'
+  | 'timestamp'
+  | 'gradient'
+  | 'json'
+  | 'regex'
+  | 'randomimage'
+  | 'css'
+  | 'functions'
+  | 'translator'
+  | 'apitester'
+  | 'redirector';
 export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab for consistency
 
 const DEFAULT_TAB_KEY = 'app-default-tab';
@@ -14,6 +26,7 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'gradient',
   'regex',
   'css',
+  'functions',
   'translator',
   'apitester',
   'redirector',
