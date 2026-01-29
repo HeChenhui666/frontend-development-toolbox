@@ -19,7 +19,6 @@ import {
   CopyOutlined as CopyAllOutlined,
 } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../utils/message';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { checkQRCodeFeatures, checkMediaAPIs, checkBasicAPIs } from '../../utils/browserCompatibility';
 
@@ -45,6 +44,7 @@ const QRCodeDecoder: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<number | null>(null);
+  const scanFailCountRef = useRef<number>(0);
 
   // 检查浏览器兼容性（异步执行，避免阻塞渲染）
   useEffect(() => {
@@ -247,7 +247,7 @@ const QRCodeDecoder: React.FC = () => {
       if (!navigator.mediaDevices.getUserMedia) {
         // 尝试使用旧版 API
         const getUserMedia = 
-          navigator.getUserMedia || 
+          (navigator as any).getUserMedia || 
           (navigator as any).webkitGetUserMedia || 
           (navigator as any).mozGetUserMedia;
         
@@ -274,10 +274,11 @@ const QRCodeDecoder: React.FC = () => {
         }
 
         setIsScanning(true);
+        scanFailCountRef.current = 0;
         setDecodedResults([]);
         scanIntervalRef.current = window.setInterval(() => {
           scanQRCode();
-        }, 300);
+        }, 500);
 
         antdMessage.success('摄像头已启动');
         return;
@@ -285,6 +286,7 @@ const QRCodeDecoder: React.FC = () => {
 
       // 使用新版 API
       setIsScanning(true);
+      scanFailCountRef.current = 0;
       setDecodedResults([]);
 
       // 先尝试后置摄像头，如果失败则使用默认摄像头
@@ -320,7 +322,7 @@ const QRCodeDecoder: React.FC = () => {
       // 开始扫描
       scanIntervalRef.current = window.setInterval(() => {
         scanQRCode();
-      }, 300); // 每300ms扫描一次
+      }, 500); // 每500ms扫描一次
 
       antdMessage.success('摄像头已启动');
     } catch (err) {
@@ -362,9 +364,10 @@ const QRCodeDecoder: React.FC = () => {
             await videoRef.current.play();
           }
           setIsScanning(true);
+          scanFailCountRef.current = 0;
           scanIntervalRef.current = window.setInterval(() => {
             scanQRCode();
-          }, 300);
+          }, 500);
           antdMessage.success('摄像头已启动');
           return;
         } catch (retryErr) {
@@ -383,6 +386,7 @@ const QRCodeDecoder: React.FC = () => {
   // 停止摄像头扫码
   const stopScanning = () => {
     setIsScanning(false);
+    scanFailCountRef.current = 0;
     
     if (scanIntervalRef.current !== null) {
       clearInterval(scanIntervalRef.current);
@@ -430,13 +434,16 @@ const QRCodeDecoder: React.FC = () => {
         setDecodedResults(prev => [...prev, newResult]);
         setError('');
         setImagePreview(canvas.toDataURL('image/png'));
-        antdMessage.success(`二维码识别成功（已识别 ${decodedResults.length + 1} 个）`);
-        
-        // 如果识别到第一个二维码，可以选择继续扫描或停止
-        // 这里选择继续扫描以识别更多二维码
-        if (decodedResults.length === 0) {
-          // 第一个二维码识别成功，继续扫描
-        }
+        antdMessage.success('二维码识别成功');
+
+        // 第一次识别到结果后自动停止扫码
+        stopScanning();
+      }
+    } else {
+      scanFailCountRef.current += 1;
+      if (scanFailCountRef.current >= 10) {
+        setError('未识别到二维码，已停止扫码');
+        stopScanning();
       }
     }
   };
