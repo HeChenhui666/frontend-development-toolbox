@@ -44,6 +44,46 @@ const GradientGenerator: React.FC = () => {
   const selectedStop = stops.find(s => s.id === selectedStopId) || stops[0];
   const isUpdatingFromStopRef = useRef(false);
 
+  const getThemeColor = (variableName: string, fallback: string) =>
+    getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || fallback;
+
+  const normalizeHexColor = (value: string, fallback: string) => {
+    const trimmed = value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed;
+    if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+      return `#${trimmed.slice(1).split('').map((char) => char + char).join('')}`;
+    }
+    return fallback;
+  };
+
+  const applyThemeDefaults = () => {
+    const primary = normalizeHexColor(getThemeColor('--theme-primary', '#22c1c3'), '#22c1c3');
+    const accent = normalizeHexColor(getThemeColor('--theme-primaryGradientEnd', '#fdbb2d'), '#fdbb2d');
+    setStops([
+      { id: '1', color: primary, position: 0 },
+      { id: '2', color: accent, position: 100 },
+    ]);
+    setSelectedStopId('2');
+  };
+
+  useEffect(() => {
+    const handleThemeChange = () => applyThemeDefaults();
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'app-theme') {
+        handleThemeChange();
+      }
+    };
+
+    applyThemeDefaults();
+    window.addEventListener('themeChanged', handleThemeChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   // 更新选中停止点的颜色（只在selectedStopId变化时）
   useEffect(() => {
     const stop = stops.find(s => s.id === selectedStopId);
@@ -173,9 +213,11 @@ const GradientGenerator: React.FC = () => {
     const newId = Date.now().toString();
     // 使用当前选中停止点的颜色作为新停止点的初始颜色
     const currentStop = stops.find(s => s.id === selectedStopId);
+    const fallbackStopColor =
+      getComputedStyle(document.documentElement).getPropertyValue('--theme-onPrimary').trim() || '#ffffff';
     const newStop: GradientStop = {
       id: newId,
-      color: currentStop ? currentStop.color : '#ffffff',
+      color: currentStop ? currentStop.color : fallbackStopColor,
       position: 50,
     };
     const newStops = [...stops, newStop].sort((a, b) => a.position - b.position);
@@ -256,7 +298,7 @@ const GradientGenerator: React.FC = () => {
             height: '120px', 
             background: cssCode,
             borderRadius: '4px',
-            border: '1px solid #d9d9d9'
+            border: '1px solid var(--theme-borderLight, #d9d9d9)'
           }}
         />
       </Card>
@@ -420,7 +462,7 @@ const GradientGenerator: React.FC = () => {
                 key={stop.id}
                 size="small"
                 style={{ 
-                  border: selectedStopId === stop.id ? '2px solid var(--theme-primary)' : '1px solid #d9d9d9',
+                  border: selectedStopId === stop.id ? '2px solid var(--theme-primary)' : '1px solid var(--theme-borderLight, #d9d9d9)',
                   cursor: 'pointer'
                 }}
                 onClick={() => setSelectedStopId(stop.id)}
@@ -432,7 +474,7 @@ const GradientGenerator: React.FC = () => {
                       height: '40px', 
                       backgroundColor: stop.color,
                       borderRadius: '4px',
-                      border: '1px solid #d9d9d9'
+                      border: '1px solid var(--theme-borderLight, #d9d9d9)'
                     }}
                   />
                   <Input

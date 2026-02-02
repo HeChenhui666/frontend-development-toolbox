@@ -50,7 +50,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
             bodyStyle={{ padding: '6px'}}
           >
             <Space direction="vertical" style={{ width: '100%' }} size="small" align="center">
-              <div className="theme-preview" style={{ width: '100%' }}>
+              <div className="theme-preview">
                 <div
                   className="theme-preview-gradient"
                   style={{

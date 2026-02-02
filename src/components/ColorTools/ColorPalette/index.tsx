@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Button,
@@ -29,6 +29,42 @@ const ColorPalette: React.FC = () => {
   const [baseColor, setBaseColor] = useState<string>('#667eea');
   const [paletteType, setPaletteType] = useState<PaletteType>('complementary');
   const [generatedPalette, setGeneratedPalette] = useState<ColorPalette | null>(null);
+
+  const getThemeColor = (variableName: string, fallback: string) =>
+    getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || fallback;
+
+  const normalizeHexColor = (value: string, fallback: string) => {
+    const trimmed = value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed;
+    if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+      return `#${trimmed.slice(1).split('').map((char) => char + char).join('')}`;
+    }
+    return fallback;
+  };
+
+  const applyThemeDefaults = () => {
+    const primary = normalizeHexColor(getThemeColor('--theme-primary', baseColor), baseColor);
+    setBaseColor(primary);
+    setGeneratedPalette(null);
+  };
+
+  useEffect(() => {
+    const handleThemeChange = () => applyThemeDefaults();
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'app-theme') {
+        handleThemeChange();
+      }
+    };
+
+    applyThemeDefaults();
+    window.addEventListener('themeChanged', handleThemeChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // HEX转HSL
   const hexToHsl = (hex: string): { h: number; s: number; l: number } | null => {
@@ -173,7 +209,7 @@ const ColorPalette: React.FC = () => {
               type="color"
               value={baseColor}
               onChange={(e) => setBaseColor(e.target.value)}
-              style={{ width: '60px', height: '32px', border: '1px solid #d9d9d9', borderRadius: '4px', cursor: 'pointer' }}
+              style={{ width: '60px', height: '32px', border: '1px solid var(--theme-borderLight, #d9d9d9)', borderRadius: '4px', cursor: 'pointer' }}
             />
             <Input
               value={baseColor}
@@ -233,7 +269,7 @@ const ColorPalette: React.FC = () => {
                       height: '60px', 
                       backgroundColor: color,
                       borderRadius: '4px',
-                      border: '1px solid #d9d9d9'
+                      border: '1px solid var(--theme-borderLight, #d9d9d9)'
                     }}
                   />
                   <Text code style={{ fontSize: '12px', display: 'block', textAlign: 'center' }}>

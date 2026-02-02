@@ -79,8 +79,8 @@
 .tetris-board {
   display: flex;
   flex-direction: column;
-  border: 2px solid #334155;
-  background: #1e293b;
+  border: 2px solid var(--theme-borderStrong, #334155);
+  background: var(--theme-text, #1e293b);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -92,7 +92,7 @@
 .tetris-cell {
   width: 12px;
   height: 12px;
-  border: 1px solid #334155;
+  border: 1px solid var(--theme-borderStrong, #334155);
   box-sizing: border-box;
 }
 
@@ -102,8 +102,8 @@
 }
 
 .tetris-cell.current {
-  background: #f093fb;
-  border-color: #e879f9;
+  background: var(--theme-primaryGradientEnd, #f093fb);
+  border-color: var(--theme-primary, #e879f9);
 }
 
 .game-over-overlay,
@@ -113,7 +113,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--theme-overlay, rgba(0, 0, 0, 0.7));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,7 +127,7 @@
   padding: 6px;
   border-radius: 4px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
 }
 
 .game-over-content h3 {

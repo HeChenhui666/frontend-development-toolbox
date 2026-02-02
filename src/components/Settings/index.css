@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--theme-overlay, rgba(0, 0, 0, 0.5));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,7 +21,7 @@
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px var(--theme-shadowStrong, rgba(0, 0, 0, 0.2));
   overflow: hidden;
 }
 
@@ -103,7 +103,7 @@
 }
 
 .settings-sidebar-item.active {
-  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08));
+  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
   color: var(--theme-active, #667eea);
   border-left-color: var(--theme-active, #667eea);
   font-weight: 600;
@@ -190,8 +190,8 @@
 }
 
 .settings-item-content .ant-btn-primary:hover {
-  background: var(--theme-activeHover, #5568d3) !important;
-  border-color: var(--theme-activeHover, #5568d3) !important;
+  background: var(--theme-buttonPrimaryHover, #5568d3) !important;
+  border-color: var(--theme-buttonPrimaryHover, #5568d3) !important;
   color: #ffffff !important;
 }
 
@@ -232,7 +232,7 @@
 .settings-item-content .ant-select.ant-select-focused .ant-select-selector,
 .settings-item-content .ant-select.ant-select-focused:hover .ant-select-selector {
   border-color: var(--theme-active, #667eea) !important;
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.2)) !important;
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.2)) !important;
 }
 
 .settings-item-content .ant-select .ant-select-selection-item {
@@ -258,7 +258,7 @@
 }
 
 .ant-select-item-option-selected {
-  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08)) !important;
+  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08)) !important;
   color: var(--theme-active, #667eea) !important;
 }
 
@@ -268,8 +268,8 @@
 }
 
 .tab-order-manager-footer .ant-btn-primary:hover {
-  background: var(--theme-activeHover, #5568d3);
-  border-color: var(--theme-activeHover, #5568d3);
+  background: var(--theme-buttonPrimaryHover, #5568d3);
+  border-color: var(--theme-buttonPrimaryHover, #5568d3);
 }
 
 .tab-order-manager-footer .ant-btn {
@@ -426,7 +426,7 @@
 
 .about-update-error {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--theme-error, #ef4444);
   margin-top: 6px;
 }
 
@@ -455,7 +455,7 @@
 }
 
 .about-link:hover {
-  color: var(--theme-activeHover, #5568d3);
+  color: var(--theme-buttonPrimaryHover, #5568d3);
   text-decoration: underline;
 }
 
@@ -466,7 +466,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--theme-overlay, rgba(0, 0, 0, 0.6));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -482,7 +482,7 @@
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
   overflow: hidden;
 }
 
@@ -572,9 +572,9 @@
 
 .tab-order-item.drag-over {
   border-color: var(--theme-active, #667eea);
-  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08));
+  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px var(--theme-shadowSoft, rgba(102, 126, 234, 0.2));
 }
 
 .tab-order-handle {

@@ -127,7 +127,7 @@ const CommonFunctions: React.FC = () => {
             {currentSnippet.description && (
               <Paragraph type="secondary">{currentSnippet.description}</Paragraph>
             )}
-            <Card size="small" style={{ background: '#f5f5f5' }}>
+            <Card size="small" style={{ background: 'var(--theme-surfaceSunken, #f5f5f5)' }}>
               <pre style={{ margin: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                 <code>{currentSnippet.code}</code>
               </pre>

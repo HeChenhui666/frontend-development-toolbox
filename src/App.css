@@ -23,6 +23,49 @@
   --theme-scrollbarTrack: #f8f9fa;
   --theme-scrollbarThumb: #cbd5e1;
   --theme-scrollbarThumbHover: #94a3b8;
+  --theme-primarySoft: rgba(102, 126, 234, 0.12);
+  --theme-primarySoftHover: rgba(102, 126, 234, 0.2);
+  --theme-primarySoftActive: rgba(102, 126, 234, 0.28);
+  --theme-primaryOutline: rgba(102, 126, 234, 0.4);
+  --theme-primaryShadow: rgba(102, 126, 234, 0.25);
+  --theme-onPrimary: #ffffff;
+  --theme-surfaceElevated: #fcfbfc;
+  --theme-surfaceSunken: #f3f5f7;
+  --theme-borderStrong: #606c7c;
+  --theme-borderMuted: #f1f4f6;
+  --theme-overlay: rgba(51, 65, 85, 0.45);
+  --theme-overlayLight: rgba(255, 255, 255, 0.7);
+  --theme-headerGlow: rgba(255, 255, 255, 0.12);
+  --theme-headerControlBg: rgba(255, 255, 255, 0.2);
+  --theme-headerControlHover: rgba(255, 255, 255, 0.32);
+  --theme-shadowSubtle: rgba(102, 126, 234, 0.08);
+  --theme-shadowSoft: rgba(102, 126, 234, 0.18);
+  --theme-shadowStrong: rgba(102, 126, 234, 0.32);
+  --theme-errorShadow: rgba(239, 68, 68, 0.18);
+  --theme-successShadow: rgba(16, 185, 129, 0.18);
+  --theme-game-2048-accent: #edc22e;
+  --theme-game-2048-2: #eee4da;
+  --theme-game-2048-4: #ede0c8;
+  --theme-game-2048-8: #f2b179;
+  --theme-game-2048-16: #f59563;
+  --theme-game-2048-32: #f67c5f;
+  --theme-game-2048-64: #f65e3b;
+  --theme-game-2048-128: #edcf72;
+  --theme-game-2048-256: #edcc61;
+  --theme-game-2048-512: #edc850;
+  --theme-game-2048-1024: #edc53f;
+  --theme-game-2048-2048: #edc22e;
+  --theme-game-2048-text-2: #776e65;
+  --theme-game-2048-text-4: #776e65;
+  --theme-game-2048-text-8: #f9f6f2;
+  --theme-game-2048-text-16: #f9f6f2;
+  --theme-game-2048-text-32: #f9f6f2;
+  --theme-game-2048-text-64: #f9f6f2;
+  --theme-game-2048-text-128: #f9f6f2;
+  --theme-game-2048-text-256: #f9f6f2;
+  --theme-game-2048-text-512: #f9f6f2;
+  --theme-game-2048-text-1024: #f9f6f2;
+  --theme-game-2048-text-2048: #f9f6f2;
   --app-spacing: 6px;
   --app-radius: 4px;
 }
@@ -30,7 +73,8 @@
 /* 全局统一滚动条样式（隐式滚动区域都会用这套），
    个别组件如果需要隐藏滚动条可以单独覆盖 */
 * {
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-width: thin;
+  /* Firefox */
   scrollbar-color: var(--theme-scrollbarThumb) transparent;
 }
 
@@ -93,6 +137,11 @@ body {
 .ant-modal-header,
 .ant-modal-footer,
 .ant-modal-body,
+.ant-drawer-content,
+.ant-drawer-header,
+.ant-drawer-footer,
+.ant-drawer-body,
+.ant-popover-inner,
 .ant-dropdown,
 .ant-select-dropdown,
 .ant-tooltip-inner {
@@ -104,10 +153,63 @@ body {
 .ant-modal-header,
 .ant-modal-footer,
 .ant-modal-body,
+.ant-drawer-header,
+.ant-drawer-footer,
+.ant-drawer-body,
 .ant-dropdown-menu,
 .ant-select-dropdown,
 .ant-tooltip-inner {
   padding: var(--app-spacing);
+}
+
+/* 弹窗类组件的主题背景优化（暗色/荧光赛博更友好） */
+.ant-modal-content,
+.ant-modal-header,
+.ant-modal-footer,
+.ant-modal-body,
+.ant-drawer-content,
+.ant-drawer-header,
+.ant-drawer-footer,
+.ant-drawer-body,
+.ant-popover-inner,
+.ant-dropdown,
+.ant-dropdown-menu,
+.ant-select-dropdown {
+  background: var(--theme-surface, #f8f9fa);
+  color: var(--theme-text, #334155);
+  border-color: var(--theme-border, #e8ecf0);
+}
+
+.ant-modal>.ant-modal-container {
+  background-color: var(--theme-surface, #f8f9fa);
+}
+
+.ant-modal-content,
+.ant-drawer-content,
+.ant-popover-inner,
+.ant-dropdown,
+.ant-select-dropdown {
+  border: 1px solid var(--theme-border, #e8ecf0);
+}
+
+.ant-modal-header,
+.ant-modal-footer,
+.ant-drawer-header,
+.ant-drawer-footer {
+  border-color: var(--theme-border, #e8ecf0);
+}
+
+.ant-popover-title,
+.ant-popover-inner-content,
+.ant-drawer-title,
+.ant-modal-title {
+  color: var(--theme-text, #334155);
+}
+
+.ant-tooltip-inner {
+  background: var(--theme-surface, #f8f9fa);
+  color: var(--theme-text, #334155);
+  border: 1px solid var(--theme-border, #e8ecf0);
 }
 
 /* 统一 Space.Compact 中输入框 + 按钮的高度对齐 */
@@ -132,7 +234,7 @@ body:has(.app-standalone) {
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 22px var(--theme-shadowSoft, rgba(0, 0, 0, 0.1));
   overflow: hidden;
 }
 
@@ -157,16 +259,14 @@ body:has(.app-standalone) {
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 22px var(--theme-shadowSoft, rgba(0, 0, 0, 0.1));
   overflow: hidden;
 }
 
 .header {
-  background: var(--theme-header-gradient, linear-gradient(
-    135deg,
-    var(--theme-primaryGradient, #667eea) 0%,
-    var(--theme-primaryGradientEnd, #764ba2) 100%
-  ));
+  background: var(--theme-header-gradient, linear-gradient(135deg,
+        var(--theme-primaryGradient, #667eea) 0%,
+        var(--theme-primaryGradientEnd, #764ba2) 100%));
   color: white;
   padding: 6px;
   text-align: center;
@@ -185,15 +285,18 @@ body:has(.app-standalone) {
   right: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--theme-headerGlow, rgba(255, 255, 255, 0.1)) 0%, transparent 70%);
   animation: pulse 8s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.5;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.8;
@@ -211,7 +314,7 @@ body:has(.app-standalone) {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--theme-headerControlBg, rgba(255, 255, 255, 0.2));
   border: none;
   color: white;
   width: 28px;
@@ -229,7 +332,7 @@ body:has(.app-standalone) {
 }
 
 .header-settings-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--theme-headerControlHover, rgba(255, 255, 255, 0.3));
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -271,7 +374,7 @@ body:has(.app-standalone) {
 .tabs-container {
   background: var(--theme-background, #ffffff);
   border-bottom: 1px solid var(--theme-borderLight, #cbd5e1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 6px var(--theme-shadowSubtle, rgba(0, 0, 0, 0.04));
   flex-shrink: 0;
   overflow: hidden;
   display: flex;
@@ -287,14 +390,17 @@ body:has(.app-standalone) {
   background: var(--theme-surface, #f8f9fa);
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
   -webkit-overflow-scrolling: touch;
   flex: 1;
 }
 
 .tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .tabs-all {
@@ -315,7 +421,7 @@ body:has(.app-standalone) {
   overflow-y: auto;
   width: 100%;
   padding: 6px;
-  background: var(--theme-background, #ffffff);
+  background: var(--theme-surfaceElevated, #ffffff);
 }
 
 .tabs-all-item {
@@ -379,14 +485,14 @@ body:has(.app-standalone) {
 }
 
 .tab:hover {
-  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08));
+  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
   color: var(--theme-active, #667eea);
 }
 
 .tab.active {
   color: var(--theme-active, #667eea);
   background: var(--theme-activeBackground, #ffffff);
-  box-shadow: 0 2px 8px var(--theme-activeHover, rgba(102, 126, 234, 0.15));
+  box-shadow: 0 2px 8px var(--theme-primaryShadow, rgba(102, 126, 234, 0.2));
   font-weight: 600;
 }
 
@@ -412,7 +518,7 @@ body:has(.app-standalone) {
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--theme-background, #ffffff);
-  box-shadow: inset 0 0 0 1px var(--theme-borderLight, #cbd5e1);
+  box-shadow: inset 0 0 0 1px var(--theme-borderMuted, #cbd5e1);
   min-height: 0;
 }
 
@@ -462,14 +568,14 @@ body:has(.app-standalone) {
 }
 
 .sub-tab:hover {
-  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08));
+  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
   color: var(--theme-active, #667eea);
 }
 
 .sub-tab.active {
   color: var(--theme-active, #667eea);
   background: var(--theme-activeBackground, #ffffff);
-  box-shadow: 0 2px 6px var(--theme-activeHover, rgba(102, 126, 234, 0.12));
+  box-shadow: 0 2px 6px var(--theme-primaryShadow, rgba(102, 126, 234, 0.18));
   font-weight: 600;
 }
 
@@ -520,9 +626,9 @@ body:has(.app-standalone) {
   font-style: italic;
   margin-top: 6px;
   padding: 6px;
-  background: var(--theme-surface, #f8f9fa);
+  background: var(--theme-surfaceSunken, #f8f9fa);
   border-radius: 4px;
-  border: 1px dashed var(--theme-borderLight, #cbd5e1);
+  border: 1px dashed var(--theme-borderMuted, #cbd5e1);
 }
 
 /* 加载中样式 */
@@ -538,12 +644,12 @@ body:has(.app-standalone) {
 /* 通用错误样式 */
 .error {
   padding: 6px;
-  background: #fff5f5;
-  color: #c62828;
+  background: var(--theme-errorBackground, #fff5f5);
+  color: var(--theme-error, #c62828);
   border-radius: 4px;
   font-size: 11px;
-  border-left: 3px solid #c62828;
-  box-shadow: 0 2px 4px rgba(198, 40, 40, 0.1);
+  border-left: 3px solid var(--theme-error, #c62828);
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
 }
 
 /* ============================================

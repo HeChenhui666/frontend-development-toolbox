@@ -89,7 +89,7 @@
 }
 
 .snippet-item.active {
-  background: var(--theme-activeHover, rgba(102, 126, 234, 0.08));
+  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
   border-color: var(--theme-primary, #667eea);
 }
 

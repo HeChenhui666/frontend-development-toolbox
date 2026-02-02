@@ -228,8 +228,15 @@ const JSONCompare: React.FC = () => {
       {diffs.length > 0 && (
         <Card size="small" title={`差异结果（共 ${diffs.length} 处）`}>
           <Space direction="vertical" style={{ width: '100%' }} size="small">
-            {diffs.map((diff, index) => (
-              <Card key={index} size="small" style={{ borderLeft: `4px solid ${diff.type === 'added' ? '#52c41a' : diff.type === 'removed' ? '#ff4d4f' : '#1890ff'}` }}>
+            {diffs.map((diff, index) => {
+              const diffColor =
+                diff.type === 'added'
+                  ? 'var(--theme-success, #52c41a)'
+                  : diff.type === 'removed'
+                    ? 'var(--theme-error, #ff4d4f)'
+                    : 'var(--theme-active, #1890ff)';
+              return (
+                <Card key={index} size="small" style={{ borderLeft: `4px solid ${diffColor}` }}>
                 <Space direction="vertical" style={{ width: '100%' }} size="small">
                   <Space>
                     <Tag color={diff.type === 'added' ? 'success' : diff.type === 'removed' ? 'error' : 'processing'}>
@@ -287,7 +294,8 @@ const JSONCompare: React.FC = () => {
                   )}
                 </Space>
               </Card>
-            ))}
+            );
+            })}
           </Space>
         </Card>
       )}

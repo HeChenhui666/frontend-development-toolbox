@@ -320,9 +320,9 @@ const CSSCompatibility: React.FC = () => {
                 message={
                   <Space>
                     {result.supported ? (
-                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <CheckCircleOutlined style={{ color: 'var(--theme-success, #52c41a)' }} />
                     ) : (
-                      <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                      <CloseCircleOutlined style={{ color: 'var(--theme-error, #ff4d4f)' }} />
                     )}
                     <Text strong>{result.property}</Text>
                     {result.prefix && (

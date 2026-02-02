@@ -20,7 +20,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--theme-headerGlow, rgba(255, 255, 255, 0.1)) 0%, transparent 70%);
   animation: rotate 20s linear infinite;
 }
 
@@ -45,14 +45,14 @@
 .easter-egg-content {
   position: relative;
   z-index: 1;
-  background: var(--theme-background, rgba(255, 255, 255, 0.95));
+  background: var(--theme-surfaceElevated, rgba(255, 255, 255, 0.95));
   border-radius: 4px;
   padding: 6px;
   max-width: 420px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
   animation: slideUp 0.4s ease-out;
   backdrop-filter: blur(10px);
 }
@@ -218,7 +218,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--theme-overlay, rgba(0, 0, 0, 0.6));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -236,7 +236,7 @@
   max-width: 380px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
   animation: modalSlideUp 0.3s ease-out;
   overflow: hidden;
 }
@@ -276,7 +276,7 @@
 }
 
 .game-modal-close {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--theme-headerControlBg, rgba(255, 255, 255, 0.2));
   border: none;
   color: white;
   font-size: 20px;
@@ -292,7 +292,7 @@
 }
 
 .game-modal-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--theme-headerControlHover, rgba(255, 255, 255, 0.3));
 }
 
 .game-modal-body {

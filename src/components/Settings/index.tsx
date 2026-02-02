@@ -321,7 +321,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
       content: (
         <div>
           <p style={{ marginBottom: '6px'}}>导入配置将覆盖现有的用户设置（主题、预设参数、游戏积分等）。</p>
-          <p style={{ fontSize: '12px', color: '#64748b', marginBottom: 6}}>
+          <p style={{ fontSize: '12px', color: 'var(--theme-textSecondary, #64748b)', marginBottom: 6}}>
             如果自动读取剪贴板失败，请点击"确定"后手动粘贴配置JSON。
           </p>
         </div>
@@ -343,7 +343,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
                 title: '手动粘贴配置',
                 content: (
                   <div>
-                    <p style={{ marginBottom: '6px', fontSize: '12px', color: '#64748b' }}>
+                    <p style={{ marginBottom: '6px', fontSize: '12px', color: 'var(--theme-textSecondary, #64748b)' }}>
                       自动读取剪贴板失败，请手动粘贴配置JSON：
                     </p>
                     <TextArea

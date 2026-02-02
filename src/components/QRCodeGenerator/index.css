@@ -37,7 +37,7 @@
 .url-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .copy-btn {
@@ -67,18 +67,18 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px var(--theme-activeHover, rgba(102, 126, 234, 0.25));
+  box-shadow: 0 2px 6px var(--theme-shadowSoft, rgba(102, 126, 234, 0.25));
 }
 
 .generate-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px var(--theme-activeHover, rgba(102, 126, 234, 0.35));
+  box-shadow: 0 4px 16px var(--theme-shadowStrong, rgba(102, 126, 234, 0.35));
   background: linear-gradient(135deg, var(--theme-buttonPrimaryHover, #5568d3) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
 }
 
 .generate-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 2px 8px var(--theme-shadowSoft, rgba(102, 126, 234, 0.25));
 }
 
 .qr-result {
@@ -97,7 +97,7 @@
   width: 200px;
   height: auto;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--theme-shadowSubtle, rgba(0, 0, 0, 0.1));
 }
 
 .download-btn {
@@ -124,6 +124,6 @@
   border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
 }
 

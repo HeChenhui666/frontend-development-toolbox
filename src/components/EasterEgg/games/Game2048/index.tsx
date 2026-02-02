@@ -227,28 +227,10 @@ const Game2048: React.FC = () => {
     setGameOver(false);
   };
 
-  // 获取数字颜色
-  const getTileColor = (value: number): string => {
-    const colors: { [key: number]: string } = {
-      2: '#eee4da',
-      4: '#ede0c8',
-      8: '#f2b179',
-      16: '#f59563',
-      32: '#f67c5f',
-      64: '#f65e3b',
-      128: '#edcf72',
-      256: '#edcc61',
-      512: '#edc850',
-      1024: '#edc53f',
-      2048: '#edc22e',
-    };
-    return colors[value] || '#3c3a32';
-  };
-
-  // 获取数字文字颜色
-  const getTextColor = (value: number): string => {
-    return value <= 4 ? '#776e65' : '#f9f6f2';
-  };
+  const getTileStyle = (value: number) => ({
+    backgroundColor: `var(--theme-game-2048-${value}, var(--theme-primary))`,
+    color: `var(--theme-game-2048-text-${value}, var(--theme-onPrimary))`,
+  });
 
   return (
     <div className="game-2048">
@@ -293,8 +275,7 @@ const Game2048: React.FC = () => {
                   <div
                     className="game-tile"
                     style={{
-                      backgroundColor: getTileColor(cell),
-                      color: getTextColor(cell),
+                      ...getTileStyle(cell),
                       fontSize: cell >= 1024 ? '14px' : cell >= 256 ? '16px' : '18px',
                     }}
                   >
