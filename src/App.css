@@ -30,7 +30,8 @@
 /* 全局统一滚动条样式（隐式滚动区域都会用这套），
    个别组件如果需要隐藏滚动条可以单独覆盖 */
 * {
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-width: thin;
+  /* Firefox */
   scrollbar-color: var(--theme-scrollbarThumb) transparent;
 }
 
@@ -93,6 +94,11 @@ body {
 .ant-modal-header,
 .ant-modal-footer,
 .ant-modal-body,
+.ant-drawer-content,
+.ant-drawer-header,
+.ant-drawer-footer,
+.ant-drawer-body,
+.ant-popover-inner,
 .ant-dropdown,
 .ant-select-dropdown,
 .ant-tooltip-inner {
@@ -104,10 +110,63 @@ body {
 .ant-modal-header,
 .ant-modal-footer,
 .ant-modal-body,
+.ant-drawer-header,
+.ant-drawer-footer,
+.ant-drawer-body,
 .ant-dropdown-menu,
 .ant-select-dropdown,
 .ant-tooltip-inner {
   padding: var(--app-spacing);
+}
+
+/* 弹窗类组件的主题背景优化（暗色/荧光赛博更友好） */
+.ant-modal-content,
+.ant-modal-header,
+.ant-modal-footer,
+.ant-modal-body,
+.ant-drawer-content,
+.ant-drawer-header,
+.ant-drawer-footer,
+.ant-drawer-body,
+.ant-popover-inner,
+.ant-dropdown,
+.ant-dropdown-menu,
+.ant-select-dropdown {
+  background: var(--theme-surface, #f8f9fa);
+  color: var(--theme-text, #334155);
+  border-color: var(--theme-border, #e8ecf0);
+}
+
+.ant-modal>.ant-modal-container {
+  background-color: var(--theme-surface, #f8f9fa);
+}
+
+.ant-modal-content,
+.ant-drawer-content,
+.ant-popover-inner,
+.ant-dropdown,
+.ant-select-dropdown {
+  border: 1px solid var(--theme-border, #e8ecf0);
+}
+
+.ant-modal-header,
+.ant-modal-footer,
+.ant-drawer-header,
+.ant-drawer-footer {
+  border-color: var(--theme-border, #e8ecf0);
+}
+
+.ant-popover-title,
+.ant-popover-inner-content,
+.ant-drawer-title,
+.ant-modal-title {
+  color: var(--theme-text, #334155);
+}
+
+.ant-tooltip-inner {
+  background: var(--theme-surface, #f8f9fa);
+  color: var(--theme-text, #334155);
+  border: 1px solid var(--theme-border, #e8ecf0);
 }
 
 /* 统一 Space.Compact 中输入框 + 按钮的高度对齐 */
@@ -162,11 +221,9 @@ body:has(.app-standalone) {
 }
 
 .header {
-  background: var(--theme-header-gradient, linear-gradient(
-    135deg,
-    var(--theme-primaryGradient, #667eea) 0%,
-    var(--theme-primaryGradientEnd, #764ba2) 100%
-  ));
+  background: var(--theme-header-gradient, linear-gradient(135deg,
+        var(--theme-primaryGradient, #667eea) 0%,
+        var(--theme-primaryGradientEnd, #764ba2) 100%));
   color: white;
   padding: 6px;
   text-align: center;
@@ -190,10 +247,13 @@ body:has(.app-standalone) {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.5;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.8;
@@ -287,14 +347,17 @@ body:has(.app-standalone) {
   background: var(--theme-surface, #f8f9fa);
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
   -webkit-overflow-scrolling: touch;
   flex: 1;
 }
 
 .tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .tabs-all {
