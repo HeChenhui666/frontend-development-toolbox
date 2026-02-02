@@ -24,7 +24,7 @@
 .section-header label {
   font-size: 11px;
   font-weight: 600;
-  color: #334155;
+  color: var(--theme-text, #334155);
 }
 
 .preset-select {
@@ -37,9 +37,9 @@
 
 .preset-description {
   font-size: 10px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   padding: 6px;
-  background: #f8f9fa;
+  background: var(--theme-surfaceSunken, #f8f9fa);
   border-radius: 4px;
   margin-top: 6px;
   font-style: italic;
@@ -63,7 +63,7 @@
   align-items: center;
   gap: 6px;
   font-size: 10px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   cursor: pointer;
 }
 
@@ -99,7 +99,7 @@
 .regex-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .regex-input.error {
@@ -164,7 +164,7 @@
 .test-textarea:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .error {
@@ -174,7 +174,7 @@
   border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
   flex-shrink: 0;
 }
 
@@ -223,7 +223,7 @@
 
 .clear-btn {
   padding: 6px;
-  background: #ef4444;
+  background: var(--theme-error, #ef4444);
   color: white;
   border: none;
   border-radius: 4px;
@@ -231,10 +231,12 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 6px var(--theme-errorShadow, rgba(239, 68, 68, 0.2));
 }
 
 .clear-btn:hover {
-  background: #dc2626;
+  background: var(--theme-error, #dc2626);
+  opacity: 0.9;
 }
 
 /* 操作区域样式 */
@@ -258,7 +260,7 @@
 }
 
 .copy-action-btn:hover {
-  background: #475569;
+  background: var(--theme-borderStrong, #475569);
 }
 
 .action-result {
@@ -281,6 +283,6 @@
 }
 
 .action-result-placeholder {
-  color: #94a3b8;
+  color: var(--theme-textMuted, #94a3b8);
   font-style: italic;
 }

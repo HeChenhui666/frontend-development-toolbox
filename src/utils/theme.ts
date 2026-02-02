@@ -64,6 +64,79 @@ export interface Theme {
   };
 }
 
+const clampChannel = (value: number) => Math.min(255, Math.max(0, Math.round(value)));
+
+const parseHexColor = (color: string): { r: number; g: number; b: number } | null => {
+  const hex = color.replace('#', '').trim();
+  if (!/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(hex)) return null;
+  const normalized = hex.length === 3
+    ? hex.split('').map((char) => char + char).join('')
+    : hex;
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return { r, g, b };
+};
+
+const parseRgbColor = (color: string): { r: number; g: number; b: number } | null => {
+  const match = color.match(/rgba?\(([^)]+)\)/i);
+  if (!match) return null;
+  const [r, g, b] = match[1]
+    .split(',')
+    .map((part) => Number.parseFloat(part.trim()))
+    .filter((value) => !Number.isNaN(value));
+  if ([r, g, b].some((value) => value === undefined)) return null;
+  return { r, g, b };
+};
+
+const toRgbaColor = (color: string, alpha: number): string => {
+  const rgb = parseHexColor(color) ?? parseRgbColor(color);
+  if (!rgb) return color;
+  return `rgba(${clampChannel(rgb.r)}, ${clampChannel(rgb.g)}, ${clampChannel(rgb.b)}, ${alpha})`;
+};
+
+const mixHexColors = (colorA: string, colorB: string, weight: number): string => {
+  const rgbA = parseHexColor(colorA);
+  const rgbB = parseHexColor(colorB);
+  if (!rgbA || !rgbB) return colorA;
+  const ratio = Math.min(1, Math.max(0, weight));
+  const r = clampChannel(rgbA.r * ratio + rgbB.r * (1 - ratio));
+  const g = clampChannel(rgbA.g * ratio + rgbB.g * (1 - ratio));
+  const b = clampChannel(rgbA.b * ratio + rgbB.b * (1 - ratio));
+  return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+};
+
+const getReadableTextColor = (color: string, light: string, dark: string): string => {
+  const rgb = parseHexColor(color) ?? parseRgbColor(color);
+  if (!rgb) return light;
+  const luminance = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+  return luminance > 0.65 ? dark : light;
+};
+
+const build2048Palette = (colors: Theme['colors']) => {
+  const { primary, primaryGradientEnd, surface, background, text } = colors;
+  const palette: Record<number, string> = {
+    2: mixHexColors(surface, background, 0.7),
+    4: mixHexColors(surface, primary, 0.18),
+    8: mixHexColors(primary, surface, 0.3),
+    16: mixHexColors(primary, surface, 0.4),
+    32: mixHexColors(primary, surface, 0.5),
+    64: mixHexColors(primary, surface, 0.6),
+    128: mixHexColors(primaryGradientEnd, primary, 0.45),
+    256: mixHexColors(primaryGradientEnd, primary, 0.6),
+    512: mixHexColors(primaryGradientEnd, primary, 0.72),
+    1024: mixHexColors(primaryGradientEnd, primary, 0.82),
+    2048: mixHexColors(primaryGradientEnd, primary, 0.92),
+  };
+
+  const textPalette: Record<number, string> = {};
+  Object.entries(palette).forEach(([key, value]) => {
+    textPalette[Number(key)] = getReadableTextColor(value, '#f9f6f2', text);
+  });
+
+  return { palette, textPalette };
+};
+
 export const themes: Record<ThemeName, Theme> = {
   default: {
     name: 'default',
@@ -708,6 +781,45 @@ export const applyTheme = (theme: ThemeName): void => {
 
   Object.entries(themeConfig.colors).forEach(([key, value]) => {
     root.style.setProperty(`--theme-${key}`, value);
+  });
+
+  const { primary, primaryGradientEnd, background, surface, border, text, error, success } = themeConfig.colors;
+  const onPrimary = getReadableTextColor(primary, '#ffffff', text);
+  const { palette: game2048Palette, textPalette: game2048TextPalette } = build2048Palette(themeConfig.colors);
+  const derivedVariables: Record<string, string> = {
+    '--theme-primarySoft': toRgbaColor(primary, 0.12),
+    '--theme-primarySoftHover': toRgbaColor(primary, 0.2),
+    '--theme-primarySoftActive': toRgbaColor(primary, 0.28),
+    '--theme-primaryOutline': toRgbaColor(primary, 0.4),
+    '--theme-primaryShadow': toRgbaColor(primary, 0.25),
+    '--theme-onPrimary': onPrimary,
+    '--theme-surfaceElevated': mixHexColors(surface, background, 0.6),
+    '--theme-surfaceSunken': mixHexColors(surface, border, 0.7),
+    '--theme-borderStrong': mixHexColors(border, text, 0.25),
+    '--theme-borderMuted': mixHexColors(border, background, 0.6),
+    '--theme-overlay': toRgbaColor(text, 0.45),
+    '--theme-overlayLight': toRgbaColor(onPrimary, 0.7),
+    '--theme-headerGlow': toRgbaColor(onPrimary, 0.12),
+    '--theme-headerControlBg': toRgbaColor(onPrimary, 0.2),
+    '--theme-headerControlHover': toRgbaColor(onPrimary, 0.32),
+    '--theme-shadowSubtle': toRgbaColor(primary, 0.08),
+    '--theme-shadowSoft': toRgbaColor(primary, 0.18),
+    '--theme-shadowStrong': toRgbaColor(primary, 0.32),
+    '--theme-errorShadow': toRgbaColor(error, 0.18),
+    '--theme-successShadow': toRgbaColor(success, 0.18),
+    '--theme-game-2048-accent': primaryGradientEnd,
+  };
+
+  Object.entries(game2048Palette).forEach(([key, value]) => {
+    derivedVariables[`--theme-game-2048-${key}`] = value;
+  });
+
+  Object.entries(game2048TextPalette).forEach(([key, value]) => {
+    derivedVariables[`--theme-game-2048-text-${key}`] = value;
+  });
+
+  Object.entries(derivedVariables).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
   });
 
   root.removeAttribute('data-theme');

@@ -97,7 +97,7 @@
 .json-textarea:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .json-textarea.output {
@@ -112,7 +112,7 @@
   border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
   flex-shrink: 0;
 }
 

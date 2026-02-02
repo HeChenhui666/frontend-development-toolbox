@@ -63,7 +63,7 @@
 .color-text-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .palette-type-select {
@@ -80,7 +80,7 @@
 .palette-type-select:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .generate-btn {

@@ -46,6 +46,18 @@ const ColorConverter: React.FC = () => {
   const [hsla, setHsla] = useState<HSLA>({ h: 250, s: 78, l: 66, a: 100 });
   const [updating, setUpdating] = useState<boolean>(false);
 
+  const getThemeColor = (variableName: string, fallback: string) =>
+    getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || fallback;
+
+  const normalizeHexColor = (value: string, fallback: string) => {
+    const trimmed = value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed;
+    if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+      return `#${trimmed.slice(1).split('').map((char) => char + char).join('')}`;
+    }
+    return fallback;
+  };
+
   // HEX转RGB
   const hexToRgb = (hex: string): RGB | null => {
     const cleanHex = hex.replace('#', '');
@@ -182,8 +194,28 @@ const ColorConverter: React.FC = () => {
   };
 
   // 初始化
+  const applyThemeDefaults = () => {
+    const primary = normalizeHexColor(getThemeColor('--theme-primary', hex), hex);
+    setHex(primary);
+    updateFromHex(primary);
+  };
+
   useEffect(() => {
-    updateFromHex(hex);
+    const handleThemeChange = () => applyThemeDefaults();
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'app-theme') {
+        handleThemeChange();
+      }
+    };
+
+    applyThemeDefaults();
+    window.addEventListener('themeChanged', handleThemeChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // 复制颜色值
@@ -221,7 +253,7 @@ const ColorConverter: React.FC = () => {
               height: '80px', 
               backgroundColor: hex,
               borderRadius: '4px',
-              border: '1px solid #d9d9d9'
+              border: '1px solid var(--theme-borderLight, #d9d9d9)'
             }}
           />
           <Space direction="vertical" size="small" style={{ width: '100%' }}>

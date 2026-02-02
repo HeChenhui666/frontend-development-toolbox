@@ -108,7 +108,7 @@
 .css-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .results-section {
@@ -152,12 +152,12 @@
 
 .result-item.supported {
   border-left: 3px solid var(--theme-success, #10b981);
-  background: rgba(16, 185, 129, 0.05);
+  background: var(--theme-successBackground, rgba(16, 185, 129, 0.05));
 }
 
 .result-item.unsupported {
   border-left: 3px solid var(--theme-error, #ef4444);
-  background: rgba(239, 68, 68, 0.05);
+  background: var(--theme-errorBackground, rgba(239, 68, 68, 0.05));
 }
 
 .result-header {
@@ -183,7 +183,7 @@
 .result-prefix {
   font-size: 10px;
   color: var(--theme-textSecondary, #64748b);
-  background: var(--theme-surface, #f8f9fa);
+  background: var(--theme-surfaceSunken, #f8f9fa);
   padding: 6px;
   border-radius: 4px;
 }

@@ -675,7 +675,11 @@ const RegexTester: React.FC = () => {
         <Alert
           message={
             <Space>
-              {isMatch ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+              {isMatch ? (
+                <CheckCircleOutlined style={{ color: 'var(--theme-success, #52c41a)' }} />
+              ) : (
+                <CloseCircleOutlined style={{ color: 'var(--theme-error, #ff4d4f)' }} />
+              )}
               <Text>{isMatch ? '匹配成功' : '匹配失败'}</Text>
             </Space>
           }

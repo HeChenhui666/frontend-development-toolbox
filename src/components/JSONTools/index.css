@@ -46,7 +46,7 @@
 .json-tool-select.ant-select-focused .ant-select-selector,
 .json-tool-select.ant-select-focused:hover .ant-select-selector {
   border-color: var(--theme-active, #667eea) !important;
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.2)) !important;
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.2)) !important;
 }
 
 .json-tool-select .ant-select-selection-item {

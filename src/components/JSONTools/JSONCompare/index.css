@@ -92,7 +92,7 @@
 .json-textarea:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .error {
@@ -102,7 +102,7 @@
   border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
   flex-shrink: 0;
 }
 
@@ -131,15 +131,15 @@
 }
 
 .diff-item.added {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--theme-success, #10b981);
 }
 
 .diff-item.removed {
-  border-left: 3px solid #ef4444;
+  border-left: 3px solid var(--theme-error, #ef4444);
 }
 
 .diff-item.modified {
-  border-left: 3px solid #f59e0b;
+  border-left: 3px solid var(--theme-active, #f59e0b);
 }
 
 .diff-path {
@@ -160,17 +160,17 @@
 }
 
 .diff-item.added .diff-type-badge {
-  background: #10b981;
+  background: var(--theme-success, #10b981);
   color: white;
 }
 
 .diff-item.removed .diff-type-badge {
-  background: #ef4444;
+  background: var(--theme-error, #ef4444);
   color: white;
 }
 
 .diff-item.modified .diff-type-badge {
-  background: #f59e0b;
+  background: var(--theme-active, #f59e0b);
   color: white;
 }
 
@@ -187,13 +187,13 @@
 }
 
 .diff-value.added {
-  background: #d1fae5;
-  border: 1px solid #10b981;
+  background: var(--theme-successBackground, #d1fae5);
+  border: 1px solid var(--theme-success, #10b981);
 }
 
 .diff-value.removed {
-  background: #fee2e2;
-  border: 1px solid #ef4444;
+  background: var(--theme-errorBackground, #fee2e2);
+  border: 1px solid var(--theme-error, #ef4444);
 }
 
 .diff-label {
@@ -203,17 +203,17 @@
 }
 
 .diff-value.added .diff-label {
-  color: #059669;
+  color: var(--theme-success, #059669);
 }
 
 .diff-value.removed .diff-label {
-  color: #dc2626;
+  color: var(--theme-error, #dc2626);
 }
 
 .diff-value pre {
   margin: 6px;
   padding: 6px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--theme-surfaceElevated, rgba(255, 255, 255, 0.7));
   border-radius: 4px;
   overflow-x: auto;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;

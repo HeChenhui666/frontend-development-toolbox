@@ -71,7 +71,7 @@
 .url-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .url-input::placeholder {
@@ -105,7 +105,7 @@
 .base-url-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .preset-params-section {
@@ -259,7 +259,7 @@
 .param-value-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .param-equals {
@@ -330,7 +330,7 @@
   line-height: 1.5;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   padding: 6px;
-  background: var(--theme-background, rgba(255, 255, 255, 0.7));
+  background: var(--theme-surfaceElevated, rgba(255, 255, 255, 0.7));
   border-radius: 4px;
   min-height: 32px;
   max-height: 200px;
@@ -365,7 +365,7 @@
 .action-btn:hover {
   background: var(--theme-buttonPrimaryHover, #5568d3);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--theme-activeHover, rgba(102, 126, 234, 0.3));
+  box-shadow: 0 4px 12px var(--theme-shadowSoft, rgba(102, 126, 234, 0.3));
 }
 
 .action-btn.primary {
@@ -374,7 +374,7 @@
 }
 
 .action-btn.primary:hover {
-  box-shadow: 0 4px 16px var(--theme-activeHover, rgba(102, 126, 234, 0.4));
+  box-shadow: 0 4px 16px var(--theme-shadowStrong, rgba(102, 126, 234, 0.4));
 }
 
 .error {
@@ -384,7 +384,7 @@
   border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
 }
 
 /* 预设管理器弹窗 */
@@ -394,7 +394,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--theme-overlay, rgba(0, 0, 0, 0.5));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -410,7 +410,7 @@
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px var(--theme-shadowStrong, rgba(0, 0, 0, 0.2));
   overflow: hidden;
 }
 
@@ -491,7 +491,7 @@
 .preset-name-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .preset-params-editor {
@@ -564,7 +564,7 @@
 .preset-param-value-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .preset-param-equals {

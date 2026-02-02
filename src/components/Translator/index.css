@@ -24,7 +24,7 @@
 .section-header label {
   font-size: 11px;
   font-weight: 600;
-  color: #334155;
+  color: var(--theme-text, #334155);
 }
 
 .language-select {
@@ -38,14 +38,14 @@
 .service-notice {
   margin-top: 6px;
   padding: 6px;
-  background: #f8f9fa;
+  background: var(--theme-surfaceSunken, #f8f9fa);
   border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--theme-borderMuted, #e2e8f0);
 }
 
 .service-notice-text {
   font-size: 10px;
-  color: #64748b;
+  color: var(--theme-textSecondary, #64748b);
   font-style: italic;
 }
 
@@ -83,7 +83,7 @@
 .input-textarea:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 /* 中间按钮区域 */
@@ -131,7 +131,7 @@
 }
 
 .swap-btn:hover:not(:disabled) {
-  background: #475569;
+  background: var(--theme-borderStrong, #475569);
 }
 
 .swap-btn:disabled {
@@ -141,16 +141,18 @@
 
 .clear-btn {
   width: 100%;
-  background: #ef4444;
+  background: var(--theme-error, #ef4444);
   color: white;
   border: none;
   font-size: 11px;
   font-weight: 500;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 6px var(--theme-errorShadow, rgba(239, 68, 68, 0.2));
 }
 
 .clear-btn:hover {
-  background: #dc2626;
+  background: var(--theme-error, #dc2626);
+  opacity: 0.9;
 }
 
 .error {
@@ -160,7 +162,7 @@
   border-radius: 4px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorBackground, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
   flex-shrink: 0;
 }
 
@@ -217,7 +219,7 @@
 }
 
 .placeholder-text {
-  color: #94a3b8;
+  color: var(--theme-textMuted, #94a3b8);
   font-style: italic;
 }
 
@@ -227,9 +229,9 @@
   flex-direction: column;
   gap: 6px;
   padding: 6px;
-  background: var(--theme-surface, #f8f9fa);
+  background: var(--theme-surfaceSunken, #f8f9fa);
   border-radius: 4px;
-  border: 1px solid var(--theme-border, #e2e8f0);
+  border: 1px solid var(--theme-borderMuted, #e2e8f0);
   flex-shrink: 0;
 }
 

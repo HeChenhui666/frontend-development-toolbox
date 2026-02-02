@@ -23,7 +23,7 @@
   height: 80px;
   border-radius: 4px;
   border: 2px solid var(--theme-border, #e2e8f0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--theme-shadowSubtle, rgba(0, 0, 0, 0.1));
   flex-shrink: 0;
 }
 
@@ -100,7 +100,7 @@
 .color-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .rgb-inputs,
@@ -149,7 +149,7 @@
 .color-number-input:focus {
   outline: none;
   border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 2px var(--theme-activeHover, rgba(102, 126, 234, 0.1));
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
 }
 
 .alpha-input-group {

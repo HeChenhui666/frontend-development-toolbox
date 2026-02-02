@@ -74,13 +74,63 @@ const QRCodeGenerator: React.FC = () => {
     }
 
     try {
+      const getThemeColor = (variableName: string, fallback: string) =>
+        getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || fallback;
+      const parseColor = (value: string) => {
+        const trimmed = value.trim();
+        const hexMatch = trimmed.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+        if (hexMatch) {
+          const hex = hexMatch[1].length === 3
+            ? hexMatch[1].split('').map((char) => char + char).join('')
+            : hexMatch[1];
+          const r = parseInt(hex.slice(0, 2), 16);
+          const g = parseInt(hex.slice(2, 4), 16);
+          const b = parseInt(hex.slice(4, 6), 16);
+          return { r, g, b };
+        }
+        const rgbMatch = trimmed.match(/rgba?\(([^)]+)\)/i);
+        if (rgbMatch) {
+          const [r, g, b] = rgbMatch[1]
+            .split(',')
+            .map((part) => Number.parseFloat(part.trim()));
+          if ([r, g, b].some((channel) => Number.isNaN(channel))) return null;
+          return { r, g, b };
+        }
+        return null;
+      };
+      const getLuminance = ({ r, g, b }: { r: number; g: number; b: number }) => {
+        const toLinear = (channel: number) => {
+          const normalized = channel / 255;
+          return normalized <= 0.03928
+            ? normalized / 12.92
+            : Math.pow((normalized + 0.055) / 1.055, 2.4);
+        };
+        const rLin = toLinear(r);
+        const gLin = toLinear(g);
+        const bLin = toLinear(b);
+        return 0.2126 * rLin + 0.7152 * gLin + 0.0722 * bLin;
+      };
+      const getContrastRatio = (colorA: { r: number; g: number; b: number }, colorB: { r: number; g: number; b: number }) => {
+        const lumA = getLuminance(colorA);
+        const lumB = getLuminance(colorB);
+        const lighter = Math.max(lumA, lumB);
+        const darker = Math.min(lumA, lumB);
+        return (lighter + 0.05) / (darker + 0.05);
+      };
       setError('');
+      const themeDark = getThemeColor('--theme-text', '#000000');
+      const themeLight = getThemeColor('--theme-background', '#FFFFFF');
+      const darkRgb = parseColor(themeDark);
+      const lightRgb = parseColor(themeLight);
+      const contrastRatio = darkRgb && lightRgb ? getContrastRatio(darkRgb, lightRgb) : 0;
+      const [safeDark, safeLight] =
+        contrastRatio >= 7 ? [themeDark, themeLight] : ['#000000', '#FFFFFF'];
       const dataUrl = await QRCode.toDataURL(urlToGenerate, {
         width: 200,
         margin: 6,
         color: {
-          dark: '#000000',
-          light: '#FFFFFF',
+          dark: safeDark,
+          light: safeLight,
         },
       });
       setQrCodeDataUrl(dataUrl);
