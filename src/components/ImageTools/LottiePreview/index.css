@@ -1,0 +1,15 @@
+.lottie-preview-canvas {
+  min-height: 260px;
+  border: 1px dashed var(--theme-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--theme-surface, #f8f9fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lottie-preview-empty {
+  color: var(--theme-textSecondary, #64748b);
+  font-size: 12px;
+}

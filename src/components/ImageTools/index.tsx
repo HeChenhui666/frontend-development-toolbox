@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Select } from 'antd';
 import RandomImageGenerator from './RandomImageGenerator';
 import Base64Encoder from './Base64Encoder';
+import LottiePreview from './LottiePreview';
 import './index.css';
 
-type ImageToolTab = 'random' | 'base64';
+type ImageToolTab = 'random' | 'base64' | 'lottie';
 
 interface ToolOption {
   value: ImageToolTab;
@@ -15,6 +16,7 @@ interface ToolOption {
 const TOOL_OPTIONS: ToolOption[] = [
   { value: 'random', label: '随机图片', icon: '🖼️' },
   { value: 'base64', label: 'Base64编码', icon: '🔐' },
+  { value: 'lottie', label: 'Lottie预览', icon: '🎬' },
 ];
 
 const ImageTools: React.FC = () => {
@@ -26,6 +28,8 @@ const ImageTools: React.FC = () => {
         return <RandomImageGenerator />;
       case 'base64':
         return <Base64Encoder />;
+      case 'lottie':
+        return <LottiePreview />;
       default:
         return <RandomImageGenerator />;
     }
