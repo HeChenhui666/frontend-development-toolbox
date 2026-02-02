@@ -182,6 +182,7 @@ body {
 
 .ant-modal>.ant-modal-container {
   background-color: var(--theme-surface, #f8f9fa);
+  padding: 20px;
 }
 
 .ant-modal-content,
