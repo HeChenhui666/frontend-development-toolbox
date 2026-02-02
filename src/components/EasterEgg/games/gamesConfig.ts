@@ -2,6 +2,7 @@ import React from 'react';
 import Game2048 from './Game2048';
 import Tetris from './Tetris';
 import Snake from './Snake';
+import Minesweeper from './Minesweeper';
 
 export interface GameConfig {
   id: string;
@@ -32,6 +33,13 @@ export const games: GameConfig[] = [
     icon: '🐍',
     description: '经典贪吃蛇游戏',
     component: Snake,
+  },
+  {
+    id: 'Minesweeper',
+    name: '扫雷',
+    icon: '💣',
+    description: '可选难度的经典扫雷',
+    component: Minesweeper,
   },
   // 可以在这里添加更多游戏
 ];
