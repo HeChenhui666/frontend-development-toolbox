@@ -1,13 +1,16 @@
 {
   "manifest_version": 3,
   "name": "小火火工具箱",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "功能强大的前端开发工具箱：二维码生成/解码、URL参数编辑、请求重定向、时间戳转换、JSON工具、颜色工具、正则表达式测试、图片工具、CSS工具、在线翻译、API调试等",
   "permissions": [
     "activeTab",
     "scripting",
     "tabs",
     "storage",
+    "cookies",
+    "browsingData",
+    "history",
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
