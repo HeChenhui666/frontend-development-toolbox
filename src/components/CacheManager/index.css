@@ -1,0 +1,240 @@
+.cache-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cache-manager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cache-manager-search {
+  width: 220px;
+}
+
+.cache-manager-custom-input {
+  width: 240px;
+}
+
+.cache-manager-history-days {
+  width: 90px;
+}
+
+.cache-manager-updated {
+  font-size: 12px;
+}
+
+.cache-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cache-manager-card {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+}
+
+.cache-manager-toggles {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cache-manager-custom-sites {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cache-manager-custom-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cache-manager-filters {
+  width: 100%;
+}
+
+.cache-manager-filter-select {
+  min-width: 160px;
+}
+
+.cache-manager-filter-number {
+  width: 120px;
+}
+
+.cache-manager-filter-switch {
+  align-items: center;
+}
+
+.cache-manager-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cache-manager-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cache-manager-card-clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cache-manager-card-clickable:hover {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 1px var(--theme-primary);
+}
+
+.cache-manager-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--theme-borderLight, #e5e7eb);
+}
+
+.cache-manager-detail-row:last-child {
+  border-bottom: none;
+}
+
+.cache-manager-detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cache-manager-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  min-width: 120px;
+}
+
+.cache-manager-value {
+  display: inline-block;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cache-manager-key {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.cache-manager-simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cache-manager-simple-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--theme-borderLight, #e5e7eb);
+}
+
+.cache-manager-simple-row:last-child {
+  border-bottom: none;
+}
+
+.cache-manager-simple-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cache-manager-simple-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  min-width: 160px;
+}
+
+.cache-manager-simple-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.cache-manager-simple-actions :global(.ant-btn) {
+  padding: 0 4px;
+  height: 22px;
+}
+
+.cache-manager-cookie-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  width: 100%;
+}
+
+.cache-manager-cookie-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cache-manager-cookie-switches {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.cache-manager-cookie-switch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cache-manager-cookie-value {
+  grid-column: 1 / -1;
+}
+
+.cache-manager-list :global(.ant-table) {
+  background: var(--theme-surface);
+}
+
+.cache-manager-list :global(.ant-table-thead > tr > th) {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.cache-manager-list :global(.ant-table-tbody > tr > td) {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.cache-manager-list :global(.ant-table-tbody > tr:hover > td) {
+  background: var(--theme-background);
+}
+
+.cache-manager-pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
