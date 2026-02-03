@@ -85,6 +85,7 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   translator: '在线翻译',
   apitester: 'API调试',
   redirector: '请求重定向',
+  techstack: '技术栈探测',
 };
 
 const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
