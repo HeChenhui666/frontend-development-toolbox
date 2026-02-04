@@ -11,7 +11,6 @@ export type DefaultTab =
   | 'translator'
   | 'apitester'
   | 'redirector'
-  | 'techstack'
   | 'cachemanager';
 export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab for consistency
 
@@ -32,7 +31,6 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'translator',
   'apitester',
   'redirector',
-  'techstack',
   'cachemanager',
 ];
 
