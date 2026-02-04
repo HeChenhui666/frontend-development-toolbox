@@ -11,6 +11,7 @@ import {
   Space,
   Switch,
   Tag,
+  Tabs,
   Typography,
   message as antdMessage,
 } from 'antd';
@@ -793,6 +794,57 @@ const CacheManager: React.FC = () => {
     setEditOpen(true);
   };
 
+  const handleDeleteStorageItem = async (
+    storageType: 'local' | 'session',
+    row: { tabId: number; key: string }
+  ) => {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: row.tabId },
+            func: (payload: { key: string; storageType: 'local' | 'session' }) => {
+              const storage = payload.storageType === 'local' ? localStorage : sessionStorage;
+              storage.removeItem(payload.key);
+            },
+            args: [{ key: row.key, storageType }],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+              return;
+            }
+            resolve();
+          }
+        );
+      });
+      if (storageType === 'local') {
+        setDetailLocalStorage((prev) => prev.filter((item) => !(item.tabId === row.tabId && item.key === row.key)));
+      } else {
+        setDetailSessionStorage((prev) => prev.filter((item) => !(item.tabId === row.tabId && item.key === row.key)));
+      }
+      antdMessage.success('缓存已删除');
+    } catch (error) {
+      antdMessage.error('删除失败');
+      console.error('Delete storage item failed:', error);
+    }
+  };
+
+  const handleDeleteCookie = async (cookie: chrome.cookies.Cookie) => {
+    try {
+      await removeCookie(cookie);
+      setDetailCookies((prev) =>
+        prev.filter(
+          (item) => !(item.name === cookie.name && item.domain === cookie.domain && item.path === cookie.path)
+        )
+      );
+      antdMessage.success('Cookie 已删除');
+    } catch (error) {
+      antdMessage.error('删除 Cookie 失败');
+      console.error('Delete cookie failed:', error);
+    }
+  };
+
   const applyStorageUpdate = async () => {
     if (!editTarget) return;
     const nextValue = editValue;
@@ -911,6 +963,8 @@ const CacheManager: React.FC = () => {
     setIncludeParentCookies(value);
     saveBoolPreference(INCLUDE_PARENT_COOKIE_KEY, value);
   };
+
+  const editValueLabel = editTarget?.storageType === 'tab' ? 'URL' : 'Value（值）';
 
 
   const clearCookiesForDomains = async (targetDomains: string[]) => {
@@ -1299,7 +1353,7 @@ const CacheManager: React.FC = () => {
         destroyOnClose
       >
         {detailDomain && (
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <div className="cache-manager-detail">
             <Space wrap>
               <Tag color="blue">Cookie: {detailDomain.cookieCount}</Tag>
               <Tag color={detailDomain.tabCount > 0 ? 'green' : 'default'}>
@@ -1309,242 +1363,345 @@ const CacheManager: React.FC = () => {
               {detailDomain.fromCustom && <Tag>自定义</Tag>}
             </Space>
 
-            <Card size="small" className="cache-manager-card">
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <Text strong>Cookie 列表</Text>
-                {detailLoading ? (
-                  <Text type="secondary">加载中...</Text>
-                ) : detailCookies.length === 0 ? (
-                  <Text type="secondary">无 Cookie</Text>
-                ) : (
-                  <div className="cache-manager-simple-list">
-                    {detailCookies.map((cookie) => (
-                      <div
-                        key={`${cookie.name}-${cookie.domain}-${cookie.path}`}
-                        className="cache-manager-simple-row"
-                      >
-                        <div className="cache-manager-simple-main">
-                          <Space size={6} wrap>
-                            <Text className="cache-manager-key">{cookie.name}</Text>
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(cookie.name, 'Cookie名称')}
-                            />
-                          </Space>
-                          <Text type="secondary" className="cache-manager-value">
-                            {cookie.value}
-                          </Text>
-                          <Text type="secondary">{cookie.path}</Text>
+            <Tabs
+              className="cache-manager-detail-tabs"
+              items={[
+                {
+                  key: 'cookies',
+                  label: 'Cookie',
+                  children: (
+                    <div className="cache-manager-detail-panel">
+                      {detailLoading ? (
+                        <Text type="secondary">加载中...</Text>
+                      ) : detailCookies.length === 0 ? (
+                        <Text type="secondary">无 Cookie</Text>
+                      ) : (
+                        <div className="cache-manager-simple-list">
+                          {detailCookies.map((cookie) => (
+                            <div
+                              key={`${cookie.name}-${cookie.domain}-${cookie.path}`}
+                              className="cache-manager-row-card"
+                            >
+                              <div className="cache-manager-row-header">
+                                <Text className="cache-manager-key">{cookie.name}</Text>
+                                <div className="cache-manager-row-actions">
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEditCookieValue(cookie)}
+                                  />
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => handleDeleteCookie(cookie)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  Value: {cookie.value}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(cookie.value, 'Cookie值')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  Domain: {cookie.domain}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(cookie.domain, 'Domain')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  Path: {cookie.path}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(cookie.path, 'Path')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  {cookie.secure ? 'Secure' : 'Non-secure'} · {formatCookieExpiry(cookie)}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      `${cookie.secure ? 'Secure' : 'Non-secure'} · ${formatCookieExpiry(cookie)}`,
+                                      '属性'
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <div className="cache-manager-simple-meta">
-                          <Text type="secondary">{cookie.secure ? 'Secure' : 'Non-secure'}</Text>
-                          <Text type="secondary">{formatCookieExpiry(cookie)}</Text>
-                          <div className="cache-manager-simple-actions">
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(cookie.value, 'Cookie值')}
-                            />
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<EditOutlined />}
-                              onClick={() => handleEditCookieValue(cookie)}
-                            />
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'local',
+                  label: 'localStorage',
+                  children: (
+                    <div className="cache-manager-detail-panel">
+                      {detailLoading ? (
+                        <Text type="secondary">加载中...</Text>
+                      ) : detailLocalStorage.length === 0 ? (
+                        <Text type="secondary">无本地存储</Text>
+                      ) : (
+                        <div className="cache-manager-simple-list">
+                          {detailLocalStorage.map((row) => (
+                            <div key={`${row.tabId}-${row.key}`} className="cache-manager-row-card">
+                              <div className="cache-manager-row-header">
+                                <Text className="cache-manager-key">{row.key}</Text>
+                                <div className="cache-manager-row-actions">
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEditValue('local', row)}
+                                  />
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => handleDeleteStorageItem('local', row)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  Value: {row.value}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(row.value, 'Value')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  大小: {formatBytes(row.size)}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(formatBytes(row.size), '大小')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  来源: {row.title || row.url || '-'}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(row.title || row.url || '-', '来源')}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'session',
+                  label: 'sessionStorage',
+                  children: (
+                    <div className="cache-manager-detail-panel">
+                      {detailLoading ? (
+                        <Text type="secondary">加载中...</Text>
+                      ) : detailSessionStorage.length === 0 ? (
+                        <Text type="secondary">无会话存储</Text>
+                      ) : (
+                        <div className="cache-manager-simple-list">
+                          {detailSessionStorage.map((row) => (
+                            <div key={`${row.tabId}-${row.key}`} className="cache-manager-row-card">
+                              <div className="cache-manager-row-header">
+                                <Text className="cache-manager-key">{row.key}</Text>
+                                <div className="cache-manager-row-actions">
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEditValue('session', row)}
+                                  />
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => handleDeleteStorageItem('session', row)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  Value: {row.value}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(row.value, 'Value')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  大小: {formatBytes(row.size)}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(formatBytes(row.size), '大小')}
+                                />
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  来源: {row.title || row.url || '-'}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(row.title || row.url || '-', '来源')}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'tabs',
+                  label: '打开标签页',
+                  children: (
+                    <div className="cache-manager-detail-panel">
+                      {detailLoading ? (
+                        <Text type="secondary">加载中...</Text>
+                      ) : detailTabs.length === 0 ? (
+                        <Text type="secondary">无打开标签页</Text>
+                      ) : (
+                        <div className="cache-manager-simple-list">
+                          {detailTabs.map((tab) => (
+                            <div key={String(tab.id)} className="cache-manager-row-card">
+                              <div className="cache-manager-row-header">
+                                <Text className="cache-manager-key">{tab.title || tab.url || '-'}</Text>
+                                <div className="cache-manager-row-actions">
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEditTabUrl(tab)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="cache-manager-row-line">
+                                <Text type="secondary" className="cache-manager-row-text">
+                                  URL: {tab.url}
+                                </Text>
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  icon={<CopyOutlined />}
+                                  onClick={() => copyToClipboard(tab.url || '', 'URL')}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'history',
+                  label: '历史记录',
+                  children: (
+                    <div className="cache-manager-detail-panel">
+                      {!includeHistory ? (
+                        <Text type="secondary">未开启历史记录来源</Text>
+                      ) : detailLoading ? (
+                        <Text type="secondary">加载中...</Text>
+                      ) : detailHistory.length === 0 ? (
+                        <Text type="secondary">无历史记录</Text>
+                      ) : (
+                        <>
+                          <div className="cache-manager-simple-list">
+                            {detailHistory.slice(0, 10).map((item) => (
+                              <div key={`${item.id}-${item.url}`} className="cache-manager-row-card">
+                                <div className="cache-manager-row-header">
+                                  <Text className="cache-manager-key">{item.title || item.url}</Text>
+                                </div>
+                                <div className="cache-manager-row-line">
+                                  <Text type="secondary" className="cache-manager-row-text">
+                                    URL: {item.url}
+                                  </Text>
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    icon={<CopyOutlined />}
+                                    onClick={() => copyToClipboard(item.url || '', 'URL')}
+                                  />
+                                </div>
+                                <div className="cache-manager-row-line">
+                                  <Text type="secondary" className="cache-manager-row-text">
+                                    访问时间: {item.lastVisitTime ? new Date(item.lastVisitTime).toLocaleString() : '-'}
+                                  </Text>
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    icon={<CopyOutlined />}
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        item.lastVisitTime
+                                          ? new Date(item.lastVisitTime).toLocaleString()
+                                          : '-',
+                                        '访问时间'
+                                      )
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Space>
-            </Card>
-
-            <Card size="small" className="cache-manager-card">
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <Text strong>打开标签页</Text>
-                {detailLoading ? (
-                  <Text type="secondary">加载中...</Text>
-                ) : detailTabs.length === 0 ? (
-                  <Text type="secondary">无打开标签页</Text>
-                ) : (
-                  <div className="cache-manager-simple-list">
-                    {detailTabs.map((tab) => (
-                      <div key={String(tab.id)} className="cache-manager-simple-row">
-                        <div className="cache-manager-simple-main">
-                          <Space size={6} wrap>
-                            <Text className="cache-manager-key">{tab.title || tab.url || '-'}</Text>
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(tab.title || tab.url || '-', '标题')}
-                            />
-                          </Space>
-                          <Text type="secondary" className="cache-manager-value">
-                            {tab.url}
-                          </Text>
-                        </div>
-                        <div className="cache-manager-simple-meta">
-                          <div className="cache-manager-simple-actions">
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(tab.url || '', 'URL')}
-                            />
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<EditOutlined />}
-                              onClick={() => handleEditTabUrl(tab)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Space>
-            </Card>
-
-            <Card size="small" className="cache-manager-card">
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <Text strong>本地存储（localStorage）</Text>
-                {detailLoading ? (
-                  <Text type="secondary">加载中...</Text>
-                ) : detailLocalStorage.length === 0 ? (
-                  <Text type="secondary">无本地存储</Text>
-                ) : (
-                  <div className="cache-manager-simple-list">
-                    {detailLocalStorage.map((row) => (
-                      <div key={`${row.tabId}-${row.key}`} className="cache-manager-simple-row">
-                        <div className="cache-manager-simple-main">
-                          <Space size={6} wrap>
-                            <Text className="cache-manager-key">{row.key}</Text>
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(row.key, 'Key')}
-                            />
-                          </Space>
-                          <Text type="secondary" className="cache-manager-value">
-                            {row.value}
-                          </Text>
-                        </div>
-                        <div className="cache-manager-simple-meta">
-                          <Text type="secondary">{formatBytes(row.size)}</Text>
-                          <Text type="secondary">{row.title || row.url || '-'}</Text>
-                          <div className="cache-manager-simple-actions">
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(row.value, 'Value')}
-                            />
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<EditOutlined />}
-                              onClick={() => handleEditValue('local', row)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Space>
-            </Card>
-
-            <Card size="small" className="cache-manager-card">
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <Text strong>会话存储（sessionStorage）</Text>
-                {detailLoading ? (
-                  <Text type="secondary">加载中...</Text>
-                ) : detailSessionStorage.length === 0 ? (
-                  <Text type="secondary">无会话存储</Text>
-                ) : (
-                  <div className="cache-manager-simple-list">
-                    {detailSessionStorage.map((row) => (
-                      <div key={`${row.tabId}-${row.key}`} className="cache-manager-simple-row">
-                        <div className="cache-manager-simple-main">
-                          <Space size={6} wrap>
-                            <Text className="cache-manager-key">{row.key}</Text>
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(row.key, 'Key')}
-                            />
-                          </Space>
-                          <Text type="secondary" className="cache-manager-value">
-                            {row.value}
-                          </Text>
-                        </div>
-                        <div className="cache-manager-simple-meta">
-                          <Text type="secondary">{formatBytes(row.size)}</Text>
-                          <Text type="secondary">{row.title || row.url || '-'}</Text>
-                          <div className="cache-manager-simple-actions">
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<CopyOutlined />}
-                              onClick={() => copyToClipboard(row.value, 'Value')}
-                            />
-                            <Button
-                              size="small"
-                              type="text"
-                              icon={<EditOutlined />}
-                              onClick={() => handleEditValue('session', row)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Space>
-            </Card>
-
-            <Card size="small" className="cache-manager-card">
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <Text strong>历史记录（近 {historyDays} 天）</Text>
-                {!includeHistory ? (
-                  <Text type="secondary">未开启历史记录来源</Text>
-                ) : detailLoading ? (
-                  <Text type="secondary">加载中...</Text>
-                ) : detailHistory.length === 0 ? (
-                  <Text type="secondary">无历史记录</Text>
-                ) : (
-                  <div className="cache-manager-simple-list">
-                    {detailHistory.slice(0, 10).map((item) => (
-                      <div key={`${item.id}-${item.url}`} className="cache-manager-simple-row">
-                        <div className="cache-manager-simple-main">
-                          <Text className="cache-manager-key">{item.title || item.url}</Text>
-                          <Text type="secondary" className="cache-manager-value">
-                            {item.url}
-                          </Text>
-                        </div>
-                        <div className="cache-manager-simple-meta">
-                          <Text type="secondary">
-                            {item.lastVisitTime ? new Date(item.lastVisitTime).toLocaleString() : '-'}
-                          </Text>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {detailHistory.length > 10 && (
-                  <Text type="secondary">仅展示最近 10 条</Text>
-                )}
-              </Space>
-            </Card>
-          </Space>
+                          {detailHistory.length > 10 && (
+                            <Text type="secondary">仅展示最近 10 条</Text>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </div>
         )}
       </Modal>
 
@@ -1566,8 +1723,8 @@ const CacheManager: React.FC = () => {
         centered
         destroyOnClose
       >
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          <Text type="secondary">
+        <div className="cache-manager-edit-form">
+          <Text type="secondary" className="cache-manager-edit-hint">
             {editTarget?.storageType === 'tab'
               ? '修改后将跳转到新的 URL。'
               : '仅对当前已打开的页面生效。'}
@@ -1642,14 +1799,18 @@ const CacheManager: React.FC = () => {
               </div>
             </div>
           ) : (
-            <Input.TextArea
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              autoSize={{ minRows: 4, maxRows: 10 }}
-              placeholder="请输入新的缓存值"
-            />
+            <div className="cache-manager-edit-field">
+              <Text type="secondary">{editValueLabel}</Text>
+              <Input.TextArea
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                autoSize={{ minRows: 4, maxRows: 10 }}
+                placeholder="请输入新的缓存值"
+                className="cache-manager-edit-textarea"
+              />
+            </div>
           )}
-        </Space>
+        </div>
       </Modal>
     </div>
   );
