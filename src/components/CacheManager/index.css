@@ -145,44 +145,88 @@
   gap: 6px;
 }
 
-.cache-manager-simple-row {
+.cache-manager-row-card {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--theme-borderLight, #e5e7eb);
+  border-radius: 8px;
+  background: var(--theme-surface);
+}
+
+.cache-manager-row-header {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px dashed var(--theme-borderLight, #e5e7eb);
 }
 
-.cache-manager-simple-row:last-child {
-  border-bottom: none;
-}
-
-.cache-manager-simple-main {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-}
-
-.cache-manager-simple-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: right;
-  min-width: 160px;
-}
-
-.cache-manager-simple-actions {
+.cache-manager-row-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
+  gap: 6px;
 }
 
-.cache-manager-simple-actions :global(.ant-btn) {
+.cache-manager-row-actions :global(.ant-btn) {
   padding: 0 4px;
   height: 22px;
+}
+
+.cache-manager-row-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cache-manager-row-text {
+  display: inline-block;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cache-manager-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cache-manager-detail-tabs :global(.ant-tabs-nav) {
+  margin-bottom: 8px;
+}
+
+.cache-manager-detail-panel {
+  padding: 10px 12px;
+  border: 1px solid var(--theme-border);
+  border-radius: 8px;
+  background: var(--theme-surface);
+}
+
+.cache-manager-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.cache-manager-edit-hint {
+  padding: 6px 10px;
+  background: var(--theme-background);
+  border-radius: 6px;
+}
+
+.cache-manager-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cache-manager-edit-textarea {
+  font-size: 13px;
 }
 
 .cache-manager-cookie-form {
@@ -203,6 +247,7 @@
   gap: 16px;
   align-items: flex-end;
   flex-wrap: wrap;
+  padding-top: 4px;
 }
 
 .cache-manager-cookie-switch {
