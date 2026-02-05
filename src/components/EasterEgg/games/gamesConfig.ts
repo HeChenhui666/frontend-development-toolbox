@@ -3,6 +3,7 @@ import Game2048 from './Game2048';
 import Tetris from './Tetris';
 import Snake from './Snake';
 import Minesweeper from './Minesweeper';
+import Sudoku from './Sudoku';
 
 export interface GameConfig {
   id: string;
@@ -40,6 +41,13 @@ export const games: GameConfig[] = [
     icon: '💣',
     description: '可选难度的经典扫雷',
     component: Minesweeper,
+  },
+  {
+    id: 'Sudoku',
+    name: '数独',
+    icon: '🧩',
+    description: '可选难度的逻辑推理游戏',
+    component: Sudoku,
   },
   // 可以在这里添加更多游戏
 ];
