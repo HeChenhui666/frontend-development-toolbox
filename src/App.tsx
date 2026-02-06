@@ -75,25 +75,34 @@ const App: React.FC = () => {
   // 使用 useDeferredValue 延迟非紧急的标签页更新，提升切换流畅度
   const deferredActiveTab = useDeferredValue(activeTab);
 
-  // 检测是否为插件popup环境
-  const isPopupMode = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    
-    // 检查URL协议：插件popup的URL是 chrome-extension://
+  // 检测运行模式：popup / sidepanel / standalone
+  const { isPopupMode, isSidePanelMode } = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return { isPopupMode: false, isSidePanelMode: false };
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+
     const isExtensionProtocol = window.location.protocol === 'chrome-extension:';
-    
-    // 检查是否有chrome.runtime.id（插件环境）
-    const hasChromeRuntime = typeof (window as any).chrome !== 'undefined' && 
-      (window as any).chrome.runtime && 
+    const hasChromeRuntime =
+      typeof (window as any).chrome !== 'undefined' &&
+      (window as any).chrome.runtime &&
       (window as any).chrome.runtime.id;
-    
-    // 检查窗口大小是否接近插件popup的固定尺寸（450x580）
-    // 如果窗口明显大于这个尺寸，说明是独立页面
     const isSmallWindow = window.innerWidth <= 500 && window.innerHeight <= 650;
-    
-    // 如果是插件协议且窗口大小接近固定尺寸，则认为是popup模式
-    // 或者有chrome.runtime.id且窗口小，也认为是popup模式
-    return (isExtensionProtocol || hasChromeRuntime) && isSmallWindow;
+    const isPopupHeuristic = (isExtensionProtocol || hasChromeRuntime) && isSmallWindow;
+
+    if (mode === 'sidepanel') {
+      return { isPopupMode: false, isSidePanelMode: true };
+    }
+    if (mode === 'popup') {
+      return { isPopupMode: true, isSidePanelMode: false };
+    }
+    if (mode === 'standalone') {
+      return { isPopupMode: false, isSidePanelMode: false };
+    }
+
+    return { isPopupMode: isPopupHeuristic, isSidePanelMode: false };
   }, []);
 
   // 监听标签页顺序变化事件
@@ -451,7 +460,7 @@ const App: React.FC = () => {
 
   return (
     <ConfigProvider theme={dynamicThemeConfig}>
-      <div className={`app ${isPopupMode ? 'app-popup' : 'app-standalone'}`}>
+      <div className={`app ${isPopupMode ? 'app-popup' : 'app-standalone'} ${isSidePanelMode ? 'app-sidepanel' : ''}`}>
         <div className='header'>
           <div className='header-content'>
             <h1 className='header-title' onClick={handleTitleClick}>
