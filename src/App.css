@@ -117,6 +117,12 @@ body {
   padding: 0;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 /* antd 组件统一内外间距与圆角 */
 .ant-btn,
 .ant-input,
@@ -252,8 +258,8 @@ body:has(.app-standalone) {
   overflow: visible;
 }
 
-/* 兼容性：默认样式（向后兼容） */
-.app {
+/* 兼容性：默认样式（向后兼容，仅在非 popup/standalone 时生效） */
+.app:not(.app-popup):not(.app-standalone) {
   width: 450px;
   height: 580px;
   background: var(--theme-background, #ffffff);
