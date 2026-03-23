@@ -1,5 +1,7 @@
 // 注意：CSS通过manifest.json加载，不需要在这里导入
 
+import { parseGoogleTranslateSingleResult } from '../utils/parseGoogleTranslateResult';
+
 // 翻译API函数
 async function translateText(text: string, targetLang: string = 'en'): Promise<string | null> {
   try {
@@ -9,7 +11,7 @@ async function translateText(text: string, targetLang: string = 'en'): Promise<s
       )}`
     );
     const data = await response.json();
-    return data[0][0][0];
+    return parseGoogleTranslateSingleResult(data);
   } catch (error) {
     console.error('翻译失败:', error);
     return null;
