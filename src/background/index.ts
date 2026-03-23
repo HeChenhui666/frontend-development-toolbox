@@ -5,9 +5,24 @@
 
 import { getRedirectRules, applyRulesToDeclarativeNetRequest } from '../utils/redirectRules';
 
-const OPEN_SIDE_PANEL_MENU_ID = 'open-xiaohuohuo-side-panel';
-const FALLBACK_WINDOW_WIDTH = 420;
+/**
+ * sidePanel 仅在本扩展的 Service Worker / 部分扩展页面中注入。
+ * 在普通网页、localhost 调试页、内容脚本的 window 里访问 chrome.sidePanel 会得到 undefined，与 Chrome 版本无关。
+ */
+console.log(
+  '[小火火后台] chrome.sidePanel:',
+  typeof chrome !== 'undefined' && chrome.sidePanel
+    ? '可用'
+    : 'undefined（请打开 chrome://extensions → 本扩展 →「Service Worker」控制台查看；勿在网页控制台测）'
+);
+
+const MENU_OPEN_SIDE_PANEL = 'xiaohuohuo-menu-open-side-panel';
+const MENU_OPEN_FLOAT_WINDOW = 'xiaohuohuo-menu-open-float-window';
+/** 与 manifest popup / App.css .app-popup 一致，小尺寸浮窗 */
+const FALLBACK_WINDOW_WIDTH = 450;
 const MIN_FALLBACK_WINDOW_WIDTH = 320;
+const FALLBACK_WINDOW_HEIGHT = 580;
+const MIN_FALLBACK_WINDOW_HEIGHT = 480;
 const FALLBACK_WINDOW_ID_KEY = 'fallback-side-panel-window-id';
 const FALLBACK_WINDOW_WIDTH_KEY = 'fallback-side-panel-window-width';
 const SIDE_PANEL_NOTICE_KEY = 'side-panel-unavailable-notice-at';
@@ -15,14 +30,6 @@ const SIDE_PANEL_NOTICE_COOLDOWN_MS = 60 * 60 * 1000;
 const GUIDE_PAGE_URL = 'pages/sidepanel-guide.html';
 const SIDE_PANEL_PATH = 'index.html?mode=sidepanel';
 const STANDALONE_PATH = 'index.html?mode=standalone';
-
-const getActiveTabId = async (): Promise<number | undefined> => {
-  return new Promise((resolve) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      resolve(tabs[0]?.id);
-    });
-  });
-};
 
 const getFallbackState = async (): Promise<{ windowId?: number; width?: number }> => {
   return new Promise((resolve) => {
@@ -47,7 +54,8 @@ const setFallbackWindowWidth = async (width: number) => {
   await chrome.storage.local.set({ [FALLBACK_WINDOW_WIDTH_KEY]: width });
 };
 
-const notifySidePanelUnavailable = async () => {
+/** 右键「侧边栏」不可用或打开失败时提示（与「浮窗」菜单互不替代） */
+const notifyCannotOpenSidePanelFromMenu = async () => {
   if (!chrome.notifications?.create) {
     return;
   }
@@ -65,8 +73,8 @@ const notifySidePanelUnavailable = async () => {
   chrome.notifications.create({
     type: 'basic',
     iconUrl: 'icons/icon128.png',
-    title: '当前浏览器不支持扩展侧边栏',
-    message: '已改用侧边浮窗模式。点击通知查看如何从浏览器右上角侧边栏入口打开。'
+    title: '无法通过右键打开侧边栏',
+    message: '请从浏览器右上角「侧边栏」入口选择本扩展，或使用右键菜单「打开小火火浮窗」。点击通知查看图文说明。'
   });
 };
 
@@ -78,8 +86,8 @@ const openSidePanelGuide = async () => {
   }
 };
 
+/** 独立小窗（popup 窗口），专用于右键「打开小火火浮窗」 */
 const openFallbackPanelWindow = async () => {
-  await notifySidePanelUnavailable();
   const { windowId, width } = await getFallbackState();
   const targetWidth = Math.max(MIN_FALLBACK_WINDOW_WIDTH, width ?? FALLBACK_WINDOW_WIDTH);
 
@@ -87,7 +95,9 @@ const openFallbackPanelWindow = async () => {
     chrome.windows.getCurrent({}, (currentWindow) => {
       const top = currentWindow.top ?? 0;
       const left = (currentWindow.left ?? 0) + (currentWindow.width ?? 0) - targetWidth;
-      const height = currentWindow.height ?? 720;
+      const parentH = currentWindow.height ?? 800;
+      const maxHeight = Math.max(MIN_FALLBACK_WINDOW_HEIGHT, parentH - 48);
+      const height = Math.min(FALLBACK_WINDOW_HEIGHT, maxHeight);
 
       if (typeof windowId === 'number') {
         chrome.windows.get(windowId, (existingWindow) => {
@@ -146,43 +156,69 @@ const openFallbackPanelWindow = async () => {
   });
 };
 
-const openSidePanelForTab = async (tabId?: number) => {
-  const sidePanel = (chrome as any).sidePanel as
-    | {
-        open?: (options: { tabId?: number; windowId?: number }) => Promise<void> | void;
-        setOptions?: (options: { tabId?: number; path?: string; enabled?: boolean }) => Promise<void> | void;
-      }
-    | undefined;
-
-  if (!sidePanel?.open) {
-    console.warn('[后台脚本] 当前浏览器不支持 sidePanel API');
-    await openFallbackPanelWindow();
+/**
+ * 在用户手势的同步调用栈内打开 Side Panel。
+ * Chrome 要求：sidePanel.open() 不得出现在 await 之后，否则会报
+ * "may only be called in response to a user gesture"。
+ * 默认路径由 manifest.side_panel 与 onInstalled 里的 setOptions 注册，此处不再 await setOptions。
+ * @see https://developer.chrome.com/docs/extensions/reference/api/sidePanel
+ */
+const openSidePanelFromUserGesture = (tab?: chrome.tabs.Tab) => {
+  if (!chrome.sidePanel?.open) {
+    console.warn('[后台脚本] 当前环境不支持 chrome.sidePanel（需 Chrome 116+）');
+    void notifyCannotOpenSidePanelFromMenu();
     return;
   }
 
-  const resolvedTabId = tabId ?? (await getActiveTabId());
-  try {
-    if (sidePanel.setOptions) {
-      await sidePanel.setOptions({ tabId: resolvedTabId, path: SIDE_PANEL_PATH, enabled: true });
-    }
-    await sidePanel.open({ tabId: resolvedTabId });
-  } catch (error) {
-    console.error('[后台脚本] 打开侧边栏失败:', error);
-    await openFallbackPanelWindow();
+  const tabId = tab?.id;
+  if (typeof tabId === 'number') {
+    chrome.sidePanel.open({ tabId }).catch((error) => {
+      console.error('[后台脚本] 打开侧边栏失败:', error);
+      void notifyCannotOpenSidePanelFromMenu();
+    });
+    return;
   }
+
+  const windowId = tab?.windowId;
+  if (typeof windowId === 'number') {
+    chrome.sidePanel.open({ windowId }).catch((error) => {
+      console.error('[后台脚本] 打开侧边栏失败:', error);
+      void notifyCannotOpenSidePanelFromMenu();
+    });
+    return;
+  }
+
+  void notifyCannotOpenSidePanelFromMenu();
+};
+
+const registerContextMenus = () => {
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: MENU_OPEN_SIDE_PANEL,
+      title: '使用侧边栏打开',
+      contexts: ['page']
+    });
+    chrome.contextMenus.create({
+      id: MENU_OPEN_FLOAT_WINDOW,
+      title: '使用小窗口打开',
+      contexts: ['page']
+    });
+  });
 };
 
 // 扩展安装或更新时初始化
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('扩展已安装/更新:', details.reason);
-  
-  chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      id: OPEN_SIDE_PANEL_MENU_ID,
-      title: '打开小火火浮窗',
-      contexts: ['page']
-    });
-  });
+
+  if (chrome.sidePanel?.setOptions) {
+    try {
+      await chrome.sidePanel.setOptions({ path: SIDE_PANEL_PATH, enabled: true });
+    } catch (e) {
+      console.warn('[后台脚本] sidePanel.setOptions 默认路径注册失败:', e);
+    }
+  }
+
+  registerContextMenus();
 
   if (details.reason === 'install') {
     // 首次安装，初始化默认规则（如果有）
@@ -227,8 +263,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === OPEN_SIDE_PANEL_MENU_ID) {
-    openSidePanelForTab(tab?.id);
+  if (info.menuItemId === MENU_OPEN_SIDE_PANEL) {
+    openSidePanelFromUserGesture(tab);
+    return;
+  }
+  if (info.menuItemId === MENU_OPEN_FLOAT_WINDOW) {
+    void openFallbackPanelWindow();
   }
 });
 
