@@ -80,8 +80,6 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   json: 'JSON',
   gradient: '颜色工具',
   regex: '正则',
-  css: 'CSS预设',
-  functions: '常用函数',
   translator: '在线翻译',
   apitester: 'API调试',
   redirector: '请求重定向',
