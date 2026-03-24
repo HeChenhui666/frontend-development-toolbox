@@ -16,6 +16,7 @@ import {
   TranslationOutlined,
 } from '@ant-design/icons';
 import './index.css';
+import { parseGoogleTranslateSingleResult } from '../../utils/parseGoogleTranslateResult';
 
 const { Text } = Typography;
 
@@ -53,9 +54,9 @@ async function translateText(text: string, targetLang: string = 'zh'): Promise<s
 
     const data = await response.json();
 
-    // 安全地访问嵌套数组
-    if (data && Array.isArray(data) && data[0] && Array.isArray(data[0]) && data[0][0] && Array.isArray(data[0][0]) && data[0][0][0]) {
-      return data[0][0][0];
+    const translated = parseGoogleTranslateSingleResult(data);
+    if (translated !== null) {
+      return translated;
     }
 
     throw new Error('翻译结果格式不正确');

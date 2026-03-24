@@ -2,6 +2,7 @@ import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallbac
 import { ConfigProvider, theme as antdTheme, Popover, Button } from 'antd';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab, DefaultTab } from './utils/userPreferences';
+import { openChatWindow } from './utils/openChatWindow';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -12,12 +13,10 @@ const ColorTools = lazy(() => import('./components/ColorTools'));
 const JSONTools = lazy(() => import('./components/JSONTools'));
 const RegexTester = lazy(() => import('./components/RegexTester'));
 const ImageTools = lazy(() => import('./components/ImageTools'));
-const CSSTools = lazy(() => import('./components/CSSTools'));
 const Translator = lazy(() => import('./components/Translator'));
 const APITester = lazy(() => import('./components/APITester'));
 const CacheManager = lazy(() => import('./components/CacheManager'));
 const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
-const CommonFunctions = lazy(() => import('./components/CommonFunctions'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -41,8 +40,6 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   json: { id: 'json', name: 'JSON', icon: '📄' },
   gradient: { id: 'gradient', name: '颜色工具', icon: '🎨' },
   regex: { id: 'regex', name: '正则', icon: '🔤' },
-  css: { id: 'css', name: 'CSS预设', icon: '🎨' },
-  functions: { id: 'functions', name: '常用函数', icon: '🧰' },
   translator: { id: 'translator', name: '在线翻译', icon: '🌐' },
   apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
   cachemanager: { id: 'cachemanager', name: '缓存管理', icon: '🧹' },
@@ -135,6 +132,10 @@ const App: React.FC = () => {
     setQrSubTab(tab);
   }, []);
 
+  const handleOpenChat = useCallback(() => {
+    openChatWindow();
+  }, []);
+
   // 所有功能模块定义 - 优化：将 QRCode 子标签页组件提取出来，避免每次重新创建
   const qrCodeComponent = useMemo(
     () => (
@@ -170,8 +171,6 @@ const App: React.FC = () => {
       json: <JSONTools />,
       gradient: <ColorTools />,
       regex: <RegexTester />,
-      css: <CSSTools />,
-      functions: <CommonFunctions />,
       translator: <Translator />,
       apitester: <APITester />,
       cachemanager: <CacheManager />,
@@ -468,6 +467,9 @@ const App: React.FC = () => {
             </h1>
             <p className='header-subtitle'>实用工具集合</p>
           </div>
+          <button type='button' className='header-chat-btn' onClick={handleOpenChat} title='聊天室'>
+            💬
+          </button>
           <button className='header-settings-btn' onClick={() => setShowSettings(true)} title='设置'>
             ⚙️
           </button>

@@ -1,8 +1,0 @@
-.common-functions {
-  padding: 6px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
-}

@@ -6,8 +6,6 @@ export type DefaultTab =
   | 'json'
   | 'regex'
   | 'randomimage'
-  | 'css'
-  | 'functions'
   | 'translator'
   | 'apitester'
   | 'redirector'
@@ -26,8 +24,6 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'json',
   'gradient',
   'regex',
-  'css',
-  'functions',
   'translator',
   'apitester',
   'redirector',
