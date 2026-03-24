@@ -2,6 +2,7 @@ import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallbac
 import { ConfigProvider, theme as antdTheme, Popover, Button } from 'antd';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab, DefaultTab } from './utils/userPreferences';
+import { openChatWindow } from './utils/openChatWindow';
 
 // 懒加载组件，按需加载
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
@@ -129,6 +130,10 @@ const App: React.FC = () => {
   // 使用 useCallback 优化 qrSubTab 切换处理函数
   const handleQrSubTabChange = useCallback((tab: 'generate' | 'decode') => {
     setQrSubTab(tab);
+  }, []);
+
+  const handleOpenChat = useCallback(() => {
+    openChatWindow();
   }, []);
 
   // 所有功能模块定义 - 优化：将 QRCode 子标签页组件提取出来，避免每次重新创建
@@ -462,6 +467,9 @@ const App: React.FC = () => {
             </h1>
             <p className='header-subtitle'>实用工具集合</p>
           </div>
+          <button type='button' className='header-chat-btn' onClick={handleOpenChat} title='聊天室'>
+            💬
+          </button>
           <button className='header-settings-btn' onClick={() => setShowSettings(true)} title='设置'>
             ⚙️
           </button>

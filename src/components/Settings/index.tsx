@@ -8,6 +8,8 @@ import {
   Typography,
   Progress,
   Tabs,
+  Switch,
+  Input,
   message as antdMessage,
 } from 'antd';
 import {
@@ -23,11 +25,12 @@ import {
   BugOutlined,
   BookOutlined,
   DragOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 import ThemeSettings from '../ThemeSettings';
 import TextArea from 'antd/es/input/TextArea';
 
-const { Text, Link } = Typography;
+const { Text, Link, Title } = Typography;
 import {
   getDefaultTab,
   saveDefaultTab,
@@ -44,6 +47,24 @@ import {
   type FeatureTab,
   type CacheType,
 } from '../../utils/userPreferences';
+import ChatConnectionPanel from '../../chat/ChatConnectionPanel';
+import { ChatHistorySettingsActions } from '../../chat/ChatHistorySettingsActions';
+import {
+  CHAT_LS_WS_URL,
+  DEFAULT_PUBLIC_ROOM_ID,
+  DEFAULT_PUBLIC_ROOM_PASS,
+  getChatAutoConnect,
+  getChatAutoJoinPublic,
+  getChatPublicRoomId,
+  getChatPublicRoomPassphrase,
+  getChatSaveHistoryEnabled,
+  notifyChatPreferencesChanged,
+  setChatAutoConnect,
+  setChatAutoJoinPublic,
+  setChatSaveHistoryEnabled,
+  setChatPublicRoomId,
+  setChatPublicRoomPassphrase,
+} from '../../utils/chatPreferences';
 import './index.css';
 
 const APP_VERSION = import.meta.env.APP_VERSION || '';
@@ -51,10 +72,18 @@ const GITHUB_URL = 'https://github.com/HeChenhui666/frontend-development-toolbox
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/HeChenhui666/frontend-development-toolbox/main';
 
 interface SettingsProps {
+  /** 弹窗模式：关闭时回调 */
   onClose: () => void;
+  /** 为 true 时不包裹外层 Modal，用于聊天室等独立页，内容与弹窗一致 */
+  embedded?: boolean;
+  /**
+   * 聊天独立页：在「聊天」标签内展示连接/昵称/进房面板（需 LanRelayChatProvider），
+   * 不再单独显示 WebSocket 输入框以免重复。
+   */
+  chatRelayPanelInTab?: boolean;
 }
 
-type SettingsTab = 'general' | 'theme';
+type SettingsTab = 'general' | 'theme' | 'chat';
 
 // 版本号比较函数
 const compareVersions = (v1: string, v2: string): number => {
@@ -86,7 +115,7 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   cachemanager: '缓存管理',
 };
 
-const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
+const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, chatRelayPanelInTab = false }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [defaultTab, setDefaultTab] = useState<DefaultTab>(getDefaultTab());
   const [storageInfo, setStorageInfo] = useState(getStorageInfo());
@@ -99,6 +128,16 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
   const [remoteVersion, setRemoteVersion] = useState<string | null>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateCheckError, setUpdateCheckError] = useState<string | null>(null);
+
+  const [chatWsUrl, setChatWsUrl] = useState(() => {
+    if (typeof window === 'undefined') return 'ws://127.0.0.1:8765';
+    return window.localStorage.getItem(CHAT_LS_WS_URL) || 'ws://127.0.0.1:8765';
+  });
+  const [chatAutoConnect, setChatAutoConnectState] = useState(() => getChatAutoConnect());
+  const [chatSaveHistory, setChatSaveHistoryState] = useState(() => getChatSaveHistoryEnabled());
+  const [chatAutoJoinPublic, setChatAutoJoinPublicState] = useState(() => getChatAutoJoinPublic());
+  const [chatPublicRoom, setChatPublicRoomState] = useState(() => getChatPublicRoomId());
+  const [chatPublicPass, setChatPublicPassState] = useState(() => getChatPublicRoomPassphrase());
 
   // 更新存储信息 - 使用 useMemo 延迟计算，避免阻塞渲染
   useEffect(() => {
@@ -591,20 +630,9 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
     setDragOverIndex(null);
   };
 
-  return (
-    <Modal
-      title="设置"
-      open={true}
-      onCancel={onClose}
-      footer={null}
-      width={800}
-      centered
-      destroyOnClose
-      maskClosable={true}
-      getContainer={() => document.body}
-      closeIcon={<CloseOutlined />}
-    >
-      <Tabs
+  const settingsTabs = (
+    <Tabs
+        className={embedded ? 'settings-embedded-tabs' : undefined}
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as SettingsTab)}
         items={[
@@ -803,54 +831,234 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose }) => {
               </div>
             ),
           },
+          {
+            key: 'chat',
+            label: (
+              <Space>
+                <MessageOutlined />
+                <span>聊天</span>
+              </Space>
+            ),
+            children: (
+              <div className='settings-main'>
+                <Space direction="vertical" style={{ width: '100%' }} size="large">
+                  <Card size="small" title="局域网聊天">
+                    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                      <Text type="secondary">
+                        与扩展内「消息」页共用配置。需在局域网运行{' '}
+                        <code style={{ fontSize: 12 }}>npm run lan-chat-server</code> 作为中继。
+                      </Text>
+
+                      {chatRelayPanelInTab && <ChatConnectionPanel />}
+
+                      {!chatRelayPanelInTab && (
+                        <Space direction="vertical" style={{ width: '100%' }} size={4}>
+                          <Text strong>WebSocket 地址</Text>
+                          <Input
+                            value={chatWsUrl}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setChatWsUrl(v);
+                              try {
+                                window.localStorage.setItem(CHAT_LS_WS_URL, v);
+                              } catch {
+                                /* ignore */
+                              }
+                              notifyChatPreferencesChanged();
+                            }}
+                            placeholder="ws://192.168.x.x:8765"
+                            size="small"
+                          />
+                        </Space>
+                      )}
+
+                      {chatRelayPanelInTab ? (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          显示昵称默认为「访客」，可在上方「局域网连接」中修改；不写入持久缓存，连接后改名会同步到在线列表。
+                        </Text>
+                      ) : (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          显示昵称请在独立聊天窗口中打开 <strong>设置 → 聊天</strong> 修改（默认「访客」，不写入持久缓存）。
+                        </Text>
+                      )}
+
+                      <Space align="start" style={{ width: '100%' }}>
+                        <Switch
+                          checked={chatAutoConnect}
+                          onChange={(v) => {
+                            setChatAutoConnectState(v);
+                            setChatAutoConnect(v);
+                            notifyChatPreferencesChanged();
+                          }}
+                        />
+                        <div>
+                          <Text>打开消息页时自动连接</Text>
+                          <div>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {chatRelayPanelInTab
+                                ? '使用本标签内「局域网连接」中的 WebSocket 地址'
+                                : '使用上方保存的 WebSocket 地址'}
+                            </Text>
+                          </div>
+                        </div>
+                      </Space>
+
+                      <Space align="start" style={{ width: '100%' }}>
+                        <Switch
+                          checked={chatSaveHistory}
+                          onChange={(v) => {
+                            setChatSaveHistoryState(v);
+                            setChatSaveHistoryEnabled(v);
+                            notifyChatPreferencesChanged();
+                          }}
+                        />
+                        <div>
+                          <Text>自动保存聊天记录到本机</Text>
+                          <div>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              关闭后不再写入浏览器本地存储；刷新后本次会话中的新消息不会持久化（已存数据可手动导出或清空）。
+                            </Text>
+                          </div>
+                        </div>
+                      </Space>
+
+                      <Space align="start" style={{ width: '100%' }}>
+                        <Switch
+                          checked={chatAutoJoinPublic}
+                          onChange={(v) => {
+                            setChatAutoJoinPublicState(v);
+                            setChatAutoJoinPublic(v);
+                            notifyChatPreferencesChanged();
+                          }}
+                        />
+                        <div>
+                          <Text>连接成功后自动加入公共房间</Text>
+                          <div>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              房间名与密语见下方；默认密语为 {DEFAULT_PUBLIC_ROOM_PASS}
+                            </Text>
+                          </div>
+                        </div>
+                      </Space>
+
+                      <Space direction="vertical" style={{ width: '100%' }} size={4}>
+                        <Text strong>公共房间名</Text>
+                        <Input
+                          value={chatPublicRoom}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setChatPublicRoomState(v);
+                            setChatPublicRoomId(v);
+                            notifyChatPreferencesChanged();
+                          }}
+                          placeholder={DEFAULT_PUBLIC_ROOM_ID}
+                          size="small"
+                        />
+                      </Space>
+
+                      <Space direction="vertical" style={{ width: '100%' }} size={4}>
+                        <Text strong>公共房间密语</Text>
+                        <Input.Password
+                          value={chatPublicPass}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setChatPublicPassState(v);
+                            setChatPublicRoomPassphrase(v);
+                            notifyChatPreferencesChanged();
+                          }}
+                          placeholder={DEFAULT_PUBLIC_ROOM_PASS}
+                          size="small"
+                        />
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          未改过则默认 {DEFAULT_PUBLIC_ROOM_PASS}；须与群内其他人一致才能解密群消息
+                        </Text>
+                      </Space>
+                    </Space>
+                  </Card>
+
+                  <ChatHistorySettingsActions chatRelayPanelInTab={chatRelayPanelInTab} />
+                </Space>
+              </div>
+            ),
+          },
         ]}
       />
+  );
 
-      {/* Tab Order Manager Modal */}
-      <Modal
-        title="管理标签页顺序"
-        open={showTabOrderManager}
-        onCancel={handleCloseTabOrderManager}
-        onOk={handleSaveTabOrder}
-        okText="保存"
-        cancelText="取消"
-        width={500}
-        centered
-        destroyOnClose
-        maskClosable={true}
-        getContainer={() => document.body}
-      >
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          <Text type="secondary">拖拽列表项调整功能标签页的显示顺序。</Text>
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            {tabOrder.map((tab, index) => (
-              <Card
-                key={tab}
-                size="small"
-                style={{
-                  cursor: 'move',
-                  opacity: draggedIndex === index ? 0.5 : 1,
-                  borderColor: dragOverIndex === index ? 'var(--theme-primary)' : undefined,
-                }}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-              >
-                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                  <Space>
-                    <DragOutlined />
-                    <Text>{TAB_NAMES[tab]}</Text>
-                  </Space>
-                  <Text type="secondary">#{index + 1}</Text>
+  const tabOrderManagerModal = (
+    <Modal
+      title="管理标签页顺序"
+      open={showTabOrderManager}
+      onCancel={handleCloseTabOrderManager}
+      onOk={handleSaveTabOrder}
+      okText="保存"
+      cancelText="取消"
+      width={500}
+      centered
+      destroyOnClose
+      maskClosable={true}
+      getContainer={() => document.body}
+    >
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Text type="secondary">拖拽列表项调整功能标签页的显示顺序。</Text>
+        <Space direction="vertical" style={{ width: '100%' }} size="small">
+          {tabOrder.map((tab, index) => (
+            <Card
+              key={tab}
+              size="small"
+              style={{
+                cursor: 'move',
+                opacity: draggedIndex === index ? 0.5 : 1,
+                borderColor: dragOverIndex === index ? 'var(--theme-primary)' : undefined,
+              }}
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
+            >
+              <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                <Space>
+                  <DragOutlined />
+                  <Text>{TAB_NAMES[tab]}</Text>
                 </Space>
-              </Card>
-            ))}
-          </Space>
+                <Text type="secondary">#{index + 1}</Text>
+              </Space>
+            </Card>
+          ))}
         </Space>
-      </Modal>
+      </Space>
+    </Modal>
+  );
+
+  if (embedded) {
+    return (
+      <div className="settings-embedded-root">
+        <Title level={4} className="settings-embedded-title">
+          设置
+        </Title>
+        {settingsTabs}
+        {tabOrderManagerModal}
+      </div>
+    );
+  }
+
+  return (
+    <Modal
+      title="设置"
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+      centered
+      destroyOnClose
+      maskClosable={true}
+      getContainer={() => document.body}
+      closeIcon={<CloseOutlined />}
+    >
+      {settingsTabs}
+      {tabOrderManagerModal}
     </Modal>
   );
 });
