@@ -874,11 +874,11 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, cha
 
                       {chatRelayPanelInTab ? (
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          显示昵称默认为「访客」，可在上方「局域网连接」中修改；不写入持久缓存，连接后改名会同步到在线列表。
+                          显示昵称默认为「访客」，可在上方「局域网连接」中修改；会缓存到本机，连接后改名会同步到在线列表。
                         </Text>
                       ) : (
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          显示昵称请在独立聊天窗口中打开 <strong>设置 → 聊天</strong> 修改（默认「访客」，不写入持久缓存）。
+                          显示昵称请在独立聊天窗口中打开 <strong>设置 → 聊天</strong> 修改（默认「访客」，会写入本机缓存）。
                         </Text>
                       )}
 

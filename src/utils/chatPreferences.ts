@@ -18,6 +18,8 @@ export function sanitizeRelayRoomId(room: string): string {
 export const CHAT_LS_WS_URL = 'lan-chat-ws-url';
 
 const LS_AUTO_CONNECT = 'lan-chat-auto-connect';
+const LS_DISPLAY_NAME = 'lan-chat-display-name';
+const DISPLAY_NAME_MAX_LEN = 48;
 const LS_SAVE_CHAT_HISTORY = 'lan-chat-save-history';
 const LS_AUTO_JOIN_PUBLIC = 'lan-chat-auto-join-public';
 const LS_PUBLIC_ROOM = 'lan-chat-public-room-id';
@@ -34,6 +36,33 @@ export function getChatAutoConnect(): boolean {
 export function setChatAutoConnect(value: boolean): void {
   try {
     window.localStorage.setItem(LS_AUTO_CONNECT, value ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 聊天室显示昵称，持久化于本机；空则界面仍显示「访客」 */
+export function getChatDisplayName(): string {
+  if (typeof window === 'undefined') return '访客';
+  try {
+    const raw = window.localStorage.getItem(LS_DISPLAY_NAME);
+    if (raw == null) return '访客';
+    const t = raw.trim().slice(0, DISPLAY_NAME_MAX_LEN);
+    return t || '访客';
+  } catch {
+    return '访客';
+  }
+}
+
+export function setChatDisplayName(value: string): void {
+  try {
+    const t = value.trim().slice(0, DISPLAY_NAME_MAX_LEN);
+    if (t === '') {
+      window.localStorage.removeItem(LS_DISPLAY_NAME);
+    } else {
+      window.localStorage.setItem(LS_DISPLAY_NAME, t);
+    }
+    notifyChatPreferencesChanged();
   } catch {
     /* ignore */
   }

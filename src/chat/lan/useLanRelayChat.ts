@@ -13,7 +13,9 @@ import {
 import {
   CHAT_LS_WS_URL,
   CHAT_PREFS_CHANGED_EVENT,
+  getChatDisplayName,
   getChatSaveHistoryEnabled,
+  setChatDisplayName,
 } from '../../utils/chatPreferences';
 import {
   CHAT_HISTORY_RELOAD_EVENT,
@@ -23,9 +25,6 @@ import {
   scheduleSaveChatHistory,
   type LinesByKeyMap,
 } from './chatHistoryStorage';
-
-/** 历史版本曾写入 localStorage，启动时清除以免误当作配置 */
-const LEGACY_CHAT_DISPLAY_NAME_KEY = 'lan-chat-display-name';
 
 export type RelayChatLine = {
   id: string;
@@ -59,7 +58,9 @@ export function useLanRelayChat() {
     if (typeof window === 'undefined') return 'ws://127.0.0.1:8765';
     return window.localStorage.getItem(CHAT_LS_WS_URL) || 'ws://127.0.0.1:8765';
   });
-  const [displayName, setDisplayNameState] = useState('访客');
+  const [displayName, setDisplayNameState] = useState(() =>
+    typeof window === 'undefined' ? '访客' : getChatDisplayName()
+  );
 
   const [connection, setConnection] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
   const [lastError, setLastError] = useState<string | null>(null);
@@ -147,6 +148,7 @@ export function useLanRelayChat() {
     renameDebounceRef.current = setTimeout(() => {
       renameDebounceRef.current = null;
       const name = renameLatestRef.current.trim() || '访客';
+      setChatDisplayName(renameLatestRef.current);
       try {
         ws.send(JSON.stringify({ t: 'hello', name, pub: spki } satisfies ClientToServer));
       } catch {
@@ -561,14 +563,6 @@ export function useLanRelayChat() {
   useEffect(() => () => teardownSocket(), [teardownSocket]);
 
   useEffect(() => {
-    try {
-      window.localStorage.removeItem(LEGACY_CHAT_DISPLAY_NAME_KEY);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  useEffect(() => {
     const onPrefs = () => {
       try {
         const u = window.localStorage.getItem(CHAT_LS_WS_URL);
@@ -577,6 +571,9 @@ export function useLanRelayChat() {
         /* ignore */
       }
       setSaveHistoryEnabled(getChatSaveHistoryEnabled());
+      const nextName = getChatDisplayName();
+      setDisplayNameState(nextName);
+      renameLatestRef.current = nextName;
     };
     window.addEventListener(CHAT_PREFS_CHANGED_EVENT, onPrefs);
     return () => window.removeEventListener(CHAT_PREFS_CHANGED_EVENT, onPrefs);

@@ -34,7 +34,7 @@ const ChatConnectionPanel: React.FC = () => {
         <Input
           value={chat.displayName}
           onChange={(e) => chat.setDisplayName(e.target.value)}
-          placeholder="默认「访客」，可改；不写入持久缓存"
+          placeholder="默认「访客」；修改后写入本机缓存，多标签页会同步"
           size="small"
         />
         <Space size={8} wrap className="chat-relay-actions">
