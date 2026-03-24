@@ -29,7 +29,7 @@ const SIDE_PANEL_NOTICE_KEY = 'side-panel-unavailable-notice-at';
 const SIDE_PANEL_NOTICE_COOLDOWN_MS = 60 * 60 * 1000;
 const GUIDE_PAGE_URL = 'pages/sidepanel-guide.html';
 const SIDE_PANEL_PATH = 'sidepanel.html';
-const STANDALONE_PATH = 'index.html?mode=standalone';
+const STANDALONE_PATH = 'standalone.html';
 
 const getFallbackState = async (): Promise<{ windowId?: number; width?: number }> => {
   return new Promise((resolve) => {

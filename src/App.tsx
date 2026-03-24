@@ -80,9 +80,13 @@ const App: React.FC = () => {
 
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode');
-    const isSidePanelEntry = /(^|\/)sidepanel\.html$/i.test(window.location.pathname);
+    const path = window.location.pathname;
+    const isSidePanelEntry = /(^|\/)sidepanel\.html$/i.test(path);
+    const isPopupEntry = /(^|\/)popup\.html$/i.test(path);
+    const isStandaloneEntry = /(^|\/)standalone\.html$/i.test(path);
 
-    const isExtensionProtocol = window.location.protocol === 'chrome-extension:';
+    // Chromium 系扩展页多为 chrome-extension:；部分国产浏览器内核可能使用其它 *-extension: 协议名
+    const isExtensionProtocol = /-extension:$/i.test(window.location.protocol);
     const hasChromeRuntime =
       typeof (window as any).chrome !== 'undefined' &&
       (window as any).chrome.runtime &&
@@ -93,10 +97,10 @@ const App: React.FC = () => {
     if (mode === 'sidepanel' || isSidePanelEntry) {
       return { isPopupMode: false, isSidePanelMode: true };
     }
-    if (mode === 'popup') {
+    if (mode === 'popup' || isPopupEntry) {
       return { isPopupMode: true, isSidePanelMode: false };
     }
-    if (mode === 'standalone') {
+    if (mode === 'standalone' || isStandaloneEntry) {
       return { isPopupMode: false, isSidePanelMode: false };
     }
 

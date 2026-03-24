@@ -18,6 +18,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        popup: resolve(__dirname, 'popup.html'),
+        standalone: resolve(__dirname, 'standalone.html'),
         sidepanel: resolve(__dirname, 'sidepanel.html'),
         chat: resolve(__dirname, 'chat.html'),
         'content/translator': resolve(__dirname, 'src/content/translator.ts'),

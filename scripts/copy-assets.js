@@ -36,7 +36,7 @@ if (existsSync(iconsDir)) {
 }
 
 // 修复 HTML 产物：移除 crossorigin 属性（Chrome 扩展不需要）
-for (const htmlName of ['index.html', 'sidepanel.html', 'chat.html']) {
+for (const htmlName of ['index.html', 'popup.html', 'standalone.html', 'sidepanel.html', 'chat.html']) {
   const htmlPath = join(distDir, htmlName);
   if (existsSync(htmlPath)) {
     let html = readFileSync(htmlPath, 'utf-8');
