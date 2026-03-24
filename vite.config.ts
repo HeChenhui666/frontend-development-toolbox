@@ -18,6 +18,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        sidepanel: resolve(__dirname, 'sidepanel.html'),
         chat: resolve(__dirname, 'chat.html'),
         'content/translator': resolve(__dirname, 'src/content/translator.ts'),
         'background': resolve(__dirname, 'src/background/index.ts'),

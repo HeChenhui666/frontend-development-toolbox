@@ -80,6 +80,7 @@ const App: React.FC = () => {
 
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode');
+    const isSidePanelEntry = /(^|\/)sidepanel\.html$/i.test(window.location.pathname);
 
     const isExtensionProtocol = window.location.protocol === 'chrome-extension:';
     const hasChromeRuntime =
@@ -89,7 +90,7 @@ const App: React.FC = () => {
     const isSmallWindow = window.innerWidth <= 500 && window.innerHeight <= 650;
     const isPopupHeuristic = (isExtensionProtocol || hasChromeRuntime) && isSmallWindow;
 
-    if (mode === 'sidepanel') {
+    if (mode === 'sidepanel' || isSidePanelEntry) {
       return { isPopupMode: false, isSidePanelMode: true };
     }
     if (mode === 'popup') {
