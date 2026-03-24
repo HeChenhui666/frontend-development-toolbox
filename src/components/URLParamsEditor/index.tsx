@@ -75,9 +75,15 @@ const URLParamsEditor: React.FC = () => {
       setError('');
       setCurrentUrl(url);
 
-      // 处理chrome://等特殊协议
-      if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.startsWith('about:')) {
-        setError('当前页面不支持URL参数编辑（chrome:// 或 about: 页面）');
+      // 处理 chrome://、about: 及各类 *-extension: 扩展页（含 QQ 等 Chromium 变体可能使用的协议名）
+      let isExtensionPage = false;
+      try {
+        isExtensionPage = new URL(url).protocol.toLowerCase().endsWith('-extension:');
+      } catch {
+        /* ignore */
+      }
+      if (url.startsWith('chrome://') || url.startsWith('about:') || isExtensionPage) {
+        setError('当前页面不支持URL参数编辑（内置页或扩展页）');
         setBaseUrl(url);
         setParams([{ key: '', value: '' }]);
         return;
