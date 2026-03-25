@@ -255,7 +255,7 @@ body:has(.app-standalone) {
   display: flex;
   flex-direction: column;
   box-shadow: none;
-  overflow: visible;
+  overflow: auto;
 }
 
 /* 兼容性：默认样式（向后兼容，仅在非 popup/standalone 时生效） */
