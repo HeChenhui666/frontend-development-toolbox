@@ -17,13 +17,15 @@ const Translator = lazy(() => import('./components/Translator'));
 const APITester = lazy(() => import('./components/APITester'));
 const CacheManager = lazy(() => import('./components/CacheManager'));
 const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
+const WebActions = lazy(() => import('./components/WebActions'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
 // 定义功能模块类型
 type FeatureTab = DefaultTab | 'future1' | 'future2';
 
-const isPersistedTab = (tab: FeatureTab): tab is DefaultTab => tab !== 'future1' && tab !== 'future2';
+const isPersistedTab = (tab: FeatureTab): tab is DefaultTab =>
+  tab !== 'future1' && tab !== 'future2';
 
 // 定义功能配置
 interface FeatureMeta {
@@ -44,6 +46,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   apitester: { id: 'apitester', name: 'API调试', icon: '🔌' },
   cachemanager: { id: 'cachemanager', name: '缓存管理', icon: '🧹' },
   redirector: { id: 'redirector', name: '请求重定向', icon: '🔄' },
+  webactions: { id: 'webactions', name: '网页操作', icon: '🧭' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -180,6 +183,7 @@ const App: React.FC = () => {
       apitester: <APITester />,
       cachemanager: <CacheManager />,
       redirector: <RequestRedirector />,
+      webactions: <WebActions />,
       future1: null,
       future2: null,
     }),

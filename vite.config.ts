@@ -23,6 +23,7 @@ export default defineConfig({
         sidepanel: resolve(__dirname, 'sidepanel.html'),
         chat: resolve(__dirname, 'chat.html'),
         'content/translator': resolve(__dirname, 'src/content/translator.ts'),
+        'content/enableCopy': resolve(__dirname, 'src/content/enableCopy.ts'),
         'background': resolve(__dirname, 'src/background/index.ts'),
       },
       output: {
@@ -49,6 +50,9 @@ export default defineConfig({
           // content script和background文件不使用hash
           if (chunkInfo.name === 'content/translator') {
             return 'content/translator.js';
+          }
+          if (chunkInfo.name === 'content/enableCopy') {
+            return 'content/enableCopy.js';
           }
           if (chunkInfo.name === 'background') {
             return 'background.js';
