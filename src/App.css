@@ -121,6 +121,13 @@ html,
 body,
 #root {
   height: 100%;
+  min-height: 0;
+}
+
+/* 主应用页：让 .app 参与 flex 高度分配，子级 .content 才能 overflow 滚动 */
+#root {
+  display: flex;
+  flex-direction: column;
 }
 
 /* antd 组件统一内外间距与圆角 */
@@ -228,15 +235,17 @@ body,
   justify-content: center;
 }
 
-/* 独立页面模式下，body需要全屏高度 */
-body:has(.app-standalone) {
+/* 独立页全屏：侧栏/小窗不要用 100vh，否则高度按整屏算，.content 无法内部滚动 */
+body:has(.app-standalone):not(:has(.app-sidepanel)) {
   min-height: 100vh;
 }
 
 /* 插件popup模式：固定尺寸 */
 .app-popup {
+  flex: 0 0 auto;
   width: 450px;
   height: 580px;
+  min-height: 0;
   background: var(--theme-background, #ffffff);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   display: flex;
@@ -245,23 +254,35 @@ body:has(.app-standalone) {
   overflow: hidden;
 }
 
-/* 独立页面模式：响应式布局 */
+/* 独立页面模式：响应式布局（滚动交给 .content，避免矮视口下无法纵向滚动） */
 .app-standalone {
+  flex: 1 1 auto;
   width: 100%;
-  min-height: 100vh;
+  min-height: 0;
   max-width: 100%;
   background: var(--theme-background, #ffffff);
   border: none;
   display: flex;
   flex-direction: column;
   box-shadow: none;
-  overflow: auto;
+  overflow: hidden;
+}
+
+/* 侧边栏：按面板实际高度约束，禁止 min-height:100vh 撑破布局 */
+.app-standalone.app-sidepanel {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 /* 兼容性：默认样式（向后兼容，仅在非 popup/standalone 时生效） */
 .app:not(.app-popup):not(.app-standalone) {
+  flex: 0 0 auto;
   width: 450px;
   height: 580px;
+  min-height: 0;
   background: var(--theme-background, #ffffff);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   display: flex;
