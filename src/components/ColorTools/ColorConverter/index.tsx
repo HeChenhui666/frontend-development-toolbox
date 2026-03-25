@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Button,
@@ -6,13 +6,11 @@ import {
   Typography,
   Input,
   InputNumber,
+  Tooltip,
   message as antdMessage,
 } from 'antd';
-import {
-  CopyOutlined,
-} from '@ant-design/icons';
+import { AimOutlined, CopyOutlined } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../../utils/message';
 
 const { Text } = Typography;
 
@@ -45,6 +43,7 @@ const ColorConverter: React.FC = () => {
   const [hsl, setHsl] = useState<HSL>({ h: 250, s: 78, l: 66 });
   const [hsla, setHsla] = useState<HSLA>({ h: 250, s: 78, l: 66, a: 100 });
   const [updating, setUpdating] = useState<boolean>(false);
+  const [eyeDropperLoading, setEyeDropperLoading] = useState(false);
 
   const getThemeColor = (variableName: string, fallback: string) =>
     getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || fallback;
@@ -218,6 +217,30 @@ const ColorConverter: React.FC = () => {
     };
   }, []);
 
+  const handleEyeDropperPick = useCallback(async () => {
+    const EyeDropperCtor = typeof window !== 'undefined' ? window.EyeDropper : undefined;
+    if (!EyeDropperCtor) {
+      antdMessage.warning('当前浏览器不支持屏幕取色（需 Chromium 系且为安全上下文）');
+      return;
+    }
+    setEyeDropperLoading(true);
+    try {
+      const eyeDropper = new EyeDropperCtor();
+      const result = await eyeDropper.open();
+      const picked = normalizeHexColor(result.sRGBHex, hex);
+      setHex(picked);
+      updateFromHex(picked);
+      antdMessage.success('已应用取到的颜色');
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
+      antdMessage.error(err instanceof Error ? err.message : '取色失败');
+    } finally {
+      setEyeDropperLoading(false);
+    }
+  }, [hex]);
+
   // 复制颜色值
   const copyColor = (format: ColorFormat) => {
     let text = '';
@@ -245,7 +268,31 @@ const ColorConverter: React.FC = () => {
   return (
     <div className="color-converter" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
       {/* 颜色预览 */}
-      <Card size="small" title="颜色预览">
+      <Card
+        size="small"
+        title="颜色预览"
+        extra={
+          <Tooltip
+            title={
+              typeof window !== 'undefined' && window.EyeDropper
+                ? '从屏幕任意位置取色，可将准星移到当前网页上（扩展弹窗可能会关闭，建议用侧边栏）'
+                : '当前环境不支持 EyeDropper API'
+            }
+          >
+            <span>
+              <Button
+                size="small"
+                icon={<AimOutlined />}
+                loading={eyeDropperLoading}
+                disabled={typeof window === 'undefined' || !window.EyeDropper}
+                onClick={handleEyeDropperPick}
+              >
+                取色
+              </Button>
+            </span>
+          </Tooltip>
+        }
+      >
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <div 
             style={{ 
