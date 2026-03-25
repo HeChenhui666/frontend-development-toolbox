@@ -118,16 +118,28 @@ body {
 }
 
 html,
+body {
+  width: 100%;
+  min-width: 0;
+}
+
+html,
 body,
 #root {
   height: 100%;
   min-height: 0;
 }
 
-/* 主应用页：让 .app 参与 flex 高度分配，子级 .content 才能 overflow 滚动 */
+/* 主应用页：让 .app 参与 flex 高度分配，子级 .content 才能 overflow 滚动。
+   overflow:hidden 的 flex 子项默认 min-width 会变成 0，横向上可被压成一条细线；
+   这里拉满宽度并保留 align-items:stretch（默认），避免扩展小窗宽度塌陷。 */
 #root {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* antd 组件统一内外间距与圆角 */
@@ -240,12 +252,33 @@ body:has(.app-standalone):not(:has(.app-sidepanel)) {
   min-height: 100vh;
 }
 
+/*
+ * 工具栏 popup：Chrome 按「文档最小宽度」定窗宽；#root 曾设 min-width:0 且 .app 用 max-width:100%，
+ * 父级在反算宽度时会塌成一条细线。给整条祖先链与 .app 明确 450px 下限（与布局宽度一致）。
+ */
+html:has(.app-popup),
+body:has(.app-popup) {
+  min-width: 450px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#root:has(.app-popup) {
+  min-width: 450px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* 插件popup模式：固定尺寸 */
 .app-popup {
   flex: 0 0 auto;
+  align-self: stretch;
   width: 450px;
+  min-width: 450px;
+  max-width: none;
   height: 580px;
   min-height: 0;
+  box-sizing: border-box;
   background: var(--theme-background, #ffffff);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   display: flex;
@@ -258,8 +291,10 @@ body:has(.app-standalone):not(:has(.app-sidepanel)) {
 .app-standalone {
   flex: 1 1 auto;
   width: 100%;
+  min-width: 0;
   min-height: 0;
   max-width: 100%;
+  box-sizing: border-box;
   background: var(--theme-background, #ffffff);
   border: none;
   display: flex;
@@ -268,10 +303,18 @@ body:has(.app-standalone):not(:has(.app-sidepanel)) {
   overflow: hidden;
 }
 
+/* 右键「小窗口」等独立扩展窗：与 background 里 MIN_FALLBACK_WINDOW_WIDTH 一致，防止 flex+overflow 把宽度压没 */
+.app-standalone:not(.app-sidepanel) {
+  min-width: 320px;
+  width: 100%;
+}
+
 /* 侧边栏：按面板实际高度约束，禁止 min-height:100vh 撑破布局 */
 .app-standalone.app-sidepanel {
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
+  width: 100%;
   height: 100%;
   max-height: 100%;
   overflow: hidden;
@@ -280,9 +323,13 @@ body:has(.app-standalone):not(:has(.app-sidepanel)) {
 /* 兼容性：默认样式（向后兼容，仅在非 popup/standalone 时生效） */
 .app:not(.app-popup):not(.app-standalone) {
   flex: 0 0 auto;
+  align-self: center;
   width: 450px;
+  max-width: 100%;
+  min-width: 320px;
   height: 580px;
   min-height: 0;
+  box-sizing: border-box;
   background: var(--theme-background, #ffffff);
   border: 1px solid var(--theme-borderLight, #cbd5e1);
   display: flex;
