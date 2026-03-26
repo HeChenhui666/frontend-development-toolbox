@@ -2,7 +2,7 @@
 
 面向 **Google Chrome**、**QQ 浏览器**等 Chromium 内核浏览器的扩展，集成二维码、URL 参数、JSON、翻译、请求重定向等多种实用工具，便于前端开发与日常调试。
 
-**当前版本**：**1.7.6**（与仓库根目录 `package.json`、`manifest.json` 中的 `version` 一致；构建后扩展版本以 `dist/manifest.json` 为准。）
+**当前版本**：**1.7.7**（与仓库根目录 `package.json`、`manifest.json` 中的 `version` 一致；构建后扩展版本以 `dist/manifest.json` 为准。）
 
 > **说明**：请始终加载 **`npm run build` 后的 `dist` 目录**。不要直接加载源码根目录，否则会出现缺少 `sidepanel.html` / `popup.html` 等文件、侧栏无法安装等问题。
 
