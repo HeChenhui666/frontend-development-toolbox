@@ -68,6 +68,16 @@
         "content/translator.css"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/mouseTrail.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ]
 }

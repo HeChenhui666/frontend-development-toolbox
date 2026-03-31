@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import ExtensionMouseTrail from './components/MouseTrail/ExtensionMouseTrail';
 import './App.css';
 import { getSavedTheme, applyTheme } from './utils/theme';
 
@@ -8,6 +9,9 @@ import { getSavedTheme, applyTheme } from './utils/theme';
 applyTheme(getSavedTheme());
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <App />
+  <>
+    <ExtensionMouseTrail />
+    <App />
+  </>
 );
 

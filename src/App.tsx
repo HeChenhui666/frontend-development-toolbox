@@ -18,6 +18,7 @@ const APITester = lazy(() => import('./components/APITester'));
 const CacheManager = lazy(() => import('./components/CacheManager'));
 const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
 const WebActions = lazy(() => import('./components/WebActions'));
+const MouseTrail = lazy(() => import('./components/MouseTrail'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -47,6 +48,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   cachemanager: { id: 'cachemanager', name: '缓存管理', icon: '🧹' },
   redirector: { id: 'redirector', name: '请求重定向', icon: '🔄' },
   webactions: { id: 'webactions', name: '网页操作', icon: '🧭' },
+  mousetrail: { id: 'mousetrail', name: '鼠标拖尾', icon: '✨' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -184,6 +186,7 @@ const App: React.FC = () => {
       cachemanager: <CacheManager />,
       redirector: <RequestRedirector />,
       webactions: <WebActions />,
+      mousetrail: <MouseTrail />,
       future1: null,
       future2: null,
     }),

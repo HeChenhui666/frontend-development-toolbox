@@ -23,6 +23,8 @@ export default defineConfig({
         sidepanel: resolve(__dirname, 'sidepanel.html'),
         chat: resolve(__dirname, 'chat.html'),
         'content/translator': resolve(__dirname, 'src/content/translator.ts'),
+        // 入口仅引用同目录 bundle，勿从 utils 引用，否则产生 assets chunk，网页端内容脚本无法加载
+        'content/mouseTrail': resolve(__dirname, 'src/content/mouseTrail.ts'),
         'content/enableCopy': resolve(__dirname, 'src/content/enableCopy.ts'),
         'background': resolve(__dirname, 'src/background/index.ts'),
       },
@@ -50,6 +52,9 @@ export default defineConfig({
           // content script和background文件不使用hash
           if (chunkInfo.name === 'content/translator') {
             return 'content/translator.js';
+          }
+          if (chunkInfo.name === 'content/mouseTrail') {
+            return 'content/mouseTrail.js';
           }
           if (chunkInfo.name === 'content/enableCopy') {
             return 'content/enableCopy.js';

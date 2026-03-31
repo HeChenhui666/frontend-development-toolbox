@@ -1,0 +1,53 @@
+.mouse-trail-panel {
+  padding: 0 4px 12px;
+}
+
+.mouse-trail-card .ant-card-head-title {
+  font-size: 15px;
+}
+
+.mouse-trail-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mouse-trail-hint {
+  margin-bottom: 0 !important;
+  margin-top: 4px !important;
+  font-size: 12px;
+}
+
+.mouse-trail-radio {
+  display: flex;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mouse-trail-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.mouse-trail-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.mouse-trail-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.mouse-trail-file {
+  font-size: 12px;
+  max-width: 100%;
+}
