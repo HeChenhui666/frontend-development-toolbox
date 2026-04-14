@@ -1,6 +1,6 @@
 // 注意：CSS通过manifest.json加载，不需要在这里导入
 
-import { parseGoogleTranslateSingleResult } from '../utils/parseGoogleTranslateResult';
+import { parseGoogleTranslateSingleResult } from './translatorParseInline';
 
 // 翻译API函数
 async function translateText(text: string, targetLang: string = 'en'): Promise<string | null> {
