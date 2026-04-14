@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
@@ -7,8 +7,32 @@ import { readFileSync } from 'fs';
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
 const APP_VERSION = packageJson.version;
 
+const CONTENT_SCRIPT_OUTPUTS = ['content/translator.js', 'content/mouseTrail.js', 'content/enableCopy.js'] as const;
+
+/**
+ * 同一扩展的多个 content_scripts 在 Chrome 里共享同一隔离世界的「脚本全局」。
+ * Rollup 可能把辅助代码放在 IIFE 外（renderChunk 无法包住最终文件），仍会与另一脚本的 `var b` 等冲突。
+ * 在 generateBundle 阶段包裹整份产物，保证各内容脚本互不污染（修复 mouseTrail / translator 重名报错与翻译初始化失败）。
+ */
+function contentScriptIifeWrap(): Plugin {
+  return {
+    name: 'content-script-iife-wrap',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      for (const fileName of CONTENT_SCRIPT_OUTPUTS) {
+        const chunk = bundle[fileName];
+        if (!chunk || chunk.type !== 'chunk' || typeof chunk.code !== 'string') continue;
+        const trimmed = chunk.code.trimStart();
+        if (trimmed.startsWith('(function(')) continue;
+        chunk.code = `(function(){\n${chunk.code}\n})();`;
+      }
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), contentScriptIifeWrap()],
   base: './', // Chrome 扩展需要使用相对路径
   define: {
     'import.meta.env.APP_VERSION': JSON.stringify(APP_VERSION),
@@ -22,6 +46,7 @@ export default defineConfig({
         standalone: resolve(__dirname, 'standalone.html'),
         sidepanel: resolve(__dirname, 'sidepanel.html'),
         chat: resolve(__dirname, 'chat.html'),
+        // translator 须只引用同目录模块（如 translatorParseInline），勿引用 utils，否则打出 import chunk 导致页面报错
         'content/translator': resolve(__dirname, 'src/content/translator.ts'),
         // 入口仅引用同目录 bundle，勿从 utils 引用，否则产生 assets chunk，网页端内容脚本无法加载
         'content/mouseTrail': resolve(__dirname, 'src/content/mouseTrail.ts'),
