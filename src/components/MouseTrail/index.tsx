@@ -15,6 +15,7 @@ import {
   DEFAULT_MOUSE_TRAIL_CONFIG,
   getMouseTrailConfig,
   saveMouseTrailConfig,
+  sanitizeHttpImageUrlForTrail,
   type MouseTrailStoredConfig,
   type MouseTrailMode,
 } from '../../utils/mouseTrailStorage';
@@ -38,12 +39,14 @@ const MouseTrail: React.FC = () => {
   configRef.current = config;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [remoteUrlDraft, setRemoteUrlDraft] = useState('');
 
   useEffect(() => {
     let canceled = false;
     void getMouseTrailConfig().then((c) => {
       if (!canceled) {
         setConfig(c);
+        setRemoteUrlDraft(c.imageRemoteUrl ?? '');
         setLoading(false);
       }
     });
@@ -51,6 +54,10 @@ const MouseTrail: React.FC = () => {
       canceled = true;
     };
   }, []);
+
+  useEffect(() => {
+    setRemoteUrlDraft(config.imageRemoteUrl ?? '');
+  }, [config.imageRemoteUrl]);
 
   const persist = useCallback(async (next: MouseTrailStoredConfig) => {
     setSaving(true);
@@ -91,7 +98,7 @@ const MouseTrail: React.FC = () => {
           message.error('读取图片失败');
           return;
         }
-        patch({ mode: 'image', imageDataUrl: dataUrl });
+        patch({ mode: 'image', imageDataUrl: dataUrl, imageRemoteUrl: null });
       };
       reader.onerror = () => message.error('读取图片失败');
       reader.readAsDataURL(file);
@@ -100,8 +107,19 @@ const MouseTrail: React.FC = () => {
   );
 
   const clearImage = useCallback(() => {
-    patch({ imageDataUrl: null, mode: 'css' });
+    setRemoteUrlDraft('');
+    patch({ imageDataUrl: null, imageRemoteUrl: null, mode: 'css' });
   }, [patch]);
+
+  const applyRemoteImageUrl = useCallback(() => {
+    const sanitized = sanitizeHttpImageUrlForTrail(remoteUrlDraft);
+    if (!sanitized) {
+      message.warning('请输入以 http:// 或 https:// 开头的图片地址');
+      return;
+    }
+    patch({ mode: 'image', imageRemoteUrl: sanitized, imageDataUrl: null });
+    setRemoteUrlDraft(sanitized);
+  }, [patch, remoteUrlDraft]);
 
   if (loading) {
     return (
@@ -147,7 +165,7 @@ const MouseTrail: React.FC = () => {
               onChange={(ev) => patch({ mode: ev.target.value as MouseTrailMode })}
             >
               <Radio.Button value="css">CSS 形状 + 背景</Radio.Button>
-              <Radio.Button value="image">本地图片</Radio.Button>
+              <Radio.Button value="image">图片</Radio.Button>
             </Radio.Group>
           </div>
 
@@ -217,13 +235,49 @@ const MouseTrail: React.FC = () => {
                   className="mouse-trail-file"
                   onChange={onPickImage}
                 />
-                <Button size="small" disabled={!config.enabled || !config.imageDataUrl} onClick={clearImage}>
+                <Button
+                  size="small"
+                  disabled={!config.enabled || (!config.imageDataUrl && !config.imageRemoteUrl)}
+                  onClick={clearImage}
+                >
                   清除图片
                 </Button>
               </div>
-              {!config.imageDataUrl && (
-                <Text type="secondary">请选择一张本地图片作为拖尾图案。</Text>
+              <div>
+                <Text strong>图片链接</Text>
+                <Paragraph type="secondary" className="mouse-trail-hint" style={{ marginBottom: 8 }}>
+                  支持 http(s) 直链；与本地文件二选一，保存本地文件时会覆盖链接。
+                </Paragraph>
+                <Space.Compact style={{ width: '100%', maxWidth: 560 }}>
+                  <Input
+                    disabled={!config.enabled}
+                    placeholder="https://example.com/image.png"
+                    value={remoteUrlDraft}
+                    onChange={(e) => setRemoteUrlDraft(e.target.value)}
+                    onPressEnter={applyRemoteImageUrl}
+                  />
+                  <Button type="primary" disabled={!config.enabled} onClick={applyRemoteImageUrl}>
+                    使用链接
+                  </Button>
+                </Space.Compact>
+              </div>
+              {!config.imageDataUrl && !config.imageRemoteUrl && (
+                <Text type="secondary">请选择本地文件或填写图片链接作为拖尾图案。</Text>
               )}
+              <div className="mouse-trail-row">
+                <div>
+                  <Text strong>GIF 性能保护</Text>
+                  <Paragraph type="secondary" className="mouse-trail-hint" style={{ marginBottom: 0 }}>
+                    拖尾节数高且 GIF 帧多时自动降采样（约每 2 帧绘 1 帧），减少快速移动时卡住。
+                  </Paragraph>
+                </div>
+                <Switch
+                  checked={config.gifPerfGuardEnabled}
+                  disabled={!config.enabled}
+                  loading={saving}
+                  onChange={(gifPerfGuardEnabled) => patch({ gifPerfGuardEnabled })}
+                />
+              </div>
               <div className="mouse-trail-inline">
                 <Text strong>宽度（px）</Text>
                 <InputNumber
