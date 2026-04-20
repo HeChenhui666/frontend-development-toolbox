@@ -34,6 +34,22 @@ interface QRCodeResult {
   };
 }
 
+function decodeWithJsQRSafe(
+  imageData: ImageData,
+  options?: Parameters<typeof jsQR>[3]
+): ReturnType<typeof jsQR> {
+  const { data, width, height } = imageData;
+  if (!data || width < 1 || height < 1) return null;
+  if (data.length < width * height * 4) return null;
+  try {
+    return jsQR(data, width, height, options);
+  } catch (err) {
+    // 某些边界图像在 jsQR 内部 locate 阶段会抛异常，这里兜底为未识别
+    console.warn('jsQR decode failed:', err);
+    return null;
+  }
+}
+
 const QRCodeDecoder: React.FC = () => {
   const [decodedResults, setDecodedResults] = useState<QRCodeResult[]>([]);
   const [error, setError] = useState<string>('');
@@ -126,7 +142,7 @@ const QRCodeDecoder: React.FC = () => {
 
       for (const attempt of scanAttempts) {
         let scanCount = 0;
-        let code = jsQR(currentImageData.data, currentImageData.width, currentImageData.height, attempt);
+        let code = decodeWithJsQRSafe(currentImageData, attempt);
         
         while (code && scanCount < maxScanAttempts) {
           scanCount++;
@@ -167,7 +183,7 @@ const QRCodeDecoder: React.FC = () => {
           }
           
           currentImageData = new ImageData(maskedData, currentImageData.width, currentImageData.height);
-          code = jsQR(currentImageData.data, currentImageData.width, currentImageData.height, attempt);
+          code = decodeWithJsQRSafe(currentImageData, attempt);
         }
       }
 
@@ -416,12 +432,13 @@ const QRCodeDecoder: React.FC = () => {
       return;
     }
 
+    if (video.videoWidth < 1 || video.videoHeight < 1) return;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    const code = decodeWithJsQRSafe(imageData);
 
     if (code) {
       // 检查是否已经识别过这个二维码（避免重复）

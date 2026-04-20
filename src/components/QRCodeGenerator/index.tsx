@@ -7,6 +7,8 @@ import {
   Space,
   Typography,
   Alert,
+  Modal,
+  Slider,
   message as antdMessage,
 } from 'antd';
 import {
@@ -20,12 +22,19 @@ import CompatibilityWarning from '../CompatibilityWarning';
 import { checkQRCodeFeatures, checkBasicAPIs } from '../../utils/browserCompatibility';
 
 const { Text } = Typography;
+const PREVIEW_SCALE_MIN = 0.2;
+const PREVIEW_SCALE_MAX = 5;
+
+const clampPreviewScale = (value: number): number =>
+  Math.min(PREVIEW_SCALE_MAX, Math.max(PREVIEW_SCALE_MIN, value));
 
 const QRCodeGenerator: React.FC = () => {
   const [url, setUrl] = useState('');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isCompatible, setIsCompatible] = useState<boolean>(true);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewScale, setPreviewScale] = useState(1);
 
   // 检查浏览器兼容性（异步执行，避免阻塞渲染）
   useEffect(() => {
@@ -155,6 +164,18 @@ const QRCodeGenerator: React.FC = () => {
     link.click();
   };
 
+  const openPreview = () => {
+    if (!qrCodeDataUrl) return;
+    setPreviewScale(1);
+    setPreviewOpen(true);
+  };
+
+  const handlePreviewWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.12 : -0.12;
+    setPreviewScale((prev) => clampPreviewScale(prev + delta));
+  };
+
   // 复制URL（兼容性处理）
   const copyUrl = async () => {
     try {
@@ -239,24 +260,86 @@ const QRCodeGenerator: React.FC = () => {
           size="small" 
           title="二维码预览"
           extra={
-            <Button
-              size="small"
-              icon={<DownloadOutlined />}
-              onClick={downloadQRCode}
-            >
-              下载
-            </Button>
+            <Space size="small">
+              <Button size="small" onClick={openPreview}>
+                放大预览
+              </Button>
+              <Button
+                size="small"
+                icon={<DownloadOutlined />}
+                onClick={downloadQRCode}
+              >
+                下载
+              </Button>
+            </Space>
           }
         >
           <div style={{ textAlign: 'center' }}>
             <img 
               src={qrCodeDataUrl} 
               alt="QR Code" 
-              style={{ maxWidth: '100%', height: 'auto' }}
+              onClick={openPreview}
+              style={{ maxWidth: '100%', height: 'auto', cursor: 'zoom-in' }}
             />
           </div>
         </Card>
       )}
+      <Modal
+        open={previewOpen}
+        title="二维码放大预览"
+        onCancel={() => setPreviewOpen(false)}
+        footer={null}
+        width={760}
+      >
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text type="secondary">缩放：{Math.round(previewScale * 100)}%</Text>
+            <Button size="small" onClick={() => setPreviewScale(1)}>
+              重置
+            </Button>
+          </div>
+          <Slider
+            min={Math.round(PREVIEW_SCALE_MIN * 100)}
+            max={Math.round(PREVIEW_SCALE_MAX * 100)}
+            step={5}
+            value={Math.round(previewScale * 100)}
+            onChange={(v) => {
+              const next = typeof v === 'number' ? v / 100 : 1;
+              setPreviewScale(clampPreviewScale(next));
+            }}
+          />
+          <div
+            onWheel={handlePreviewWheel}
+            style={{
+              border: '1px solid var(--theme-border)',
+              borderRadius: 8,
+              background: 'var(--theme-card-background)',
+              minHeight: 360,
+              maxHeight: '60vh',
+              overflow: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 16,
+            }}
+          >
+            {qrCodeDataUrl ? (
+              <img
+                src={qrCodeDataUrl}
+                alt="QR Code Large Preview"
+                style={{
+                  width: `${previewScale * 100}%`,
+                  maxWidth: 'none',
+                  height: 'auto',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+              />
+            ) : null}
+          </div>
+          <Text type="secondary">可拖动滚轮自由缩放，也可拖动滑条精确调整。</Text>
+        </Space>
+      </Modal>
     </div>
   );
 };
