@@ -1,0 +1,77 @@
+.codec-tools {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 6px;
+  min-height: 0;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.codec-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.codec-select-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.codec-select-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-textSecondary, #64748b);
+}
+
+.codec-io {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
+.codec-io-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--theme-textSecondary, #64748b);
+}
+
+.codec-io-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
+.codec-textarea {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 11px !important;
+  min-height: 72px;
+  resize: vertical;
+}
+
+.codec-actions {
+  flex-shrink: 0;
+}
+
+.codec-tool-select .ant-select-selector {
+  background: var(--theme-inputBackground, #ffffff) !important;
+  border-color: var(--theme-inputBorder, #e2e8f0) !important;
+  color: var(--theme-inputText, #334155) !important;
+}
+
+.codec-tool-select.ant-select-focused .ant-select-selector,
+.codec-tool-select.ant-select-focused:hover .ant-select-selector {
+  border-color: var(--theme-active, #667eea) !important;
+  box-shadow: 0 0 0 2px var(--theme-primarySoft, rgba(102, 126, 234, 0.2)) !important;
+}
+
+.codec-tool-select .ant-select-selection-item {
+  color: var(--theme-inputText, #334155) !important;
+}

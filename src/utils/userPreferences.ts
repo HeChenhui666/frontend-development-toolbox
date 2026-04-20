@@ -11,7 +11,8 @@ export type DefaultTab =
   | 'redirector'
   | 'cachemanager'
   | 'webactions'
-  | 'mousetrail';
+  | 'mousetrail'
+  | 'codec';
 export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab for consistency
 
 const DEFAULT_TAB_KEY = 'app-default-tab';
@@ -32,6 +33,7 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'cachemanager',
   'webactions',
   'mousetrail',
+  'codec',
 ];
 
 export const getDefaultTab = (): DefaultTab => {
