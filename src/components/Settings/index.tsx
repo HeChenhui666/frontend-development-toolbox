@@ -114,6 +114,8 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   apitester: 'API调试',
   redirector: '请求重定向',
   cachemanager: '缓存管理',
+  mousetrail: '鼠标拖尾',
+  codec: '编码/解码',
 };
 
 const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, chatRelayPanelInTab = false }) => {
