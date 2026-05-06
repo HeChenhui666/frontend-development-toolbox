@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo, useDeferredValue } from 'react';
+import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo } from 'react';
 import { ConfigProvider, theme as antdTheme, Popover, Button } from 'antd';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab, DefaultTab } from './utils/userPreferences';
@@ -55,6 +55,75 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
 
+interface ActiveTabPanelProps {
+  tab: FeatureTab;
+  qrSubTab: 'generate' | 'decode';
+  onQrSubTabChange: (next: 'generate' | 'decode') => void;
+}
+
+/** 只挂载当前 Tab 对应的懒加载子树，避免在内存里为所有 Tab 创建元素 */
+const ActiveTabPanel = memo<ActiveTabPanelProps>(({ tab, qrSubTab, onQrSubTabChange }) => {
+  switch (tab) {
+    case 'qrcode':
+      return (
+        <div className='feature-content'>
+          <div className='sub-tabs'>
+            <button
+              type='button'
+              className={`sub-tab ${qrSubTab === 'generate' ? 'active' : ''}`}
+              onClick={() => onQrSubTabChange('generate')}
+            >
+              <span className='sub-tab-icon'>📱</span>
+              <span>生成</span>
+            </button>
+            <button
+              type='button'
+              className={`sub-tab ${qrSubTab === 'decode' ? 'active' : ''}`}
+              onClick={() => onQrSubTabChange('decode')}
+            >
+              <span className='sub-tab-icon'>🔍</span>
+              <span>解码</span>
+            </button>
+          </div>
+          <div className='sub-content'>{qrSubTab === 'generate' ? <QRCodeGenerator /> : <QRCodeDecoder />}</div>
+        </div>
+      );
+    case 'urlparams':
+      return <URLParamsEditor />;
+    case 'timestamp':
+      return <TimestampConverter />;
+    case 'randomimage':
+      return <ImageTools />;
+    case 'json':
+      return <JSONTools />;
+    case 'gradient':
+      return <ColorTools />;
+    case 'regex':
+      return <RegexTester />;
+    case 'translator':
+      return <Translator />;
+    case 'apitester':
+      return <APITester />;
+    case 'cachemanager':
+      return <CacheManager />;
+    case 'redirector':
+      return <RequestRedirector />;
+    case 'webactions':
+      return <WebActions />;
+    case 'mousetrail':
+      return <MouseTrail />;
+    case 'codec':
+      return <CodecTools />;
+    case 'future1':
+    case 'future2':
+      return null;
+    default:
+      return null;
+  }
+});
+
+ActiveTabPanel.displayName = 'ActiveTabPanel';
+
 const App: React.FC = () => {
   const { initialActiveTab, initialShouldScroll } = useMemo(() => {
     const lastActiveTab = getActiveTab();
@@ -74,10 +143,9 @@ const App: React.FC = () => {
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const shouldScrollToActiveTab = useRef<boolean>(initialShouldScroll); // 标记是否需要滚动到活动tab
-  const [isPending, startTransition] = useTransition(); // React 18 并发特性
-  
-  // 使用 useDeferredValue 延迟非紧急的标签页更新，提升切换流畅度
-  const deferredActiveTab = useDeferredValue(activeTab);
+  // 标签切换单独用 isPending，避免与「保存 tab / 顺序更新」的低优先级 transition 混用导致内容区被误隐藏
+  const [isTabPending, startTabTransition] = useTransition();
+  const [, startDeferredUpdate] = useTransition();
 
   // 检测运行模式：popup / sidepanel / standalone
   const { isPopupMode, isSidePanelMode } = useMemo(() => {
@@ -117,14 +185,14 @@ const App: React.FC = () => {
   // 监听标签页顺序变化事件
   useEffect(() => {
     const handleTabOrderChange = () => {
-      startTransition(() => {
+      startDeferredUpdate(() => {
         setTabOrderVersion((prev) => prev + 1);
       });
     };
     
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'app-tab-order') {
-        startTransition(() => {
+        startDeferredUpdate(() => {
           setTabOrderVersion((prev) => prev + 1);
         });
       }
@@ -148,54 +216,6 @@ const App: React.FC = () => {
     openChatWindow();
   }, []);
 
-  // 所有功能模块定义 - 优化：将 QRCode 子标签页组件提取出来，避免每次重新创建
-  const qrCodeComponent = useMemo(
-    () => (
-      <div className='feature-content'>
-        <div className='sub-tabs'>
-          <button
-            className={`sub-tab ${qrSubTab === 'generate' ? 'active' : ''}`}
-            onClick={() => handleQrSubTabChange('generate')}
-          >
-            <span className='sub-tab-icon'>📱</span>
-            <span>生成</span>
-          </button>
-          <button
-            className={`sub-tab ${qrSubTab === 'decode' ? 'active' : ''}`}
-            onClick={() => handleQrSubTabChange('decode')}
-          >
-            <span className='sub-tab-icon'>🔍</span>
-            <span>解码</span>
-          </button>
-        </div>
-        <div className='sub-content'>{qrSubTab === 'generate' ? <QRCodeGenerator /> : <QRCodeDecoder />}</div>
-      </div>
-    ),
-    [qrSubTab, handleQrSubTabChange]
-  );
-
-  const featureComponents = useMemo<Record<FeatureTab, React.ReactNode>>(
-    () => ({
-      qrcode: qrCodeComponent,
-      urlparams: <URLParamsEditor />,
-      timestamp: <TimestampConverter />,
-      randomimage: <ImageTools />,
-      json: <JSONTools />,
-      gradient: <ColorTools />,
-      regex: <RegexTester />,
-      translator: <Translator />,
-      apitester: <APITester />,
-      cachemanager: <CacheManager />,
-      redirector: <RequestRedirector />,
-      webactions: <WebActions />,
-      mousetrail: <MouseTrail />,
-      codec: <CodecTools />,
-      future1: null,
-      future2: null,
-    }),
-    [qrCodeComponent]
-  );
-
   // 根据用户设置的顺序排列功能模块
   const features: FeatureMeta[] = useMemo(() => {
     const tabOrder = getTabOrder();
@@ -204,11 +224,6 @@ const App: React.FC = () => {
       .filter((feature): feature is FeatureMeta => feature !== undefined);
     return orderedFeatures;
   }, [tabOrderVersion]);
-
-  // 使用 deferredActiveTab 来延迟非紧急的组件切换，提升切换流畅度
-  const currentFeature = useMemo(() => {
-    return featureComponents[deferredActiveTab] ?? null;
-  }, [featureComponents, deferredActiveTab]);
 
   // 处理标题点击事件
   const handleTitleClick = useCallback(() => {
@@ -239,7 +254,7 @@ const App: React.FC = () => {
 
   // Tab 切换处理函数
   const handleTabChange = useCallback((tab: FeatureTab) => {
-    startTransition(() => {
+    startTabTransition(() => {
       setActiveTab(tab);
     });
     setAllTabsOpen(false);
@@ -336,21 +351,27 @@ const App: React.FC = () => {
     };
   }, [features]);
 
-  // 在恢复tab后滚动到中间
+  // 在恢复 tab 后滚动到中间（双 rAF：等布局稳定，避免固定 100ms 延迟）
   useEffect(() => {
-    if (shouldScrollToActiveTab.current) {
-      // 延迟执行，确保DOM已渲染
-      setTimeout(() => {
+    if (!shouldScrollToActiveTab.current) return;
+    let cancelled = false;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (cancelled) return;
         scrollActiveTabToCenter();
         shouldScrollToActiveTab.current = false;
-      }, 100);
-    }
+      });
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(id);
+    };
   }, [activeTab, features, scrollActiveTabToCenter]);
 
   // 保存当前活动的tab（使用 startTransition 避免阻塞UI）
   useEffect(() => {
     if (isPersistedTab(activeTab)) {
-      startTransition(() => {
+      startDeferredUpdate(() => {
         saveActiveTab(activeTab);
       });
     }
@@ -390,11 +411,6 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // 获取 CSS 变量值的辅助函数
-  const getCSSVariable = useCallback((varName: string) => {
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || undefined;
-  }, []);
-
   // 监听主题变化，动态更新 antd 主题
   const [themeVersion, setThemeVersion] = useState(0);
   useEffect(() => {
@@ -419,16 +435,18 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // 每次主题版本变化时重新计算主题配置
+  // 每次主题版本变化时重新计算主题配置（单次 getComputedStyle，避免多次读样式树）
   const dynamicThemeConfig = useMemo(() => {
+    const root = getComputedStyle(document.documentElement);
+    const v = (name: string) => root.getPropertyValue(name).trim() || undefined;
     return {
       algorithm: antdTheme.defaultAlgorithm,
       token: {
-        colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
-        colorSuccess: getCSSVariable('--theme-success'),
-        colorError: getCSSVariable('--theme-error'),
+        colorPrimary: v('--theme-primary') || v('--theme-buttonPrimary'),
+        colorSuccess: v('--theme-success'),
+        colorError: v('--theme-error'),
         colorWarning: '#faad14',
-        colorInfo: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+        colorInfo: v('--theme-primary') || v('--theme-buttonPrimary'),
         borderRadius: 4,
         borderRadiusSM: 4,
         borderRadiusLG: 4,
@@ -438,39 +456,39 @@ const App: React.FC = () => {
         paddingSM: 6,
         paddingLG: 6,
         paddingXL: 6,
-        colorBgContainer: getCSSVariable('--theme-background'),
-        colorText: getCSSVariable('--theme-text'),
-        colorTextSecondary: getCSSVariable('--theme-textSecondary'),
-        colorBorder: getCSSVariable('--theme-border'),
-        colorBorderSecondary: getCSSVariable('--theme-borderLight'),
+        colorBgContainer: v('--theme-background'),
+        colorText: v('--theme-text'),
+        colorTextSecondary: v('--theme-textSecondary'),
+        colorBorder: v('--theme-border'),
+        colorBorderSecondary: v('--theme-borderLight'),
       },
       components: {
         Button: {
-          primaryColor: getCSSVariable('--theme-buttonText') || '#ffffff',
-          colorPrimary: getCSSVariable('--theme-buttonPrimary') || getCSSVariable('--theme-primary'),
-          colorPrimaryHover: getCSSVariable('--theme-buttonPrimaryHover'),
-          colorPrimaryActive: getCSSVariable('--theme-buttonPrimaryHover'),
+          primaryColor: v('--theme-buttonText') || '#ffffff',
+          colorPrimary: v('--theme-buttonPrimary') || v('--theme-primary'),
+          colorPrimaryHover: v('--theme-buttonPrimaryHover'),
+          colorPrimaryActive: v('--theme-buttonPrimaryHover'),
         },
         Card: {
-          colorBgContainer: getCSSVariable('--theme-surface') || getCSSVariable('--theme-background'),
-          colorBorderSecondary: getCSSVariable('--theme-border'),
+          colorBgContainer: v('--theme-surface') || v('--theme-background'),
+          colorBorderSecondary: v('--theme-border'),
         },
         Input: {
-          colorBgContainer: getCSSVariable('--theme-inputBackground') || getCSSVariable('--theme-background'),
-          colorBorder: getCSSVariable('--theme-inputBorder') || getCSSVariable('--theme-border'),
-          colorText: getCSSVariable('--theme-inputText') || getCSSVariable('--theme-text'),
-          activeBorderColor: getCSSVariable('--theme-inputFocusBorder') || getCSSVariable('--theme-primary'),
+          colorBgContainer: v('--theme-inputBackground') || v('--theme-background'),
+          colorBorder: v('--theme-inputBorder') || v('--theme-border'),
+          colorText: v('--theme-inputText') || v('--theme-text'),
+          activeBorderColor: v('--theme-inputFocusBorder') || v('--theme-primary'),
         },
         Switch: {
-          colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
-          colorPrimaryHover: getCSSVariable('--theme-buttonPrimaryHover'),
+          colorPrimary: v('--theme-primary') || v('--theme-buttonPrimary'),
+          colorPrimaryHover: v('--theme-buttonPrimaryHover'),
         },
         Tag: {
-          colorPrimary: getCSSVariable('--theme-primary') || getCSSVariable('--theme-buttonPrimary'),
+          colorPrimary: v('--theme-primary') || v('--theme-buttonPrimary'),
         },
       },
     };
-  }, [themeVersion, getCSSVariable]);
+  }, [themeVersion]);
 
   return (
     <ConfigProvider theme={dynamicThemeConfig}>
@@ -539,11 +557,14 @@ const App: React.FC = () => {
         </div>
         <div className='content'>
           <Suspense fallback={<div className='loading'>加载中...</div>}>
-            {isPending && activeTab !== deferredActiveTab ? (
-              <div className='loading'>切换中...</div>
-            ) : (
-              currentFeature
-            )}
+            {isTabPending ? <div className='loading'>切换中...</div> : null}
+            {!isTabPending ? (
+              <ActiveTabPanel
+                tab={activeTab}
+                qrSubTab={qrSubTab}
+                onQrSubTabChange={handleQrSubTabChange}
+              />
+            ) : null}
           </Suspense>
         </div>
       </div>
