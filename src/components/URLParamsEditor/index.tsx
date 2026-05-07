@@ -37,9 +37,54 @@ interface URLParam {
   value: string;
 }
 
+/** 序列化后查询串写在 `#` 之前，还是写在 hash 路由段之后（如 `#/home?a=1`） */
+type ParamWriteMode = 'leading' | 'fragment' | 'both';
+
+/** 从 hash（含 `#`）中拆出「无查询的 hash」与 hash 内查询串 */
+const splitHashBaseAndFragmentQuery = (hash: string): { hashBase: string; fragQS: string } => {
+  if (!hash) return { hashBase: '', fragQS: '' };
+  const q = hash.indexOf('?');
+  if (q === -1) return { hashBase: hash, fragQS: '' };
+  return { hashBase: hash.slice(0, q), fragQS: hash.slice(q + 1) };
+};
+
+const parseQueryStringToParams = (queryString: string): URLParam[] => {
+  const paramsArray: URLParam[] = [];
+  if (!queryString) return paramsArray;
+  queryString.split('&').forEach((param) => {
+    const [key, value = ''] = param.split('=');
+    if (key) {
+      try {
+        paramsArray.push({
+          key: decodeURIComponent(key),
+          value: decodeURIComponent(value),
+        });
+      } catch {
+        paramsArray.push({ key, value });
+      }
+    }
+  });
+  return paramsArray;
+};
+
+const resolveParamWriteMode = (
+  leadingSearchHadParams: boolean,
+  fragmentSearchHadParams: boolean,
+  hashBase: string
+): ParamWriteMode => {
+  if (leadingSearchHadParams && fragmentSearchHadParams) return 'both';
+  if (leadingSearchHadParams) return 'leading';
+  if (fragmentSearchHadParams) return 'fragment';
+  if (hashBase && /^#\//.test(hashBase)) return 'fragment';
+  return 'leading';
+};
+
 const URLParamsEditor: React.FC = () => {
   const [currentUrl, setCurrentUrl] = useState<string>('');
   const [baseUrl, setBaseUrl] = useState<string>('');
+  /** hash 中「路由」部分，不含 `?` 后的查询，如 `#/home`；无 hash 则为 `''` */
+  const [hashBase, setHashBase] = useState<string>('');
+  const [paramWriteMode, setParamWriteMode] = useState<ParamWriteMode>('leading');
   const [params, setParams] = useState<URLParam[]>([]);
   const [error, setError] = useState<string>('');
   const [presetParams, setPresetParams] = useState<PresetParam[]>([]);
@@ -85,96 +130,73 @@ const URLParamsEditor: React.FC = () => {
       if (url.startsWith('chrome://') || url.startsWith('about:') || isExtensionPage) {
         setError('当前页面不支持URL参数编辑（内置页或扩展页）');
         setBaseUrl(url);
+        setHashBase('');
+        setParamWriteMode('leading');
         setParams([{ key: '', value: '' }]);
         return;
       }
 
       // 检查 URL API 支持
       if (typeof URL === 'undefined') {
-        // 降级方案：手动解析
-        const urlMatch = url.match(/^(https?:\/\/[^\/]+)(\/.*)?(\?.*)?$/);
-        if (urlMatch) {
-          setBaseUrl(urlMatch[1] + (urlMatch[2] || ''));
-          const queryString = urlMatch[3] ? urlMatch[3].substring(1) : '';
-          const paramsArray: URLParam[] = [];
-          
-          if (queryString) {
-            queryString.split('&').forEach((param) => {
-              const [key, value = ''] = param.split('=');
-              if (key) {
-                try {
-                  paramsArray.push({
-                    key: decodeURIComponent(key),
-                    value: decodeURIComponent(value),
-                  });
-                } catch (e) {
-                  paramsArray.push({ key, value });
-                }
-              }
-            });
-          }
-          
-          if (paramsArray.length === 0) {
-            paramsArray.push({ key: '', value: '' });
-          }
-          setParams(paramsArray);
-        } else {
-          setBaseUrl(url.split('?')[0] || url);
-          setParams([{ key: '', value: '' }]);
+        // 降级方案：手动解析（含 `#/path?query`）
+        const hashIdx = url.indexOf('#');
+        const beforeHash = hashIdx >= 0 ? url.slice(0, hashIdx) : url;
+        const hashFull = hashIdx >= 0 ? url.slice(hashIdx) : '';
+        const { hashBase: hb, fragQS } = splitHashBaseAndFragmentQuery(hashFull);
+        const qIdx = beforeHash.indexOf('?');
+        const pathOnly = qIdx >= 0 ? beforeHash.slice(0, qIdx) : beforeHash;
+        const mainQS = qIdx >= 0 ? beforeHash.slice(qIdx + 1) : '';
+
+        const leadingSearchHadParams = Boolean(mainQS);
+        const fragmentSearchHadParams = Boolean(fragQS);
+        const mode = resolveParamWriteMode(leadingSearchHadParams, fragmentSearchHadParams, hb);
+
+        setBaseUrl(pathOnly);
+        setHashBase(hb);
+        setParamWriteMode(mode);
+
+        const fromMain = parseQueryStringToParams(mainQS);
+        const fromFrag = parseQueryStringToParams(fragQS);
+        let paramsArray: URLParam[] = [...fromMain, ...fromFrag];
+        if (paramsArray.length === 0) {
+          paramsArray = [{ key: '', value: '' }];
         }
+        setParams(paramsArray);
         return;
       }
 
       const urlObj = new URL(url);
       setBaseUrl(`${urlObj.origin}${urlObj.pathname}`);
 
+      const mainQS = urlObj.search.startsWith('?') ? urlObj.search.slice(1) : '';
+      const { hashBase: hb, fragQS } = splitHashBaseAndFragmentQuery(urlObj.hash);
+      const leadingSearchHadParams = Boolean(mainQS);
+      const fragmentSearchHadParams = Boolean(fragQS);
+      const mode = resolveParamWriteMode(leadingSearchHadParams, fragmentSearchHadParams, hb);
+      setHashBase(hb);
+      setParamWriteMode(mode);
+
+      const mergeIntoParamsArray = (): URLParam[] => {
+        const fromMain = parseQueryStringToParams(mainQS);
+        const fromFrag = parseQueryStringToParams(fragQS);
+        return [...fromMain, ...fromFrag];
+      };
+
       // 检查 URLSearchParams API 支持
       if (typeof URLSearchParams === 'undefined') {
-        // 降级方案：手动解析查询字符串
-        const search = urlObj.search.substring(1);
-        const paramsArray: URLParam[] = [];
-        
-        if (search) {
-          search.split('&').forEach((param) => {
-            const [key, value = ''] = param.split('=');
-            if (key) {
-              try {
-                paramsArray.push({
-                  key: decodeURIComponent(key),
-                  value: decodeURIComponent(value),
-                });
-              } catch (e) {
-                paramsArray.push({ key, value });
-              }
-            }
-          });
+        let merged = mergeIntoParamsArray();
+        if (merged.length === 0) {
+          merged = [{ key: '', value: '' }];
         }
-        
-        if (paramsArray.length === 0) {
-          paramsArray.push({ key: '', value: '' });
-        }
-        setParams(paramsArray);
+        setParams(merged);
         return;
       }
 
-      const urlParams = new URLSearchParams(urlObj.search);
-      const paramsArray: URLParam[] = [];
-
-      urlParams.forEach((value, key) => {
-        // 对参数名和参数值进行URL解码，将编码的字符转换为中文
-        try {
-          const decodedKey = decodeURIComponent(key);
-          const decodedValue = decodeURIComponent(value);
-          paramsArray.push({ key: decodedKey, value: decodedValue });
-        } catch (e) {
-          // 如果解码失败，使用原始值
-          paramsArray.push({ key, value });
-        }
-      });
+      let paramsArray: URLParam[] = mergeIntoParamsArray();
 
       // 如果没有参数，添加一个空行方便添加
       if (paramsArray.length === 0) {
-        paramsArray.push({ key: '', value: '' });
+        paramsArray = [{ key: '', value: '' }];
       }
 
       setParams(paramsArray);
@@ -182,7 +204,9 @@ const URLParamsEditor: React.FC = () => {
       setError('无法解析URL，请确保是有效的HTTP/HTTPS地址');
       console.error(err);
       // 即使解析失败，也尝试显示原始URL
-      setBaseUrl(url.split('?')[0] || url);
+      setBaseUrl(url.split('?')[0].split('#')[0] || url);
+      setHashBase('');
+      setParamWriteMode('leading');
       setParams([{ key: '', value: '' }]);
     }
   };
@@ -209,19 +233,33 @@ const URLParamsEditor: React.FC = () => {
     setParams(newParams);
   };
 
-  // 生成新URL
-  const generateNewURL = (): string => {
+  const buildUrlFromParts = (
+    pathPart: string,
+    hb: string,
+    mode: ParamWriteMode,
+    paramList: URLParam[]
+  ): string => {
     const urlParams = new URLSearchParams();
-
-    params.forEach((param) => {
+    paramList.forEach((param) => {
       if (param.key.trim()) {
         urlParams.append(param.key.trim(), param.value);
       }
     });
-
     const queryString = urlParams.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    if (mode === 'fragment') {
+      if (!queryString) {
+        return `${pathPart}${hb}`;
+      }
+      return `${pathPart}${hb}?${queryString}`;
+    }
+    if (!queryString) {
+      return `${pathPart}${hb}`;
+    }
+    return `${pathPart}?${queryString}${hb}`;
   };
+
+  // 生成新URL（保留 hash 路由段，并按解析时的规则把查询写在 `?` 前或写在 `#/path` 之后）
+  const generateNewURL = (): string => buildUrlFromParts(baseUrl, hashBase, paramWriteMode, params);
 
   // 更新当前标签页URL
   const updateCurrentTabURL = () => {
@@ -414,15 +452,7 @@ const URLParamsEditor: React.FC = () => {
 
     setParams(newParams);
 
-    // 自动更新当前标签页URL
-    const urlParams = new URLSearchParams();
-    newParams.forEach((param) => {
-      if (param.key.trim()) {
-        urlParams.append(param.key.trim(), param.value);
-      }
-    });
-    const queryString = urlParams.toString();
-    const newURL = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    const newURL = buildUrlFromParts(baseUrl, hashBase, paramWriteMode, newParams);
 
     try {
       new URL(newURL);
@@ -469,11 +499,20 @@ const URLParamsEditor: React.FC = () => {
       </Card>
 
       <Card size="small" title="基础URL">
-        <Input
-          value={baseUrl}
-          onChange={(e) => setBaseUrl(e.target.value)}
-          placeholder='基础URL'
-        />
+        <Space direction="vertical" style={{ width: '100%' }} size="small">
+          <Input
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            placeholder="不含查询与 hash 的路径（origin + pathname）"
+          />
+          {hashBase ? (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              将保留的 Hash：{hashBase}
+              {paramWriteMode === 'fragment' && '（当前查询写在 hash 之后）'}
+              {paramWriteMode === 'both' && '（解析时 ? 与 hash 内均有参数，保存时合并到路径 ? 前）'}
+            </Text>
+          ) : null}
+        </Space>
       </Card>
 
       <Card 

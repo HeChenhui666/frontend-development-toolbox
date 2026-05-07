@@ -4,7 +4,7 @@
 
 | 项目 | 说明 |
 |------|------|
-| **当前版本** | **1.8.0**（与仓库根目录 `package.json`、`manifest.json` 中 `version` 一致；以 **`npm run build` 后 `dist/manifest.json`** 为准。） |
+| **当前版本** | **1.8.1**（与仓库根目录 `package.json`、`manifest.json` 中 `version` 一致；以 **`npm run build` 后 `dist/manifest.json`** 为准。） |
 | **最低浏览器** | **Chromium 116+**（与 `manifest.json` 中 `minimum_chrome_version` 一致，侧栏等 API 需要较新内核。） |
 | **仓库** | [github.com/HeChenhui666/frontend-development-toolbox](https://github.com/HeChenhui666/frontend-development-toolbox) |
 
