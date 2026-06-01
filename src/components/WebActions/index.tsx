@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Card, Collapse, Space, Typography, message as antdMessage } from 'antd';
+import { Button, Card, Collapse, Input, Space, Typography, message as antdMessage } from 'antd';
 import { ClusterOutlined, CopyOutlined, FieldTimeOutlined, UnlockOutlined } from '@ant-design/icons';
 import './index.css';
 
@@ -8,6 +8,8 @@ const { Paragraph, Text } = Typography;
 const ENABLE_COPY_FILES = ['content/enableCopy.js'] as const;
 const LATE_IFRAME_TICK_MS = 3000;
 const LATE_IFRAME_TOTAL_MS = 60000;
+const URL_POPUP_WIDTH = 900;
+const URL_POPUP_HEIGHT = 700;
 
 const isExtensionInjectEnv = () =>
   typeof chrome !== 'undefined' && !!chrome.tabs && !!chrome.scripting?.executeScript;
@@ -63,6 +65,8 @@ const WebActions: React.FC = () => {
   const [copyUnlockLoading, setCopyUnlockLoading] = useState(false);
   const [copyUnlockAllFramesLoading, setCopyUnlockAllFramesLoading] = useState(false);
   const [lateIframeWatchActive, setLateIframeWatchActive] = useState(false);
+  const [openUrlValue, setOpenUrlValue] = useState('');
+  const [openUrlLoading, setOpenUrlLoading] = useState(false);
 
   const lateWatchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lateWatchEndTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -187,6 +191,62 @@ const WebActions: React.FC = () => {
     });
   }, [lateIframeWatchActive, clearLateWatchTimers]);
 
+  const isValidUrl = useCallback((value: string): boolean => {
+    try {
+      new URL(value.trim());
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const handleOpenUrlPopup = useCallback(() => {
+    const url = openUrlValue.trim();
+    if (!url) {
+      antdMessage.warning('请输入要打开的链接');
+      return;
+    }
+    if (!isValidUrl(url)) {
+      antdMessage.warning('请输入有效的 URL，例如 https://example.com');
+      return;
+    }
+
+    setOpenUrlLoading(true);
+
+    if (typeof chrome !== 'undefined' && chrome.windows?.create) {
+      chrome.windows.create(
+        {
+          url,
+          type: 'popup',
+          width: URL_POPUP_WIDTH,
+          height: URL_POPUP_HEIGHT,
+          focused: true,
+        },
+        () => {
+          setOpenUrlLoading(false);
+          if (chrome.runtime.lastError) {
+            antdMessage.error(chrome.runtime.lastError.message || '打开失败');
+          }
+        }
+      );
+      return;
+    }
+
+    const win = window.open(
+      url,
+      'webactions-url-popup',
+      `width=${URL_POPUP_WIDTH},height=${URL_POPUP_HEIGHT},scrollbars=yes,resizable=yes,noopener,noreferrer`
+    );
+    setOpenUrlLoading(false);
+    if (!win) {
+      antdMessage.error('浏览器阻止了弹出窗口，请允许弹窗后重试');
+    }
+  }, [isValidUrl, openUrlValue]);
+
+  const handleUrlInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setOpenUrlValue(event.target.value);
+  }, []);
+
   return (
     <div className="feature-content web-actions">
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -259,6 +319,37 @@ const WebActions: React.FC = () => {
                     </Text>
                     <Text type="secondary">
                       说明：Canvas / 图片排版文字仍无法按纯文本复制。
+                    </Text>
+                  </Space>
+                ),
+              },
+              {
+                key: 'open-url-popup',
+                label: (
+                  <span className="web-actions-collapse-label">
+                    <CopyOutlined aria-hidden />
+                    <span>在小窗口打开网址</span>
+                  </span>
+                ),
+                children: (
+                  <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <Input
+                      placeholder="请输入完整 URL，例如 https://example.com"
+                      value={openUrlValue}
+                      onChange={handleUrlInputChange}
+                      onPressEnter={handleOpenUrlPopup}
+                      allowClear
+                    />
+                    <Button
+                      type="primary"
+                      onClick={handleOpenUrlPopup}
+                      loading={openUrlLoading}
+                      block
+                    >
+                      用小窗口打开网页
+                    </Button>
+                    <Text type="secondary">
+                      若处于扩展环境，将尝试使用弹窗窗口打开；如不可用则回退到标准浏览器窗口。
                     </Text>
                   </Space>
                 ),
