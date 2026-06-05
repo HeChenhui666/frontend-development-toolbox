@@ -1,75 +1,86 @@
+/* ===== 俄罗斯方块 ===== */
 .tetris {
-  width: 100%;
-  max-width: 100%;
-  margin: 6px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .tetris-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 6px;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.tetris-title h2 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--theme-primary, #667eea);
-  margin: 6px;
-}
+/* 隐藏冗余标题 */
+.tetris-title h2 { display: none; }
 
 .tetris-hint {
-  font-size: 9px;
-  color: var(--theme-textMuted, #94a3b8);
-  margin: 6px;
+  font-size: 11px;
+  color: var(--theme-textMuted);
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .tetris-info {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: center;
   gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
 }
 
 .info-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  background: var(--theme-surfaceSunken);
+  border: 1px solid var(--theme-border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  min-width: 48px;
 }
 
 .info-label {
-  color: var(--theme-textSecondary, #64748b);
+  font-size: 9px;
+  color: var(--theme-textMuted);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  margin-bottom: 2px;
 }
 
 .info-value {
-  color: var(--theme-text, #334155);
-  font-weight: 700;
-  min-width: 40px;
-  text-align: right;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--theme-text);
+  line-height: 1;
 }
 
 .restart-button {
-  background: var(--theme-surface, #f8f9fa);
-  border: 1px solid var(--theme-border, #e8ecf0);
-  color: var(--theme-textSecondary, #64748b);
-  padding: 6px;
-  border-radius: 4px;
-  font-size: 10px;
+  background: transparent;
+  border: 1px solid var(--theme-border);
+  color: var(--theme-textSecondary);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  margin-top: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  margin-top: 0;
 }
 
 .restart-button:hover {
-  background: var(--theme-surfaceHover, #e8ecf0);
-  color: var(--theme-text, #475569);
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+  background: var(--theme-primarySoft);
 }
 
+/* ===== 棋盘 ===== */
 .tetris-board-container {
   position: relative;
   display: flex;
@@ -79,9 +90,9 @@
 .tetris-board {
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--theme-borderStrong, #334155);
-  background: var(--theme-text, #1e293b);
-  border-radius: 4px;
+  border: 2px solid var(--theme-borderStrong);
+  background: #0f172a;
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -90,78 +101,97 @@
 }
 
 .tetris-cell {
-  width: 12px;
-  height: 12px;
-  border: 1px solid var(--theme-borderStrong, #334155);
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
+  transition: background-color 0.06s ease;
 }
 
 .tetris-cell.filled {
-  background: var(--theme-primary, #667eea);
-  border-color: var(--theme-buttonPrimaryHover, #5568d3);
+  background: var(--theme-primary);
+  border-color: var(--theme-primaryGradientEnd);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .tetris-cell.current {
-  background: var(--theme-primaryGradientEnd, #f093fb);
-  border-color: var(--theme-primary, #e879f9);
+  background: var(--theme-primaryGradientEnd, #ff9800);
+  border-color: var(--theme-primary);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
+/* ===== 蒙层 ===== */
 .game-over-overlay,
 .pause-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--theme-overlay, rgba(0, 0, 0, 0.7));
+  inset: 0;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 4px;
+  border-radius: 10px;
+  animation: overlayIn 0.2s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .game-over-content,
 .pause-content {
-  background: var(--theme-background, white);
-  padding: 6px;
-  border-radius: 4px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  padding: 20px 24px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 10px 30px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: cardIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cardIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
 }
 
 .game-over-content h3 {
   font-size: 16px;
-  color: var(--theme-text, #334155);
-  margin: 6px;
+  font-weight: 800;
+  color: var(--theme-text);
+  margin: 0 0 4px;
 }
 
 .game-over-content p {
   font-size: 12px;
-  color: var(--theme-textSecondary, #64748b);
-  margin: 6px;
+  color: var(--theme-textSecondary);
+  margin: 0;
 }
 
 .game-over-content button {
-  background: var(--theme-buttonPrimary, #667eea);
-  color: var(--theme-buttonText, white);
+  margin-top: 10px;
+  background: var(--theme-accentGradient);
+  color: #fff;
   border: none;
-  padding: 6px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 12px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.game-over-content button:hover {
-  background: var(--theme-buttonPrimaryHover, #5568d3);
-}
+.game-over-content button:hover  { opacity: 0.88; }
+.game-over-content button:active { transform: scale(0.96); }
 
 .pause-content {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--theme-primary, #667eea);
-  padding: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--theme-text);
+  padding: 20px 32px;
+  letter-spacing: -0.3px;
 }
-

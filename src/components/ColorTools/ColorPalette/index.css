@@ -1,7 +1,7 @@
 .color-palette {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
   overflow-y: auto;
@@ -10,8 +10,8 @@
 .palette-controls {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 6px;
+  gap: 8px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);

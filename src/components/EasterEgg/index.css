@@ -1,355 +1,364 @@
-.easter-egg {
+/* ===== 彩蛋遮罩 ===== */
+.ee-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 50%, var(--theme-primary, #f093fb) 100%);
+  inset: 0;
+  background: rgba(20, 8, 4, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
+  z-index: 9000;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  padding: 16px;
+}
+
+.ee-overlay.ee-visible {
+  opacity: 1;
+}
+
+/* ===== 主面板 ===== */
+.ee-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--theme-primaryOutline),
+    0 24px 64px rgba(0, 0, 0, 0.4),
+    0 8px 24px var(--theme-shadowStrong);
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ee-visible .ee-panel {
+  transform: translateY(0) scale(1);
+}
+
+/* ===== 粒子装饰 ===== */
+.ee-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
   overflow: hidden;
 }
 
-.easter-egg::before {
-  content: '';
+.ee-particle {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, var(--theme-headerGlow, rgba(255, 255, 255, 0.1)) 0%, transparent 70%);
-  animation: rotate 20s linear infinite;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  opacity: 0;
+  animation: ee-sparkle 3s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.25s);
+  top: calc(10% + var(--i) * 7%);
+  left: calc(5% + (var(--i) * 9%) - (var(--i) * var(--i) * 0.3%));
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.ee-particle:nth-child(even) {
+  width: 3px;
+  height: 3px;
+  background: var(--theme-primaryGradientEnd, #ff9800);
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.ee-particle:nth-child(3n) {
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
 }
 
-.easter-egg-content {
+@keyframes ee-sparkle {
+  0%, 100% { opacity: 0; transform: translateY(0) scale(0.5); }
+  40%       { opacity: 0.8; transform: translateY(-12px) scale(1); }
+  70%       { opacity: 0.3; transform: translateY(-20px) scale(0.7); }
+}
+
+/* ===== 头部 ===== */
+.ee-header {
   position: relative;
   z-index: 1;
-  background: var(--theme-surfaceElevated, rgba(255, 255, 255, 0.95));
-  border-radius: 4px;
-  padding: 6px;
-  max-width: 420px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
-  animation: slideUp 0.4s ease-out;
-  backdrop-filter: blur(10px);
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.easter-egg-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid var(--theme-border, #e8ecf0);
-}
-
-.easter-egg-header h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--theme-primary, #667eea);
-  margin: 6px;
-  letter-spacing: -0.3px;
-}
-
-.close-button {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: var(--theme-textMuted, #94a3b8);
-  cursor: pointer;
-  padding: 6px;
-  width: 30px;
-  height: 30px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  gap: 12px;
+  padding: 20px 20px 18px;
+  background: var(--theme-accentGradient);
+  overflow: hidden;
 }
 
-.close-button:hover {
-  background: var(--theme-surfaceHover, #f1f5f9);
-  color: var(--theme-textSecondary, #64748b);
+.ee-header-glow {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(ellipse at 60% 50%, rgba(255,255,255,0.18) 0%, transparent 65%);
+  pointer-events: none;
+  animation: ee-glow-drift 6s ease-in-out infinite alternate;
 }
 
-.easter-egg-body {
-  text-align: center;
+@keyframes ee-glow-drift {
+  from { transform: translateX(-10%) scale(1); }
+  to   { transform: translateX(10%) scale(1.1); }
 }
 
-.easter-egg-icon {
-  font-size: 80px;
-  margin-bottom: 6px;
-  animation: bounce 1s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.easter-egg-body h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--theme-text, #334155);
-  margin-bottom: 6px;
-}
-
-.easter-egg-body > p {
-  font-size: 13px;
-  color: var(--theme-textSecondary, #64748b);
-  line-height: 1.6;
-  margin-bottom: 6px;
-}
-
-.games-list-section {
-  margin: 6px;
-}
-
-.games-list-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--theme-text, #334155);
-  margin: 6px;
-  text-align: left;
-}
-
-.games-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.game-card {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px;
-  background: var(--theme-surface, #f8f9fa);
-  border: 1px solid var(--theme-border, #e8ecf0);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  width: 100%;
-}
-
-.game-card:hover {
-  background: var(--theme-surfaceHover, #f1f5f9);
-  border-color: var(--theme-primary, #667eea);
-  transform: translateX(4px);
-}
-
-.game-card-icon {
-  font-size: 32px;
+.ee-trophy {
+  font-size: 36px;
+  line-height: 1;
   flex-shrink: 0;
+  animation: ee-trophy-bounce 2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
 }
 
-.game-card-info {
+@keyframes ee-trophy-bounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%       { transform: translateY(-5px) rotate(3deg); }
+}
+
+.ee-header-text {
   flex: 1;
   min-width: 0;
 }
 
-.game-card-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--theme-text, #334155);
-  margin-bottom: 6px;
-}
-
-.game-card-description {
-  font-size: 11px;
-  color: var(--theme-textSecondary, #64748b);
-}
-
-.game-card-arrow {
+.ee-title {
+  margin: 0;
   font-size: 18px;
-  color: var(--theme-textMuted, #94a3b8);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.ee-subtitle {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.2px;
+}
+
+/* ===== 关闭按钮 ===== */
+.ee-close {
   flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.game-card:hover .game-card-arrow {
-  transform: translateX(4px);
-  color: var(--theme-primary, #667eea);
-}
-
-/* 游戏弹窗样式 */
-.game-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--theme-overlay, rgba(0, 0, 0, 0.6));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.2s ease-in-out;
-  backdrop-filter: blur(4px);
-}
-
-.game-modal-content {
-  background: var(--theme-background, white);
-  border-radius: 4px;
-  max-width: 90vw;
-  max-height: 85vh;
-  width: 100%;
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px var(--theme-shadowStrong, rgba(0, 0, 0, 0.3));
-  animation: modalSlideUp 0.3s ease-out;
-  overflow: hidden;
-}
-
-@keyframes modalSlideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.game-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px;
-  border-bottom: 1px solid var(--theme-border, #e8ecf0);
-  background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
-  color: var(--theme-buttonText, white);
-}
-
-.game-modal-header h3 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.game-modal-icon {
-  font-size: 20px;
-}
-
-.game-modal-close {
-  background: var(--theme-headerControlBg, rgba(255, 255, 255, 0.2));
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   border: none;
-  color: white;
-  font-size: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 12px;
+  transition: background 0.15s ease, transform 0.15s ease;
+  padding: 0;
 }
 
-.game-modal-close:hover {
-  background: var(--theme-headerControlHover, rgba(255, 255, 255, 0.3));
+.ee-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
 }
 
-.game-modal-body {
-  padding: 6px;
-  overflow-y: auto;
-  max-height: calc(85vh - 70px);
-  background: var(--theme-surface, #f8f9fa);
+.ee-close:active {
+  transform: scale(0.92);
 }
 
-/* 贪吃蛇游戏特殊样式 - 防止滚动 */
-.game-modal-body.no-scroll {
+/* ===== 游戏网格 ===== */
+.ee-games {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 10px;
+  padding: 16px;
+}
+
+/* ===== 单个游戏卡片 ===== */
+.ee-game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px 14px;
+  background: var(--theme-backgroundGradient);
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+  position: relative;
   overflow: hidden;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
 }
 
-.easter-egg-features {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 6px;
-  padding: 6px;
-  background: var(--theme-surface, #f8f9fa);
-  border-radius: 4px;
+.ee-game-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--theme-accentGradient);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  border-radius: inherit;
 }
 
-.feature-item {
+.ee-game-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 24px var(--theme-shadowStrong), 0 2px 6px var(--theme-shadowSoft);
+  border-color: var(--theme-primary);
+}
+
+.ee-game-card:hover::before {
+  opacity: 0.06;
+}
+
+.ee-game-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.ee-game-icon {
+  font-size: 32px;
+  line-height: 1;
+  display: block;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ee-game-card:hover .ee-game-icon {
+  transform: scale(1.15) translateY(-2px);
+}
+
+.ee-game-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--theme-text);
+  position: relative;
+  letter-spacing: -0.1px;
+}
+
+.ee-game-desc {
+  font-size: 10px;
+  color: var(--theme-textMuted);
+  position: relative;
+  line-height: 1.4;
+}
+
+.ee-game-play {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--theme-primary);
+  position: relative;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.ee-game-card:hover .ee-game-play {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== 底部 ===== */
+.ee-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 10px 16px 14px;
+  font-size: 11px;
+  color: var(--theme-textMuted);
+  border-top: 1px solid var(--theme-borderMuted);
+  letter-spacing: 0.2px;
+}
+
+/* ===== 游戏弹层 ===== */
+.ee-game-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 8, 4, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--theme-textSecondary, #475569);
-  font-weight: 500;
+  z-index: 9100;
+  padding: 16px;
+  animation: ee-fadein 0.2s ease;
 }
 
-.feature-emoji {
+@keyframes ee-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ee-game-modal {
+  width: 100%;
+  max-width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--theme-primaryOutline),
+    0 32px 80px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  animation: ee-modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ee-modal-in {
+  from { transform: translateY(24px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.ee-game-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--theme-accentGradient);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ee-game-header::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(ellipse at 70% 50%, rgba(255,255,255,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.ee-game-header-icon {
   font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
-.easter-egg-footer {
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--theme-border, #e8ecf0);
-}
-
-.footer-text {
+.ee-game-header-name {
+  flex: 1;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--theme-primary, #667eea);
-  margin-bottom: 6px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-.footer-subtext {
-  font-size: 11px;
-  color: var(--theme-textMuted, #94a3b8);
-  font-style: italic;
+.ee-game-close {
+  position: relative;
+  z-index: 1;
 }
 
+.ee-game-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--theme-backgroundGradient);
+  min-height: 0;
+}

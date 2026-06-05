@@ -1,17 +1,28 @@
-import React, { useState, memo, useCallback } from 'react';
-import { Modal, Card, Space, Typography, Button } from 'antd';
-import { CloseOutlined, RightOutlined } from '@ant-design/icons';
+import React, { useState, memo, useCallback, useEffect } from 'react';
+import { CloseOutlined } from '@ant-design/icons';
 import './index.css';
 import { games, GameConfig } from './games/gamesConfig';
-
-const { Title, Paragraph, Text } = Typography;
 
 interface EasterEggProps {
   onClose: () => void;
 }
 
+const GAME_MODAL_WIDTH: Record<string, number> = {
+  Snake: 520,
+};
+
 const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
   const [selectedGame, setSelectedGame] = useState<GameConfig | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true));
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setVisible(false);
+    setTimeout(onClose, 250);
+  }, [onClose]);
 
   const handleGameClick = useCallback((game: GameConfig) => {
     setSelectedGame(game);
@@ -24,96 +35,78 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
   const GameComponent = selectedGame?.component;
 
   return (
-    <Modal
-      title={
-        <Space>
-          <span style={{ fontSize: '24px' }}>🎉</span>
-          <Title level={3} style={{ margin: 6}}>恭喜发现彩蛋！</Title>
-        </Space>
-      }
-      open={true}
-      onCancel={onClose}
-      footer={null}
-      width={800}
-      centered
-      destroyOnClose
-      maskClosable={true}
-      getContainer={() => document.body}
-      closeIcon={<CloseOutlined />}
-    >
-      <Space direction="vertical" style={{ width: '100%' }} size="large" align="center">
-        <Space direction="vertical" size="small" align="center">
-          <Text style={{ fontSize: '48px' }}>🎊</Text>
-          <Title level={4} style={{ margin: 6}}>你找到了隐藏页面！</Title>
-          <Paragraph type="secondary">看来你是一个细心的人，能够发现这个隐藏的彩蛋。</Paragraph>
-        </Space>
-
-        <Card title="🎮 小游戏" style={{ width: '100%' }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            {games.map((game) => (
-              <Card
-                key={game.id}
-                hoverable
-                style={{ cursor: 'pointer' }}
-                onClick={() => handleGameClick(game)}
-              >
-                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                  <Space size="middle">
-                    <Text style={{ fontSize: '32px' }}>{game.icon}</Text>
-                    <Space direction="vertical" size="small">
-                      <Text strong>{game.name}</Text>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>
-                        {game.description}
-                      </Text>
-                    </Space>
-                  </Space>
-                  <RightOutlined />
-                </Space>
-              </Card>
+    <>
+      {/* 主彩蛋弹层 */}
+      <div className={`ee-overlay${visible ? ' ee-visible' : ''}`} onClick={handleClose}>
+        <div className="ee-panel" onClick={e => e.stopPropagation()}>
+          {/* 粒子装饰 */}
+          <div className="ee-particles" aria-hidden>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span key={i} className="ee-particle" style={{ '--i': i } as React.CSSProperties} />
             ))}
-          </Space>
-        </Card>
+          </div>
 
-        <Space direction="vertical" size="small" align="center">
-          <Text strong>感谢使用工具箱！</Text>
-          <Text type="secondary">选择一个游戏开始吧~</Text>
-        </Space>
-      </Space>
+          {/* 头部 */}
+          <div className="ee-header">
+            <div className="ee-header-glow" aria-hidden />
+            <div className="ee-trophy">🎉</div>
+            <div className="ee-header-text">
+              <h2 className="ee-title">发现彩蛋！</h2>
+              <p className="ee-subtitle">你是一个细心的人 · 选一个游戏开始吧</p>
+            </div>
+            <button className="ee-close" onClick={handleClose} aria-label="关闭">
+              <CloseOutlined />
+            </button>
+          </div>
 
-      {/* 游戏弹窗 */}
+          {/* 游戏卡片网格 */}
+          <div className="ee-games">
+            {games.map((game) => (
+              <button
+                key={game.id}
+                className="ee-game-card"
+                onClick={() => handleGameClick(game)}
+                type="button"
+              >
+                <span className="ee-game-icon">{game.icon}</span>
+                <span className="ee-game-name">{game.name}</span>
+                <span className="ee-game-desc">{game.description}</span>
+                <span className="ee-game-play">开始 →</span>
+              </button>
+            ))}
+          </div>
+
+          {/* 底部签名 */}
+          <div className="ee-footer">
+            <span>感谢使用工具箱 ✨</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 游戏弹层 */}
       {selectedGame && GameComponent && (
-        <Modal
-          title={
-            <Space>
-              <span style={{ fontSize: '20px' }}>{selectedGame.icon}</span>
-              <Text strong>{selectedGame.name}</Text>
-            </Space>
-          }
-          open={true}
-          onCancel={handleCloseGame}
-          footer={null}
-          width={selectedGame.id === 'Snake' ? 600 : 800}
-          centered
-          destroyOnClose
-          maskClosable={true}
-          getContainer={() => document.body}
-          closeIcon={<CloseOutlined />}
-          style={{
-            maxHeight: selectedGame.id === 'Snake' ? '90vh' : undefined,
-          }}
-          bodyStyle={{
-            maxHeight: selectedGame.id === 'Snake' ? 'calc(90vh - 120px)' : undefined,
-            overflowY: selectedGame.id === 'Snake' ? 'auto' : undefined,
-          }}
-        >
-          <GameComponent />
-        </Modal>
+        <div className="ee-game-overlay" onClick={handleCloseGame}>
+          <div
+            className="ee-game-modal"
+            style={{ width: GAME_MODAL_WIDTH[selectedGame.id] ?? 720 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="ee-game-header">
+              <span className="ee-game-header-icon">{selectedGame.icon}</span>
+              <span className="ee-game-header-name">{selectedGame.name}</span>
+              <button className="ee-close ee-game-close" onClick={handleCloseGame} aria-label="关闭游戏">
+                <CloseOutlined />
+              </button>
+            </div>
+            <div className="ee-game-body">
+              <GameComponent />
+            </div>
+          </div>
+        </div>
       )}
-    </Modal>
+    </>
   );
 });
 
 EasterEgg.displayName = 'EasterEgg';
-
 export default EasterEgg;
-
