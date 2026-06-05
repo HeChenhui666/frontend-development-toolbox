@@ -18,11 +18,11 @@ console.log(
 
 const MENU_OPEN_SIDE_PANEL = 'xiaohuohuo-menu-open-side-panel';
 const MENU_OPEN_FLOAT_WINDOW = 'xiaohuohuo-menu-open-float-window';
-/** 与 manifest popup / App.css .app-popup 一致，小尺寸浮窗 */
-const FALLBACK_WINDOW_WIDTH = 450;
-const MIN_FALLBACK_WINDOW_WIDTH = 320;
-const FALLBACK_WINDOW_HEIGHT = 580;
-const MIN_FALLBACK_WINDOW_HEIGHT = 480;
+/** 独立浮窗尺寸：比 popup 更宽，给工具提供充足空间，同时不占满全屏 */
+const FALLBACK_WINDOW_WIDTH = 560;
+const MIN_FALLBACK_WINDOW_WIDTH = 400;
+const FALLBACK_WINDOW_HEIGHT = 740;
+const MIN_FALLBACK_WINDOW_HEIGHT = 580;
 const FALLBACK_WINDOW_ID_KEY = 'fallback-side-panel-window-id';
 const FALLBACK_WINDOW_WIDTH_KEY = 'fallback-side-panel-window-width';
 const SIDE_PANEL_NOTICE_KEY = 'side-panel-unavailable-notice-at';

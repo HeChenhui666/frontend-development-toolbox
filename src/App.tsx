@@ -439,6 +439,7 @@ const App: React.FC = () => {
   const dynamicThemeConfig = useMemo(() => {
     const root = getComputedStyle(document.documentElement);
     const v = (name: string) => root.getPropertyValue(name).trim() || undefined;
+    const appRadius = parseInt(root.getPropertyValue('--app-radius') || '6', 10);
     return {
       algorithm: antdTheme.defaultAlgorithm,
       token: {
@@ -447,9 +448,9 @@ const App: React.FC = () => {
         colorError: v('--theme-error'),
         colorWarning: '#faad14',
         colorInfo: v('--theme-primary') || v('--theme-buttonPrimary'),
-        borderRadius: 4,
-        borderRadiusSM: 4,
-        borderRadiusLG: 4,
+        borderRadius: appRadius,
+        borderRadiusSM: Math.max(2, appRadius - 2),
+        borderRadiusLG: appRadius + 2,
         padding: 6,
         paddingXXS: 6,
         paddingXS: 6,
