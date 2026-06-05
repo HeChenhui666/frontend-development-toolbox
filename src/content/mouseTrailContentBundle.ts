@@ -11,6 +11,8 @@ interface MouseTrailStoredConfig {
   mode: MouseTrailMode;
   clipPath: string;
   background: string;
+  /** 内容脚本忽略此字段（无法读取扩展页面 CSS 变量），仅做兼容解析 */
+  followTheme: boolean;
   trailSize: number;
   imageDataUrl: string | null;
   imageRemoteUrl: string | null;
@@ -29,6 +31,7 @@ const DEFAULT_MOUSE_TRAIL_CONFIG: MouseTrailStoredConfig = {
   mode: 'css',
   clipPath: 'circle(50% at 50% 50%)',
   background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.92), rgba(118, 75, 162, 0.82))',
+  followTheme: true,
   trailSize: 14,
   imageDataUrl: null,
   imageRemoteUrl: null,
@@ -82,12 +85,15 @@ function sanitizeConfig(raw: unknown): MouseTrailStoredConfig {
     imageRemoteUrl = null;
   }
 
+  const followTheme = typeof o.followTheme === 'boolean' ? o.followTheme : true;
+
   return {
     enabled: o.enabled === true,
     applyGlobally: o.applyGlobally === true,
     mode,
     clipPath,
     background,
+    followTheme,
     trailSize,
     imageDataUrl,
     imageRemoteUrl,

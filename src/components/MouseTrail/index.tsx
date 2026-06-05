@@ -171,6 +171,20 @@ const MouseTrail: React.FC = () => {
 
           {config.mode === 'css' && (
             <>
+              <div className="mouse-trail-row">
+                <div>
+                  <Text strong>跟随主题渐变</Text>
+                  <Paragraph type="secondary" className="mouse-trail-hint">
+                    自动使用当前主题的强调色渐变，切换主题时实时同步。
+                  </Paragraph>
+                </div>
+                <Switch
+                  checked={config.followTheme}
+                  disabled={!config.enabled}
+                  loading={saving}
+                  onChange={(followTheme) => patch({ followTheme })}
+                />
+              </div>
               <div>
                 <Text strong>clip-path 预设</Text>
                 <div className="mouse-trail-presets">
@@ -203,12 +217,17 @@ const MouseTrail: React.FC = () => {
               <div>
                 <Text strong>background</Text>
                 <Input
-                  disabled={!config.enabled}
+                  disabled={!config.enabled || config.followTheme}
                   value={config.background}
                   onChange={(ev) => setConfig((p) => ({ ...p, background: ev.target.value }))}
                   onBlur={(ev) => patch({ background: ev.target.value })}
                   placeholder="颜色、linear-gradient、radial-gradient 等"
                 />
+                {config.followTheme && (
+                  <Text type="secondary" className="mouse-trail-hint">
+                    已跟随主题渐变，关闭上方开关后可自定义
+                  </Text>
+                )}
               </div>
               <div className="mouse-trail-inline">
                 <Text strong>拖尾块尺寸（px）</Text>

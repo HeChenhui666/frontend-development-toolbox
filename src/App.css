@@ -5,134 +5,125 @@
 }
 
 :root {
-  /* 默认主题变量，会被主题系统覆盖 */
-  --theme-primary: #667eea;
-  --theme-primaryGradient: #667eea;
-  --theme-primaryGradientEnd: #764ba2;
-  --theme-background: #ffffff;
-  --theme-surface: #f8f9fa;
-  --theme-surfaceHover: #e8ecf0;
-  --theme-text: #334155;
-  --theme-textSecondary: #64748b;
-  --theme-textMuted: #94a3b8;
-  --theme-border: #e8ecf0;
-  --theme-borderLight: #cbd5e1;
-  --theme-active: #667eea;
+  /* 主题色（由 applyTheme 在运行时覆盖，这里作为骨架兜底值） */
+  --theme-primary: #ff6b3d;
+  --theme-primaryGradient: #ff6b3d;
+  --theme-primaryGradientEnd: #ff9800;
+  --theme-background: #fff7f2;
+  --theme-surface: #ffece2;
+  --theme-surfaceHover: #ffdccc;
+  --theme-text: #4a1f12;
+  --theme-textSecondary: #8b4a30;
+  --theme-textMuted: #c07a5a;
+  --theme-border: #ffd7c2;
+  --theme-borderLight: #ffbf9e;
+  --theme-active: #ff6b3d;
   --theme-activeBackground: #ffffff;
-  --theme-activeHover: rgba(102, 126, 234, 0.08);
-  --theme-scrollbarTrack: #f8f9fa;
-  --theme-scrollbarThumb: #cbd5e1;
-  --theme-scrollbarThumbHover: #94a3b8;
-  --theme-primarySoft: rgba(102, 126, 234, 0.12);
-  --theme-primarySoftHover: rgba(102, 126, 234, 0.2);
-  --theme-primarySoftActive: rgba(102, 126, 234, 0.28);
-  --theme-primaryOutline: rgba(102, 126, 234, 0.4);
-  --theme-primaryShadow: rgba(102, 126, 234, 0.25);
+  --theme-activeHover: rgba(255, 107, 61, 0.08);
+  --theme-scrollbarTrack: transparent;
+  --theme-scrollbarThumb: rgba(0, 0, 0, 0.15);
+  --theme-scrollbarThumbHover: rgba(0, 0, 0, 0.28);
+  --theme-primarySoft: rgba(255, 107, 61, 0.1);
+  --theme-primarySoftHover: rgba(255, 107, 61, 0.18);
+  --theme-primarySoftActive: rgba(255, 107, 61, 0.26);
+  --theme-primaryOutline: rgba(255, 107, 61, 0.35);
+  --theme-primaryShadow: rgba(255, 107, 61, 0.2);
   --theme-onPrimary: #ffffff;
-  --theme-surfaceElevated: #fcfbfc;
-  --theme-surfaceSunken: #f3f5f7;
-  --theme-borderStrong: #606c7c;
-  --theme-borderMuted: #f1f4f6;
-  --theme-overlay: rgba(51, 65, 85, 0.45);
-  --theme-overlayLight: rgba(255, 255, 255, 0.7);
-  --theme-headerGlow: rgba(255, 255, 255, 0.12);
-  --theme-headerControlBg: rgba(255, 255, 255, 0.2);
-  --theme-headerControlHover: rgba(255, 255, 255, 0.32);
-  --theme-shadowSubtle: rgba(102, 126, 234, 0.08);
-  --theme-shadowSoft: rgba(102, 126, 234, 0.18);
-  --theme-shadowStrong: rgba(102, 126, 234, 0.32);
-  --theme-errorShadow: rgba(239, 68, 68, 0.18);
-  --theme-successShadow: rgba(16, 185, 129, 0.18);
-  --theme-game-2048-accent: #edc22e;
-  --theme-game-2048-2: #eee4da;
-  --theme-game-2048-4: #ede0c8;
-  --theme-game-2048-8: #f2b179;
-  --theme-game-2048-16: #f59563;
-  --theme-game-2048-32: #f67c5f;
-  --theme-game-2048-64: #f65e3b;
-  --theme-game-2048-128: #edcf72;
-  --theme-game-2048-256: #edcc61;
-  --theme-game-2048-512: #edc850;
-  --theme-game-2048-1024: #edc53f;
-  --theme-game-2048-2048: #edc22e;
-  --theme-game-2048-text-2: #776e65;
-  --theme-game-2048-text-4: #776e65;
-  --theme-game-2048-text-8: #f9f6f2;
-  --theme-game-2048-text-16: #f9f6f2;
-  --theme-game-2048-text-32: #f9f6f2;
-  --theme-game-2048-text-64: #f9f6f2;
-  --theme-game-2048-text-128: #f9f6f2;
-  --theme-game-2048-text-256: #f9f6f2;
-  --theme-game-2048-text-512: #f9f6f2;
-  --theme-game-2048-text-1024: #f9f6f2;
-  --theme-game-2048-text-2048: #f9f6f2;
+  --theme-surfaceElevated: #ffffff;
+  --theme-surfaceSunken: #fff1ea;
+  --theme-borderStrong: #c07a5a;
+  --theme-borderMuted: #ffece2;
+  --theme-overlay: rgba(74, 31, 18, 0.4);
+  --theme-overlayLight: rgba(255, 255, 255, 0.72);
+  --theme-headerGlow: rgba(255, 255, 255, 0.1);
+  --theme-headerControlBg: rgba(255, 255, 255, 0.18);
+  --theme-headerControlHover: rgba(255, 255, 255, 0.3);
+  --theme-shadowSubtle: rgba(255, 107, 61, 0.06);
+  --theme-shadowSoft: rgba(255, 107, 61, 0.15);
+  --theme-shadowStrong: rgba(255, 107, 61, 0.28);
+  --theme-errorShadow: rgba(239, 68, 68, 0.15);
+  --theme-successShadow: rgba(16, 185, 129, 0.15);
+
+  /* 渐变色 tokens（由 applyTheme 在运行时计算覆盖） */
+  --theme-accentGradient: linear-gradient(90deg, #ff6b3d 0%, #ff9800 100%);
+  --theme-backgroundGradient: linear-gradient(150deg, #fff7f2 0%, #fff4ee 100%);
+  --theme-surfaceGradient: linear-gradient(135deg, #ffece2 0%, #ffe6d6 100%);
+  --theme-borderGradient: linear-gradient(135deg, #ffd7c2 0%, #ffbf9e 100%);
+  --theme-tab-indicator-opacity: 1;
+
+  /* 2048 游戏色板 */
+  --theme-game-2048-accent: #ff9800;
+  --theme-game-2048-2: #ffece2;
+  --theme-game-2048-4: #ffdccc;
+  --theme-game-2048-8: #ffbf9e;
+  --theme-game-2048-16: #ff9e7a;
+  --theme-game-2048-32: #ff8558;
+  --theme-game-2048-64: #ff6b3d;
+  --theme-game-2048-128: #f59000;
+  --theme-game-2048-256: #e8a000;
+  --theme-game-2048-512: #dab000;
+  --theme-game-2048-1024: #cfbc00;
+  --theme-game-2048-2048: #c4c800;
+  --theme-game-2048-text-2: #8b4a30;
+  --theme-game-2048-text-4: #8b4a30;
+  --theme-game-2048-text-8: #ffffff;
+  --theme-game-2048-text-16: #ffffff;
+  --theme-game-2048-text-32: #ffffff;
+  --theme-game-2048-text-64: #ffffff;
+  --theme-game-2048-text-128: #ffffff;
+  --theme-game-2048-text-256: #ffffff;
+  --theme-game-2048-text-512: #ffffff;
+  --theme-game-2048-text-1024: #ffffff;
+  --theme-game-2048-text-2048: #ffffff;
+
+  /* 间距比例尺 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* 组件尺寸 */
   --app-spacing: 6px;
-  --app-radius: 4px;
+  --app-radius: 6px;
+  --sider-collapsed-width: 48px;
+  --sider-expanded-width: 140px;
+  --sider-logo-height: 44px;
+  --sider-item-height: 34px;
+  --content-topbar-height: 36px;
 }
 
-/* 全局统一滚动条样式（隐式滚动区域都会用这套），
-   个别组件如果需要隐藏滚动条可以单独覆盖 */
+/* ===== 滚动条 ===== */
 * {
   scrollbar-width: thin;
-  /* Firefox */
   scrollbar-color: var(--theme-scrollbarThumb) transparent;
 }
-
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb {
   background-color: var(--theme-scrollbarThumb);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-  opacity: 0.35;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  border-radius: 99px;
+  transition: background-color 0.2s ease;
 }
+*::-webkit-scrollbar-thumb:hover { background-color: var(--theme-scrollbarThumbHover); }
 
-*::-webkit-scrollbar-thumb:hover {
-  background-color: var(--theme-scrollbarThumbHover);
-  opacity: 0.85;
-}
-
-*::-webkit-scrollbar-thumb:active {
-  background-color: var(--theme-scrollbarThumbHover);
-  opacity: 1;
-}
-
+/* ===== 基础 ===== */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, 'SF Pro Text',
+    'Segoe UI Variable Text', 'Segoe UI',
+    system-ui, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--theme-surface, #f5f7fa);
-  margin: 0;
-  padding: 0;
+  background: var(--theme-surface);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-html,
-body {
-  width: 100%;
-  min-width: 0;
-}
+html, body { width: 100%; min-width: 0; }
+html, body, #root { height: 100%; min-height: 0; }
 
-html,
-body,
-#root {
-  height: 100%;
-  min-height: 0;
-}
-
-/* 主应用页：让 .app 参与 flex 高度分配，子级 .content 才能 overflow 滚动。
-   overflow:hidden 的 flex 子项默认 min-width 会变成 0，横向上可被压成一条细线；
-   这里拉满宽度并保留 align-items:stretch（默认），避免扩展小窗宽度塌陷。 */
 #root {
   display: flex;
   flex-direction: column;
@@ -142,103 +133,45 @@ body,
   box-sizing: border-box;
 }
 
-/* antd 组件统一内外间距与圆角 */
-.ant-btn,
-.ant-input,
-.ant-input-affix-wrapper,
-.ant-input-number,
-.ant-input-number-input,
-.ant-select-selector,
-.ant-picker,
-.ant-tag,
-.ant-alert,
-.ant-message-notice-content {
-  padding: var(--app-spacing);
-  border-radius: var(--app-radius);
-}
-
+/* ===== antd 全局覆盖 ===== */
 .ant-card,
 .ant-modal-content,
 .ant-modal-header,
-.ant-modal-footer,
-.ant-modal-body,
-.ant-drawer-content,
-.ant-drawer-header,
-.ant-drawer-footer,
-.ant-drawer-body,
 .ant-popover-inner,
 .ant-dropdown,
 .ant-select-dropdown,
 .ant-tooltip-inner {
-  border-radius: var(--app-radius);
-}
-
-.ant-card-head,
-.ant-card-body,
-.ant-modal-header,
-.ant-modal-footer,
-.ant-modal-body,
-.ant-drawer-header,
-.ant-drawer-footer,
-.ant-drawer-body,
-.ant-dropdown-menu,
-.ant-select-dropdown,
-.ant-tooltip-inner {
-  padding: var(--app-spacing);
-}
-
-/* 弹窗类组件的主题背景优化（暗色/荧光赛博更友好） */
-.ant-modal-content,
-.ant-modal-header,
-.ant-modal-footer,
-.ant-modal-body,
-.ant-drawer-content,
-.ant-drawer-header,
-.ant-drawer-footer,
-.ant-drawer-body,
-.ant-popover-inner,
-.ant-dropdown,
-.ant-dropdown-menu,
-.ant-select-dropdown {
-  background: var(--theme-surface, #f8f9fa);
-  color: var(--theme-text, #334155);
-  border-color: var(--theme-border, #e8ecf0);
-}
-
-.ant-modal>.ant-modal-container {
-  background-color: var(--theme-surface, #f8f9fa);
-  padding: 20px;
+  border-radius: var(--app-radius) !important;
 }
 
 .ant-modal-content,
-.ant-drawer-content,
 .ant-popover-inner,
 .ant-dropdown,
 .ant-select-dropdown {
-  border: 1px solid var(--theme-border, #e8ecf0);
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+  border: 1px solid var(--theme-border) !important;
 }
 
-.ant-modal-header,
-.ant-modal-footer,
-.ant-drawer-header,
-.ant-drawer-footer {
-  border-color: var(--theme-border, #e8ecf0);
-}
+.ant-modal-header { background: var(--theme-surface) !important; }
 
+.ant-modal-title,
 .ant-popover-title,
-.ant-popover-inner-content,
-.ant-drawer-title,
-.ant-modal-title {
-  color: var(--theme-text, #334155);
+.ant-drawer-title {
+  color: var(--theme-text) !important;
 }
 
 .ant-tooltip-inner {
-  background: var(--theme-surface, #f8f9fa);
-  color: var(--theme-text, #334155);
-  border: 1px solid var(--theme-border, #e8ecf0);
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border: 1px solid var(--theme-border) !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  min-height: auto !important;
+  box-shadow: var(--theme-shadow-card, 0 2px 8px rgba(0,0,0,0.08)) !important;
 }
 
-/* 统一 Space.Compact 中输入框 + 按钮的高度对齐 */
 .ant-space-compact .ant-btn {
   align-self: stretch;
   height: auto;
@@ -247,852 +180,524 @@ body,
   justify-content: center;
 }
 
-/* 独立页全屏：侧栏/小窗不要用 100vh，否则高度按整屏算，.content 无法内部滚动 */
-body:has(.app-standalone):not(:has(.app-sidepanel)) {
-  min-height: 100vh;
+/* ===== 应用根布局 ===== */
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+  background: var(--theme-surface);
 }
 
-/*
- * 工具栏 popup：Chrome 按「文档最小宽度」定窗宽；#root 曾设 min-width:0 且 .app 用 max-width:100%，
- * 父级在反算宽度时会塌成一条细线。给整条祖先链与 .app 明确 450px 下限（与布局宽度一致）。
- */
-html:has(.app-popup),
-body:has(.app-popup) {
-  min-width: 450px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-#root:has(.app-popup) {
-  min-width: 450px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* 插件popup模式：固定尺寸 */
-.app-popup {
-  flex: 0 0 auto;
-  align-self: stretch;
+/* popup 模式：固定尺寸卡片样式，带渐变边框 */
+.app-layout.mode-popup {
   width: 450px;
   min-width: 450px;
-  max-width: none;
   height: 580px;
-  min-height: 0;
-  box-sizing: border-box;
-  background: var(--theme-background, #ffffff);
-  border: 1px solid var(--theme-borderLight, #cbd5e1);
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 6px 22px var(--theme-shadowSoft, rgba(0, 0, 0, 0.1));
-  overflow: hidden;
-}
-
-/* 独立页面模式：响应式布局（滚动交给 .content，避免矮视口下无法纵向滚动） */
-.app-standalone {
-  flex: 1 1 auto;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-  background: var(--theme-background, #ffffff);
-  border: none;
-  display: flex;
-  flex-direction: column;
-  box-shadow: none;
-  overflow: hidden;
-}
-
-/* 右键「小窗口」等独立扩展窗：与 background 里 MIN_FALLBACK_WINDOW_WIDTH 一致，防止 flex+overflow 把宽度压没 */
-.app-standalone:not(.app-sidepanel) {
-  min-width: 320px;
-  width: 100%;
-}
-
-/* 侧边栏：按面板实际高度约束，禁止 min-height:100vh 撑破布局 */
-.app-standalone.app-sidepanel {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
-
-/* 兼容性：默认样式（向后兼容，仅在非 popup/standalone 时生效） */
-.app:not(.app-popup):not(.app-standalone) {
   flex: 0 0 auto;
   align-self: center;
-  width: 450px;
-  max-width: 100%;
+  background:
+    var(--theme-backgroundGradient) padding-box,
+    var(--theme-borderGradient) border-box;
+  border: 1px solid transparent;
+  box-shadow: var(--theme-shadow-popup, 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06));
+  border-radius: calc(var(--app-radius) + 2px);
+  overflow: hidden;
+}
+
+/* standalone 模式 */
+.app-layout.mode-standalone {
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 320px;
-  height: 580px;
   min-height: 0;
-  box-sizing: border-box;
-  background: var(--theme-background, #ffffff);
-  border: 1px solid var(--theme-borderLight, #cbd5e1);
+  background: var(--theme-backgroundGradient);
+}
+
+/* sidepanel 模式 */
+.app-layout.mode-sidepanel {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  background: var(--theme-backgroundGradient);
+}
+
+/* popup/侧边栏时 root 对齐 */
+html:has(.mode-popup), body:has(.mode-popup) {
+  min-width: 450px;
+  width: 100%;
+}
+#root:has(.mode-popup) {
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-surface);
+}
+
+/* ===== 左侧导航栏 ===== */
+.app-sider {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 6px 22px var(--theme-shadowSoft, rgba(0, 0, 0, 0.1));
-  overflow: hidden;
-}
-
-.header {
-  background: var(--theme-header-gradient, linear-gradient(135deg,
-        var(--theme-primaryGradient, #667eea) 0%,
-        var(--theme-primaryGradientEnd, #764ba2) 100%));
-  color: white;
-  padding: 6px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, var(--theme-headerGlow, rgba(255, 255, 255, 0.1)) 0%, transparent 70%);
-  animation: pulse 8s ease-in-out infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-}
-
-.header-content {
-  position: relative;
-  z-index: 1;
   flex: 1;
+  height: 100%;
+  background: var(--theme-surfaceGradient);
+  border-right: 1px solid var(--theme-border);
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
-.header-settings-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--theme-headerControlBg, rgba(255, 255, 255, 0.2));
-  border: none;
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  cursor: pointer;
+/* 收起态宽度（popup/sidepanel）*/
+.sider-collapsed .app-sider-wrapper {
+  width: var(--sider-collapsed-width);
+}
+
+/* 展开态宽度（standalone）*/
+.sider-expanded .app-sider-wrapper {
+  width: var(--sider-expanded-width);
+}
+
+/* ── Logo 区 ── */
+.sider-logo {
+  height: var(--sider-logo-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  z-index: 2;
-  padding: 0;
-  backdrop-filter: blur(4px);
-}
-
-.header-settings-btn:hover,
-.header-chat-btn:hover {
-  background: var(--theme-headerControlHover, rgba(255, 255, 255, 0.3));
-  transform: translateY(-50%) scale(1.1);
-}
-
-.header-settings-btn:active,
-.header-chat-btn:active {
-  transform: translateY(-50%) scale(1);
-}
-
-.header-chat-btn {
-  position: absolute;
-  right: 42px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--theme-headerControlBg, rgba(255, 255, 255, 0.2));
-  border: none;
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  z-index: 2;
-  padding: 0;
-  backdrop-filter: blur(4px);
-}
-
-.header h1 {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  letter-spacing: -0.3px;
-}
-
-.app-standalone .header h1 {
-  font-size: 24px;
-}
-
-.header-title {
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
+  flex-shrink: 0;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.1s ease;
+  background: var(--theme-header-gradient,
+    linear-gradient(135deg, var(--theme-primaryGradient, #ff6b3d) 0%, var(--theme-primaryGradientEnd, #ff9800) 100%)
+  );
+  color: rgba(255, 255, 255, 0.95);
+  transition: opacity var(--theme-transition, 150ms ease);
 }
 
-.header-title:active {
-  transform: scale(0.95);
-}
+.sider-logo:hover { opacity: 0.88; }
+.sider-logo:active { opacity: 0.72; }
 
-.header-subtitle {
-  font-size: 10px;
-  opacity: 0.9;
-  font-weight: 400;
-}
-
-.app-standalone .header-subtitle {
-  font-size: 14px;
-}
-
-.tabs-container {
-  background: var(--theme-background, #ffffff);
-  border-bottom: 1px solid var(--theme-borderLight, #cbd5e1);
-  box-shadow: 0 2px 6px var(--theme-shadowSubtle, rgba(0, 0, 0, 0.04));
+.sider-logo-icon {
+  font-size: 16px;
   flex-shrink: 0;
+  line-height: 1;
+}
+
+.sider-logo-text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px;
 }
 
-.tabs {
-  display: flex;
-  gap: 6px;
-  padding: 0;
-  background: var(--theme-surface, #f8f9fa);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  -webkit-overflow-scrolling: touch;
+/* 收起时隐藏文字 */
+.sider-collapsed .sider-logo-text { display: none; }
+.sider-expanded .sider-logo { justify-content: flex-start; padding: 0 var(--sp-3); }
+
+/* ── 导航区 ── */
+.sider-nav {
   flex: 1;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari, Opera */
-}
-
-.tabs-all {
-  flex-shrink: 0;
-}
-
-.tabs-all-button {
-  border-radius: 4px;
-  padding: 6px;
-  height: auto;
-}
-
-.tabs-all-popover {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 6px;
-  max-height: 320px;
   overflow-y: auto;
-  width: 100%;
-  padding: 6px;
-  background: var(--theme-surfaceElevated, #ffffff);
+  overflow-x: hidden;
+  padding: var(--sp-1) 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.tabs-all-item {
+.sider-nav::-webkit-scrollbar { display: none; }
+
+/* ── 单个导航项 ── */
+.sider-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  justify-content: flex-start;
-  text-align: left;
-  border-radius: 4px;
-}
-
-.tabs-all-icon {
-  font-size: 14px;
-}
-
-.tabs-all-text {
-  font-size: 12px;
-}
-
-.tabs-all-overlay {
-  width: 100vw;
-  max-width: 100vw;
-  left: 0 !important;
-  right: 0 !important;
-}
-
-.tabs-all-overlay .ant-popover-inner {
+  gap: var(--sp-2);
   width: 100%;
-  border-radius: 4px;
-}
-
-.tab {
-  flex: 0 0 calc(28.57% - 2px);
-  min-width: calc(28.57% - 2px);
-  max-width: calc(28.57% - 2px);
-  padding: 6px;
+  height: var(--sider-item-height);
+  padding: 0 var(--sp-3);
   border: none;
   background: transparent;
   cursor: pointer;
+  color: var(--theme-textSecondary);
   font-size: 12px;
   font-weight: 500;
-  color: var(--theme-textSecondary, #64748b);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  transition:
+    background var(--theme-transition, 150ms ease),
+    color var(--theme-transition, 150ms ease);
   position: relative;
   white-space: nowrap;
   box-sizing: border-box;
+  text-align: left;
 }
 
-/* 独立页面模式下的tab样式 */
-.app-standalone .tab {
-  flex: 0 0 auto;
-  min-width: 100px;
-  max-width: 200px;
-  padding: 6px;
-  font-size: 14px;
+/* 收起时图标居中 */
+.sider-collapsed .sider-item {
+  justify-content: center;
+  padding: 0;
 }
 
-.tab:hover {
-  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
-  color: var(--theme-active, #667eea);
+.sider-item:hover {
+  background: var(--theme-activeHover);
+  color: var(--theme-active);
 }
 
-.tab.active {
-  color: var(--theme-active, #667eea);
-  background: var(--theme-activeBackground, #ffffff);
-  box-shadow: 0 2px 8px var(--theme-primaryShadow, rgba(102, 126, 234, 0.2));
+.sider-item.active {
+  color: var(--theme-active);
+  background: var(--theme-primarySoft);
   font-weight: 600;
 }
 
-.tab-icon {
+/* 激活时左侧渐变指示条 */
+.sider-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 3px;
+  background: var(--theme-accentGradient);
+  border-radius: 0 2px 2px 0;
+}
+
+.sider-item-icon {
   font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
-.app-standalone .tab-icon {
-  font-size: 18px;
-}
-
-.tab-text {
+.sider-item-label {
   font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
-.app-standalone .tab-text {
+/* 收起时隐藏文字 */
+.sider-collapsed .sider-item-label { display: none; }
+
+/* ── 底部操作区 ── */
+.sider-bottom {
+  flex-shrink: 0;
+  border-top: 1px solid var(--theme-border);
+  padding: var(--sp-1) 0;
+  background: var(--theme-surface);
+}
+
+.sider-action {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  height: var(--sider-item-height);
+  padding: 0 var(--sp-3);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--theme-textMuted);
+  font-size: 12px;
+  font-weight: 500;
+  transition:
+    background var(--theme-transition, 150ms ease),
+    color var(--theme-transition, 150ms ease);
+  white-space: nowrap;
+  box-sizing: border-box;
+  text-align: left;
+  position: relative;
+}
+
+.sider-collapsed .sider-action {
+  justify-content: center;
+  padding: 0;
+}
+
+.sider-action:hover {
+  background: var(--theme-activeHover);
+  color: var(--theme-active);
+}
+
+.sider-action.active {
+  color: var(--theme-active);
+  background: var(--theme-primarySoft);
+  font-weight: 600;
+}
+
+.sider-action.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 3px;
+  background: var(--theme-accentGradient);
+  border-radius: 0 2px 2px 0;
+}
+
+.sider-action-icon {
   font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
+.sider-action-label {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sider-collapsed .sider-action-label { display: none; }
+
+/* 展开/收起切换按钮分隔线 */
+.sider-toggle-separator {
+  height: 1px;
+  background: var(--theme-border);
+  margin: 2px var(--sp-2);
+}
+
+/* ===== 内容区 ===== */
+.app-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 功能名称顶栏（仅 standalone 展开态可见）*/
+.content-topbar {
+  height: var(--content-topbar-height);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-3);
+  background: var(--theme-backgroundGradient);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.content-topbar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-text);
+  letter-spacing: -0.1px;
+}
+
+/* 内容滚动区 */
 .content {
   flex: 1;
-  padding: 6px;
+  padding: var(--sp-3);
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--theme-background, #ffffff);
-  box-shadow: inset 0 0 0 1px var(--theme-borderMuted, #cbd5e1);
+  background: var(--theme-backgroundGradient);
   min-height: 0;
 }
 
-/* 独立页面模式下的content样式 */
-.app-standalone .content {
-  padding: 6px;
-  box-shadow: none;
-  border: none;
-}
+.mode-standalone .content { padding: var(--sp-4); }
 
-/* 功能内容区域 */
+/* ===== 功能内容区 ===== */
 .feature-content {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 6px;
+  gap: var(--sp-2);
   min-height: 0;
 }
 
-/* 子标签样式 */
+/* ===== 子标签（分段控件风格）===== */
 .sub-tabs {
   display: flex;
-  gap: 6px;
-  background: var(--theme-surface, #f8f9fa);
-  padding: 6px;
-  border-radius: 4px;
-  margin-bottom: 6px;
+  gap: 2px;
+  background: var(--theme-surfaceGradient);
+  padding: 3px;
+  border-radius: var(--theme-radius-lg, 8px);
+  margin-bottom: var(--sp-2);
   flex-shrink: 0;
-  border: 1px solid var(--theme-borderLight, #cbd5e1);
+  border: 1px solid var(--theme-border);
 }
 
 .sub-tab {
   flex: 1;
-  padding: 6px;
+  padding: 5px var(--sp-2);
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--theme-textSecondary, #64748b);
-  transition: all 0.25s ease;
-  border-radius: 4px;
+  color: var(--theme-textSecondary);
+  transition:
+    background var(--theme-transition, 150ms ease),
+    color var(--theme-transition, 150ms ease),
+    box-shadow var(--theme-transition, 150ms ease);
+  border-radius: var(--app-radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--sp-1);
 }
 
-.sub-tab:hover {
-  background: var(--theme-primarySoft, rgba(102, 126, 234, 0.08));
-  color: var(--theme-active, #667eea);
-}
+.sub-tab:hover { color: var(--theme-active); background: var(--theme-activeHover); }
 
 .sub-tab.active {
-  color: var(--theme-active, #667eea);
-  background: var(--theme-activeBackground, #ffffff);
-  box-shadow: 0 2px 6px var(--theme-primaryShadow, rgba(102, 126, 234, 0.18));
+  color: var(--theme-active);
+  background: var(--theme-activeBackground);
   font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 
-.sub-tab-icon {
-  font-size: 12px;
-}
+.sub-tab-icon { font-size: 12px; line-height: 1; }
 
-.sub-content {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
+.sub-content { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 
-/* 功能占位符样式 */
+/* ===== 占位符 ===== */
 .feature-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  padding: var(--sp-4);
   text-align: center;
-  color: var(--theme-textSecondary, #64748b);
+  color: var(--theme-textSecondary);
+  gap: var(--sp-2);
 }
 
-.placeholder-icon {
-  font-size: 48px;
-  margin-bottom: 6px;
-  opacity: 0.6;
-}
+.placeholder-icon { font-size: 40px; opacity: 0.5; }
 
 .feature-placeholder h3 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--theme-text, #334155);
-  margin-bottom: 6px;
+  color: var(--theme-text);
 }
 
-.feature-placeholder p {
-  font-size: 12px;
-  line-height: 1.5;
-  margin-bottom: 6px;
-}
+.feature-placeholder p { font-size: 12px; line-height: 1.6; color: var(--theme-textSecondary); }
 
 .placeholder-hint {
-  font-size: 10px;
-  color: var(--theme-textMuted, #94a3b8);
+  font-size: 11px;
+  color: var(--theme-textMuted);
   font-style: italic;
-  margin-top: 6px;
-  padding: 6px;
-  background: var(--theme-surfaceSunken, #f8f9fa);
-  border-radius: 4px;
-  border: 1px dashed var(--theme-borderMuted, #cbd5e1);
+  margin-top: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--theme-surfaceSunken);
+  border-radius: var(--app-radius);
+  border: 1px dashed var(--theme-borderMuted);
 }
 
-/* 加载中样式 */
+/* ===== 状态 ===== */
 .loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  color: var(--theme-textSecondary, #64748b);
+  padding: var(--sp-4);
+  color: var(--theme-textMuted);
   font-size: 12px;
+  gap: var(--sp-2);
 }
 
-/* 通用错误样式 */
 .error {
-  padding: 6px;
+  padding: var(--sp-2) var(--sp-3);
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 4px;
-  font-size: 11px;
+  border-radius: var(--app-radius);
+  font-size: 12px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
 }
 
-/* ============================================
-   独立页面响应式样式（仅对 .app-standalone 生效）
-   ============================================ */
+/* ===== 侧边栏包装器 ===== */
+.app-sider-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  z-index: 10;
+  transition: width var(--theme-transition, 150ms ease);
+}
 
-/* 移动端样式（< 576px） */
-@media screen and (max-width: 575.98px) {
-  .app-standalone {
+/* ===== 侧边栏悬浮展开/收起按钮 ===== */
+.sider-float-toggle {
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%) scaleX(0.7);
+  transform-origin: left center;
+  z-index: 20;
+  width: 14px;
+  height: 36px;
+  border-radius: 0 6px 6px 0;
+  border: 1px solid var(--theme-border);
+  border-left: none;
+  background: var(--theme-surface);
+  color: var(--theme-textMuted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  box-shadow: 2px 0 6px var(--theme-shadowSoft);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+  padding: 0;
+}
+
+.app-sider-wrapper:hover .sider-float-toggle {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) scaleX(1);
+}
+
+.sider-float-toggle:hover {
+  background: var(--theme-primarySoft);
+  color: var(--theme-active);
+  box-shadow: 2px 0 10px var(--theme-shadowStrong);
+}
+
+.sider-float-toggle:active {
+  transform: translateY(-50%) scaleX(0.9);
+}
+
+/* ===== 响应式（standalone 模式）===== */
+
+/* 移动端 < 640px */
+@media screen and (max-width: 639.98px) {
+  .app-layout.mode-standalone {
     width: 100%;
     min-height: 100vh;
   }
-
-  .app-standalone .header {
-    padding: 6px;
-  }
-
-  .app-standalone .header h1 {
-    font-size: 20px;
-  }
-
-  .app-standalone .header-subtitle {
-    font-size: 12px;
-  }
-
-  .app-standalone .header-settings-btn {
-    width: 32px;
-    height: 32px;
-    right: 12px;
-    font-size: 16px;
-  }
-
-  .app-standalone .header-chat-btn {
-    width: 32px;
-    height: 32px;
-    right: 50px;
-    font-size: 16px;
-  }
-
-  .app-standalone .tabs {
-    padding: 6px;
-    gap: 6px;
-  }
-
-  .app-standalone .tab {
-    min-width: 80px;
-    max-width: 120px;
-    padding: 6px;
-    font-size: 12px;
-  }
-
-  .app-standalone .tab-icon {
-    font-size: 16px;
-  }
-
-  .app-standalone .tab-text {
-    font-size: 12px;
-  }
-
-  .app-standalone .content {
-    padding: 6px;
-  }
+  .mode-standalone .content { padding: var(--sp-2); }
+  :root { --sider-expanded-width: 120px; }
 }
 
-/* 小屏移动端（576px - 767.98px） */
-@media screen and (min-width: 576px) and (max-width: 767.98px) {
-  .app-standalone {
+/* 平板 640–1023px */
+@media screen and (min-width: 640px) and (max-width: 1023.98px) {
+  .app-layout.mode-standalone {
     width: 100%;
     min-height: 100vh;
-    max-width: 100%;
   }
-
-  .app-standalone .header {
-    padding: 6px;
-  }
-
-  .app-standalone .header h1 {
-    font-size: 22px;
-  }
-
-  .app-standalone .header-subtitle {
-    font-size: 13px;
-  }
-
-  .app-standalone .tabs {
-    padding: 6px;
-  }
-
-  .app-standalone .tab {
-    min-width: 90px;
-    max-width: 140px;
-    padding: 6px;
-    font-size: 13px;
-  }
-
-  .app-standalone .content {
-    padding: 6px;
-  }
+  .mode-standalone .content { padding: var(--sp-3); }
 }
 
-/* 平板样式（768px - 1023.98px） */
-@media screen and (min-width: 768px) and (max-width: 1023.98px) {
-  .app-standalone {
+/* 桌面 ≥ 1024px */
+@media screen and (min-width: 1024px) {
+  .app-layout.mode-standalone {
     width: 100%;
-    max-width: 100%;
     min-height: 100vh;
-    margin: 0;
-    border: none;
-    border-radius: 4px;
-    box-shadow: none;
   }
-
-  .app-standalone .header {
-    padding: 6px;
-    border-radius: 4px;
+  .mode-standalone .content { padding: var(--sp-5); }
+  :root {
+    --sider-expanded-width: 152px;
+    --sider-item-height: 36px;
+    --content-topbar-height: 40px;
   }
-
-  .app-standalone .header h1 {
-    font-size: 24px;
-  }
-
-  .app-standalone .header-subtitle {
-    font-size: 13px;
-  }
-
-  .app-standalone .header-settings-btn {
-    width: 34px;
-    height: 34px;
-    right: 18px;
-    font-size: 17px;
-  }
-
-  .app-standalone .header-chat-btn {
-    width: 34px;
-    height: 34px;
-    right: 58px;
-    font-size: 17px;
-  }
-
-  .app-standalone .tabs {
-    padding: 6px;
-  }
-
-  .app-standalone .tab {
-    min-width: 100px;
-    max-width: 150px;
-    padding: 6px;
-    font-size: 13px;
-  }
-
-  .app-standalone .tab-icon {
-    font-size: 17px;
-  }
-
-  .app-standalone .content {
-    padding: 6px;
-  }
-}
-
-/* 桌面小屏（1024px - 1439.98px） */
-@media screen and (min-width: 1024px) and (max-width: 1439.98px) {
-  .app-standalone {
-    width: 100%;
-    max-width: 100%;
-    min-height: 100vh;
-    margin: 0;
-    border: none;
-    border-radius: 4px;
-    box-shadow: none;
-  }
-
-  .app-standalone .header {
-    padding: 6px;
-    border-radius: 4px;
-  }
-
-  .app-standalone .header h1 {
-    font-size: 26px;
-  }
-
-  .app-standalone .header-subtitle {
-    font-size: 14px;
-  }
-
-  .app-standalone .header-settings-btn {
-    width: 38px;
-    height: 38px;
-    right: 22px;
-    font-size: 19px;
-  }
-
-  .app-standalone .header-chat-btn {
-    width: 38px;
-    height: 38px;
-    right: 66px;
-    font-size: 19px;
-  }
-
-  .app-standalone .tabs {
-    padding: 6px;
-  }
-
-  .app-standalone .tab {
-    min-width: 110px;
-    max-width: 170px;
-    padding: 6px;
-    font-size: 14px;
-  }
-
-  .app-standalone .tab-icon {
-    font-size: 19px;
-  }
-
-  .app-standalone .tab-text {
-    font-size: 14px;
-  }
-
-  .app-standalone .content {
-    padding: 6px;
-  }
-}
-
-/* 桌面大屏（1440px - 1919.98px） */
-@media screen and (min-width: 1440px) and (max-width: 1919.98px) {
-  .app-standalone {
-    width: 100%;
-    max-width: 100%;
-    min-height: 100vh;
-    margin: 0;
-    border: none;
-    border-radius: 4px;
-    box-shadow: none;
-  }
-
-  .app-standalone .header {
-    padding: 6px;
-    border-radius: 4px;
-  }
-
-  .app-standalone .header h1 {
-    font-size: 30px;
-  }
-
-  .app-standalone .header-subtitle {
-    font-size: 15px;
-  }
-
-  .app-standalone .header-settings-btn {
-    width: 42px;
-    height: 42px;
-    right: 26px;
-    font-size: 21px;
-  }
-
-  .app-standalone .header-chat-btn {
-    width: 42px;
-    height: 42px;
-    right: 74px;
-    font-size: 21px;
-  }
-
-  .app-standalone .tabs {
-    padding: 6px;
-  }
-
-  .app-standalone .tab {
-    min-width: 130px;
-    max-width: 190px;
-    padding: 6px;
-    font-size: 15px;
-  }
-
-  .app-standalone .tab-icon {
-    font-size: 21px;
-  }
-
-  .app-standalone .tab-text {
-    font-size: 15px;
-  }
-
-  .app-standalone .content {
-    padding: 6px;
-  }
-}
-
-/* 超大屏（≥ 1920px） */
-@media screen and (min-width: 1920px) {
-  .app-standalone {
-    width: 100%;
-    max-width: 100%;
-    min-height: 100vh;
-    margin: 0;
-    border: none;
-    border-radius: 4px;
-    box-shadow: none;
-  }
-
-  .app-standalone .header {
-    padding: 6px;
-    border-radius: 4px;
-  }
-
-  .app-standalone .header h1 {
-    font-size: 32px;
-  }
-
-  .app-standalone .header-subtitle {
-    font-size: 16px;
-  }
-
-  .app-standalone .header-settings-btn {
-    width: 44px;
-    height: 44px;
-    right: 30px;
-    font-size: 22px;
-  }
-
-  .app-standalone .header-chat-btn {
-    width: 44px;
-    height: 44px;
-    right: 80px;
-    font-size: 22px;
-  }
-
-  .app-standalone .tabs {
-    padding: 6px;
-  }
-
-  .app-standalone .tab {
-    min-width: 140px;
-    max-width: 200px;
-    padding: 6px;
-    font-size: 16px;
-  }
-
-  .app-standalone .tab-icon {
-    font-size: 22px;
-  }
-
-  .app-standalone .tab-text {
-    font-size: 16px;
-  }
-
-  .app-standalone .content {
-    padding: 6px;
-  }
+  .content-topbar-title { font-size: 14px; }
+  .sider-item-icon { font-size: 15px; }
+  .sider-item-label { font-size: 13px; }
 }

@@ -2,13 +2,13 @@
 .decoder {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 }
 
 .file-upload {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .upload-buttons {
@@ -55,7 +55,7 @@
 .image-preview {
   display: flex;
   justify-content: center;
-  padding: 6px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-border, #e8ecf0);
@@ -74,14 +74,14 @@
 .decoded-results {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .copy-all-btn {
@@ -90,7 +90,7 @@
 }
 
 .decoded-result {
-  padding: 6px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border: 1.5px solid var(--theme-primary, #667eea);
   border-radius: 4px;

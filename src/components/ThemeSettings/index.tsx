@@ -54,7 +54,8 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose, embedded = false
                 <div
                   className="theme-preview-gradient"
                   style={{
-                    background: `linear-gradient(135deg, ${theme.colors.primaryGradient} 0%, ${theme.colors.primaryGradientEnd} 100%)`,
+                    background: theme.style.headerGradient
+                      ?? `linear-gradient(135deg, ${theme.colors.primaryGradient} 0%, ${theme.colors.primaryGradientEnd} 100%)`,
                     height: '40px',
                     borderRadius: '4px',
                   }}

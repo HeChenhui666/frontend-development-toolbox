@@ -9,8 +9,10 @@ export interface MouseTrailStoredConfig {
   mode: MouseTrailMode;
   /** CSS clip-path，如 circle(50% at 50% 50%) 或 polygon(...) */
   clipPath: string;
-  /** CSS background，支持颜色、渐变等 */
+  /** CSS background，支持颜色、渐变等；followTheme 为 true 时由扩展页面运行时自动替换为主题渐变 */
   background: string;
+  /** CSS 模式：自动跟随当前主题的强调色渐变（仅扩展页面生效，内容脚本不可读扩展 CSS 变量） */
+  followTheme: boolean;
   /** CSS 模式下拖尾块基准尺寸（px） */
   trailSize: number;
   imageDataUrl: string | null;
@@ -31,6 +33,7 @@ export const DEFAULT_MOUSE_TRAIL_CONFIG: MouseTrailStoredConfig = {
   mode: 'css',
   clipPath: 'circle(50% at 50% 50%)',
   background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.92), rgba(118, 75, 162, 0.82))',
+  followTheme: true,
   trailSize: 14,
   imageDataUrl: null,
   imageRemoteUrl: null,
@@ -65,12 +68,15 @@ function sanitizeConfig(raw: unknown): MouseTrailStoredConfig {
     imageRemoteUrl = null;
   }
 
+  const followTheme = typeof o.followTheme === 'boolean' ? o.followTheme : true;
+
   return {
     enabled: o.enabled === true,
     applyGlobally: o.applyGlobally === true,
     mode,
     clipPath,
     background,
+    followTheme,
     trailSize,
     imageDataUrl,
     imageRemoteUrl,

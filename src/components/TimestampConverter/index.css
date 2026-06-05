@@ -2,7 +2,7 @@
 .timestamp-converter {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
   overflow-y: auto;
@@ -10,7 +10,7 @@
 }
 
 .current-time-section {
-  padding: 6px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border-radius: 4px;
   border: 1.5px solid var(--theme-primary, #667eea);
@@ -21,7 +21,7 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--theme-primary, #667eea);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .current-time-display {
@@ -73,8 +73,8 @@
 .converter-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 6px;
+  gap: 8px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
@@ -118,7 +118,7 @@
 .converter-input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .converter-input {

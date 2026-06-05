@@ -2,14 +2,14 @@
 .url-params-editor {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
   overflow: auto;
 }
 
 .url-display {
-  padding: 6px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-border, #e2e8f0);
@@ -22,7 +22,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .url-display-header label {
@@ -81,7 +81,7 @@
 .base-url-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -111,7 +111,7 @@
 .preset-params-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -178,7 +178,7 @@
 .params-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
   min-height: 200px;
   max-height: 350px;
@@ -217,11 +217,11 @@
 .params-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 6px;
+  padding: 0;
   min-height: 0;
 }
 
@@ -301,7 +301,7 @@
 }
 
 .preview-section {
-  padding: 6px;
+  padding: 10px;
   background: var(--theme-surface, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-borderLight, #cbd5e1);
@@ -312,7 +312,7 @@
 }
 
 .preview-header {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 

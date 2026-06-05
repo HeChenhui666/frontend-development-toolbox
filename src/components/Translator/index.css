@@ -1,7 +1,7 @@
 .translator {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
   overflow-y: auto;
@@ -10,7 +10,7 @@
 .language-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -36,8 +36,8 @@
 }
 
 .service-notice {
-  margin-top: 6px;
-  padding: 6px;
+  margin-top: 8px;
+  padding: 8px;
   background: var(--theme-surfaceSunken, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-borderMuted, #e2e8f0);
@@ -227,8 +227,8 @@
 .page-translate-switch-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 6px;
+  gap: 8px;
+  padding: 10px;
   background: var(--theme-surfaceSunken, #f8f9fa);
   border-radius: 4px;
   border: 1px solid var(--theme-borderMuted, #e2e8f0);
@@ -248,7 +248,7 @@
 }
 
 .switch-desc {
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .switch-desc-text {
