@@ -14,7 +14,7 @@
 
 .theme-settings-modal {
   background: var(--theme-background, #ffffff);
-  border-radius: 4px;
+  border-radius: 3px;
   box-shadow: 0 8px 32px var(--theme-shadowStrong, rgba(0, 0, 0, 0.2));
   width: 90%;
   max-width: 380px;
@@ -62,7 +62,7 @@
   color: white;
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -101,7 +101,7 @@
   position: relative;
   cursor: pointer;
   border: 2px solid var(--theme-border, #e8ecf0);
-  border-radius: 4px;
+  border-radius: 3px;
   padding: 6px;
   transition: all 0.2s ease;
   background: var(--theme-surface, #f8f9fa);
@@ -122,7 +122,7 @@
 .theme-preview {
   width: 65px;
   height: 80px;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
   margin-bottom: 6px;
   position: relative;
@@ -146,7 +146,7 @@
 
 .theme-preview-active {
   padding: 6px;
-  border-radius: 4px;
+  border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
 }
@@ -166,7 +166,7 @@
   height: 20px;
   background: var(--theme-primary, #667eea);
   color: white;
-  border-radius: 4px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;

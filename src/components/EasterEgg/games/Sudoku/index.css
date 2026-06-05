@@ -26,7 +26,7 @@
 .sudoku-select {
   padding: 5px 8px;
   border: 1px solid var(--theme-border);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surfaceSunken);
   color: var(--theme-text);
   font-size: 11px;
@@ -42,7 +42,7 @@
 .sudoku-button {
   padding: 5px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-accentGradient);
   color: #fff;
   cursor: pointer;
@@ -83,7 +83,7 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surfaceSunken);
   border: 1px solid var(--theme-border);
   font-size: 11px;
@@ -104,7 +104,7 @@
   grid-template-columns: repeat(9, minmax(28px, 42px));
   width: min(90vw, 420px);
   border: 2px solid var(--theme-borderStrong);
-  border-radius: 10px;
+  border-radius: 3px;
   overflow: hidden;
   background: var(--theme-borderStrong);
   gap: 1px;
@@ -183,7 +183,7 @@
 
 .sudoku-win-banner {
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(52,211,153,0.08) 100%);
   color: var(--theme-success, #10b981);
   border: 1px solid rgba(16,185,129,0.3);
@@ -202,7 +202,7 @@
 .sudoku-pad-button {
   padding: 7px 0;
   border: 1px solid var(--theme-border);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surfaceSunken);
   color: var(--theme-text);
   cursor: pointer;

@@ -27,7 +27,7 @@
   flex: 1;
   padding: 6px;
   border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 4px;
+  border-radius: 3px;
   font-size: 12px;
   transition: all 0.25s ease;
   background: var(--theme-inputBackground, #ffffff);
@@ -43,7 +43,7 @@
 .copy-btn {
   padding: 6px;
   border: 1.5px solid var(--theme-borderLight, #e0e0e0);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--theme-background, white);
   color: var(--theme-text, #334155);
   cursor: pointer;
@@ -62,7 +62,7 @@
   background: linear-gradient(135deg, var(--theme-primaryGradient, #667eea) 0%, var(--theme-primaryGradientEnd, #764ba2) 100%);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -88,7 +88,7 @@
   gap: 8px;
   padding: 10px;
   background: var(--theme-surface, #f8f9fa);
-  border-radius: 4px;
+  border-radius: 3px;
   border: 1px solid var(--theme-border, #e8ecf0);
 }
 
@@ -96,7 +96,7 @@
   max-width: 200px;
   width: 200px;
   height: auto;
-  border-radius: 4px;
+  border-radius: 3px;
   box-shadow: 0 2px 8px var(--theme-shadowSubtle, rgba(0, 0, 0, 0.1));
 }
 
@@ -105,7 +105,7 @@
   background: var(--theme-success, #10b981);
   color: var(--theme-buttonText, white);
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -121,7 +121,7 @@
   padding: 6px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 4px;
+  border-radius: 3px;
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
   box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));

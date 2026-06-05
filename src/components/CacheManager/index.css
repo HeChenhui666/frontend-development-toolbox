@@ -151,7 +151,7 @@
   gap: 8px;
   padding: 10px 12px;
   border: 1px solid var(--theme-borderLight, #e5e7eb);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surface);
 }
 
@@ -202,7 +202,7 @@
 .cache-manager-detail-panel {
   padding: 10px 12px;
   border: 1px solid var(--theme-border);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surface);
 }
 
@@ -216,7 +216,7 @@
 .cache-manager-edit-hint {
   padding: 6px 10px;
   background: var(--theme-background);
-  border-radius: 6px;
+  border-radius: 3px;
 }
 
 .cache-manager-edit-field {
