@@ -38,7 +38,7 @@
   align-items: center;
   background: var(--theme-surfaceSunken);
   border: 1px solid var(--theme-border);
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 5px 12px;
   min-width: 60px;
 }
@@ -65,7 +65,7 @@
   border: 1px solid var(--theme-border);
   color: var(--theme-textSecondary);
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -93,7 +93,7 @@
   gap: 8px;
   background: var(--theme-borderStrong);
   padding: 8px;
-  border-radius: 10px;
+  border-radius: 3px;
   width: min(340px, calc(100vw - 64px));
   aspect-ratio: 1;
   position: relative;
@@ -101,7 +101,7 @@
 
 .game-cell {
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,7 +116,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 3px;
   font-weight: 800;
   animation: tileAppear 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -137,7 +137,7 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 10px;
+  border-radius: 3px;
   animation: overlayIn 0.2s ease;
 }
 
@@ -150,7 +150,7 @@
   background: var(--theme-surface);
   border: 1px solid var(--theme-border);
   padding: 20px 24px;
-  border-radius: 12px;
+  border-radius: 3px;
   text-align: center;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
   display: flex;
@@ -183,7 +183,7 @@
   color: #fff;
   border: none;
   padding: 8px 20px;
-  border-radius: 8px;
+  border-radius: 3px;
   font-size: 12px;
   cursor: pointer;
   font-weight: 700;

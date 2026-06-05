@@ -27,7 +27,7 @@
 .minesweeper-input {
   padding: 5px 8px;
   border: 1px solid var(--theme-border);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surfaceSunken);
   color: var(--theme-text);
   font-size: 11px;
@@ -44,7 +44,7 @@
 .minesweeper-button {
   padding: 5px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-accentGradient);
   color: #fff;
   cursor: pointer;
@@ -60,7 +60,7 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--theme-surfaceSunken);
   border: 1px solid var(--theme-border);
   font-size: 11px;
@@ -90,7 +90,7 @@
   display: grid;
   border: 2px solid var(--theme-borderStrong);
   background: rgba(0,0,0,0.5);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 2px;
   gap: 2px;
 }
@@ -107,7 +107,7 @@
   justify-content: center;
   cursor: pointer;
   user-select: none;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: background 0.1s ease;
 }
 
@@ -146,7 +146,7 @@
 
 .minesweeper-win-banner {
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(52,211,153,0.08) 100%);
   color: var(--theme-success, #10b981);
   border: 1px solid rgba(16,185,129,0.3);

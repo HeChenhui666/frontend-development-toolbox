@@ -5,67 +5,85 @@
 }
 
 :root {
-  /* 主题色（由 applyTheme 在运行时覆盖，这里作为骨架兜底值） */
-  --theme-primary: #ff6b3d;
-  --theme-primaryGradient: #ff6b3d;
-  --theme-primaryGradientEnd: #ff9800;
-  --theme-background: #fff7f2;
-  --theme-surface: #ffece2;
-  --theme-surfaceHover: #ffdccc;
-  --theme-text: #4a1f12;
-  --theme-textSecondary: #8b4a30;
-  --theme-textMuted: #c07a5a;
-  --theme-border: #ffd7c2;
-  --theme-borderLight: #ffbf9e;
-  --theme-active: #ff6b3d;
+  /* 主题色（由 applyTheme 在运行时覆盖，这里作为骨架兜底值，对应 default·暖橙主题） */
+  --theme-primary: #ff7f50;
+  --theme-secondary: #ffb347;
+  --theme-accent: #ff6b6b;
+  /* 向后兼容旧变量名 */
+  --theme-primaryGradient: #ffb347;
+  --theme-primaryGradientEnd: #ff6b6b;
+  --theme-background: #fffbf8;
+  --theme-surface: #fff5f0;
+  --theme-surfaceHover: #ffe8de;
+  --theme-text: #2d2420;
+  --theme-textSecondary: #6b564c;
+  --theme-textMuted: #a8948c;
+  --theme-border: #f0dccf;
+  --theme-borderLight: #f7ece4;
+  --theme-active: #ff7f50;
   --theme-activeBackground: #ffffff;
-  --theme-activeHover: rgba(255, 107, 61, 0.08);
-  --theme-scrollbarTrack: transparent;
-  --theme-scrollbarThumb: rgba(0, 0, 0, 0.15);
-  --theme-scrollbarThumbHover: rgba(0, 0, 0, 0.28);
-  --theme-primarySoft: rgba(255, 107, 61, 0.1);
-  --theme-primarySoftHover: rgba(255, 107, 61, 0.18);
-  --theme-primarySoftActive: rgba(255, 107, 61, 0.26);
-  --theme-primaryOutline: rgba(255, 107, 61, 0.35);
-  --theme-primaryShadow: rgba(255, 107, 61, 0.2);
+  --theme-activeHover: rgba(255, 127, 80, 0.15);
+  --theme-scrollbarTrack: #fff5f0;
+  --theme-scrollbarThumb: #e0c4b8;
+  --theme-scrollbarThumbHover: #cfae9f;
+  --theme-inputBackground: #ffffff;
+  --theme-inputBorder: #e0d0c5;
+  --theme-inputText: #2d2420;
+  --theme-inputFocusBorder: #ff7f50;
+  --theme-buttonPrimary: #ff7f50;
+  --theme-buttonPrimaryHover: #e56a3d;
+  --theme-buttonText: #ffffff;
+  --theme-success: #10b981;
+  --theme-successBackground: #ecfdf5;
+  --theme-error: #ef4444;
+  --theme-errorBackground: #fef2f2;
+  --theme-primarySoft: rgba(255, 127, 80, 0.12);
+  --theme-primarySoftHover: rgba(255, 127, 80, 0.2);
+  --theme-primarySoftActive: rgba(255, 127, 80, 0.28);
+  --theme-primaryOutline: rgba(255, 127, 80, 0.4);
+  --theme-primaryShadow: rgba(255, 127, 80, 0.25);
   --theme-onPrimary: #ffffff;
-  --theme-surfaceElevated: #ffffff;
-  --theme-surfaceSunken: #fff1ea;
-  --theme-borderStrong: #c07a5a;
-  --theme-borderMuted: #ffece2;
-  --theme-overlay: rgba(74, 31, 18, 0.4);
-  --theme-overlayLight: rgba(255, 255, 255, 0.72);
-  --theme-headerGlow: rgba(255, 255, 255, 0.1);
-  --theme-headerControlBg: rgba(255, 255, 255, 0.18);
-  --theme-headerControlHover: rgba(255, 255, 255, 0.3);
-  --theme-shadowSubtle: rgba(255, 107, 61, 0.06);
-  --theme-shadowSoft: rgba(255, 107, 61, 0.15);
-  --theme-shadowStrong: rgba(255, 107, 61, 0.28);
-  --theme-errorShadow: rgba(239, 68, 68, 0.15);
-  --theme-successShadow: rgba(16, 185, 129, 0.15);
+  --theme-surfaceElevated: #fff9f6;
+  --theme-surfaceSunken: #fbeed6;
+  --theme-borderStrong: #5e4c47;
+  --theme-borderMuted: #f6e8df;
+  --theme-overlay: rgba(45, 36, 32, 0.45);
+  --theme-overlayLight: rgba(255, 255, 255, 0.7);
+  --theme-headerGlow: rgba(255, 255, 255, 0.12);
+  --theme-headerControlBg: rgba(255, 255, 255, 0.2);
+  --theme-headerControlHover: rgba(255, 255, 255, 0.32);
+  --theme-shadowSubtle: rgba(255, 127, 80, 0.08);
+  --theme-shadowSoft: rgba(255, 127, 80, 0.18);
+  --theme-shadowStrong: rgba(255, 127, 80, 0.32);
+  --theme-errorShadow: rgba(239, 68, 68, 0.18);
+  --theme-successShadow: rgba(16, 185, 129, 0.18);
 
-  /* 渐变色 tokens（由 applyTheme 在运行时计算覆盖） */
-  --theme-accentGradient: linear-gradient(90deg, #ff6b3d 0%, #ff9800 100%);
-  --theme-backgroundGradient: linear-gradient(150deg, #fff7f2 0%, #fff4ee 100%);
-  --theme-surfaceGradient: linear-gradient(135deg, #ffece2 0%, #ffe6d6 100%);
-  --theme-borderGradient: linear-gradient(135deg, #ffd7c2 0%, #ffbf9e 100%);
+  /* 渐变系统（由 applyTheme 在运行时从主题 gradients 字段覆盖） */
+  --theme-gradient-main: linear-gradient(135deg, #ff7f50 0%, #ffa500 100%);
+  --theme-gradient-subtle: linear-gradient(135deg, rgba(255, 127, 80, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+  --theme-gradient-text: linear-gradient(to right, #ff7f50, #ff4500);
+  --theme-gradient-header: linear-gradient(135deg, #fffbf8 0%, #fff5f0 100%);
+  --theme-accentGradient: linear-gradient(135deg, #ff7f50 0%, #ffa500 100%);
+  --theme-backgroundGradient: linear-gradient(135deg, #fffbf8 0%, #fff5f0 100%);
+  --theme-surfaceGradient: linear-gradient(135deg, #fff5f0 0%, #ffeee6 100%);
+  --theme-borderGradient: linear-gradient(135deg, #f0dccf 0%, #f7ece4 100%);
   --theme-tab-indicator-opacity: 1;
 
-  /* 2048 游戏色板 */
-  --theme-game-2048-accent: #ff9800;
-  --theme-game-2048-2: #ffece2;
-  --theme-game-2048-4: #ffdccc;
-  --theme-game-2048-8: #ffbf9e;
-  --theme-game-2048-16: #ff9e7a;
-  --theme-game-2048-32: #ff8558;
-  --theme-game-2048-64: #ff6b3d;
-  --theme-game-2048-128: #f59000;
-  --theme-game-2048-256: #e8a000;
-  --theme-game-2048-512: #dab000;
-  --theme-game-2048-1024: #cfbc00;
-  --theme-game-2048-2048: #c4c800;
-  --theme-game-2048-text-2: #8b4a30;
-  --theme-game-2048-text-4: #8b4a30;
+  /* 2048 游戏色板（由 applyTheme 在运行时动态计算覆盖） */
+  --theme-game-2048-accent: #ffb347;
+  --theme-game-2048-2: #fff7f4;
+  --theme-game-2048-4: #ffb38a;
+  --theme-game-2048-8: #ff9468;
+  --theme-game-2048-16: #ff8757;
+  --theme-game-2048-32: #ff7a47;
+  --theme-game-2048-64: #ff6d37;
+  --theme-game-2048-128: #ff9a47;
+  --theme-game-2048-256: #ffa34d;
+  --theme-game-2048-512: #ffab53;
+  --theme-game-2048-1024: #ffb258;
+  --theme-game-2048-2048: #ffb85c;
+  --theme-game-2048-text-2: #6b564c;
+  --theme-game-2048-text-4: #ffffff;
   --theme-game-2048-text-8: #ffffff;
   --theme-game-2048-text-16: #ffffff;
   --theme-game-2048-text-32: #ffffff;
@@ -86,7 +104,7 @@
 
   /* 组件尺寸 */
   --app-spacing: 6px;
-  --app-radius: 6px;
+  --app-radius: 3px;
   --sider-collapsed-width: 48px;
   --sider-expanded-width: 140px;
   --sider-logo-height: 44px;
@@ -201,7 +219,7 @@ html, body, #root { height: 100%; min-height: 0; }
     var(--theme-borderGradient) border-box;
   border: 1px solid transparent;
   box-shadow: var(--theme-shadow-popup, 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06));
-  border-radius: calc(var(--app-radius) + 2px);
+  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -268,9 +286,7 @@ html:has(.mode-popup), body:has(.mode-popup) {
   flex-shrink: 0;
   cursor: pointer;
   user-select: none;
-  background: var(--theme-header-gradient,
-    linear-gradient(135deg, var(--theme-primaryGradient, #ff6b3d) 0%, var(--theme-primaryGradientEnd, #ff9800) 100%)
-  );
+  background: var(--theme-header-gradient, var(--theme-accentGradient));
   color: rgba(255, 255, 255, 0.95);
   transition: opacity var(--theme-transition, 150ms ease);
 }
@@ -357,7 +373,7 @@ html:has(.mode-popup), body:has(.mode-popup) {
   bottom: 18%;
   width: 3px;
   background: var(--theme-accentGradient);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 3px 3px 0;
 }
 
 .sider-item-icon {
@@ -433,7 +449,7 @@ html:has(.mode-popup), body:has(.mode-popup) {
   bottom: 18%;
   width: 3px;
   background: var(--theme-accentGradient);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 3px 3px 0;
 }
 
 .sider-action-icon {
@@ -514,7 +530,7 @@ html:has(.mode-popup), body:has(.mode-popup) {
   gap: 2px;
   background: var(--theme-surfaceGradient);
   padding: 3px;
-  border-radius: var(--theme-radius-lg, 8px);
+  border-radius: 3px;
   margin-bottom: var(--sp-2);
   flex-shrink: 0;
   border: 1px solid var(--theme-border);
@@ -625,7 +641,7 @@ html:has(.mode-popup), body:has(.mode-popup) {
   z-index: 20;
   width: 14px;
   height: 36px;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 3px 3px 0;
   border: 1px solid var(--theme-border);
   border-left: none;
   background: var(--theme-surface);

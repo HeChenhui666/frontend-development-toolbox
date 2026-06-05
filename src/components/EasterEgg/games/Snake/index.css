@@ -22,7 +22,7 @@
   border: 1px solid var(--theme-border);
   color: var(--theme-textSecondary);
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
@@ -49,7 +49,7 @@
   align-items: center;
   background: var(--theme-surfaceSunken);
   border: 1px solid var(--theme-border);
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 5px 10px;
   min-width: 52px;
   gap: 2px;
@@ -76,7 +76,7 @@
   border: 1px solid var(--theme-border);
   color: var(--theme-textSecondary);
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -102,7 +102,7 @@
   display: grid;
   border: 2px solid var(--theme-borderStrong);
   background: #0f172a;
-  border-radius: 10px;
+  border-radius: 3px;
   overflow: hidden;
   gap: 1px;
   padding: 1px;
@@ -168,7 +168,7 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  border-radius: 10px;
+  border-radius: 3px;
   animation: overlayIn 0.2s ease;
 }
 
@@ -181,7 +181,7 @@
   background: var(--theme-surface);
   border: 1px solid var(--theme-border);
   padding: 20px 24px;
-  border-radius: 12px;
+  border-radius: 3px;
   text-align: center;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
   display: flex;
@@ -214,7 +214,7 @@
   color: #fff;
   border: none;
   padding: 8px 20px;
-  border-radius: 8px;
+  border-radius: 3px;
   font-size: 12px;
   cursor: pointer;
   font-weight: 700;

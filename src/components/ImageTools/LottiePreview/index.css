@@ -1,7 +1,7 @@
 .lottie-preview-canvas {
   min-height: 260px;
   border: 1px dashed var(--theme-border, #e2e8f0);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--theme-surface, #f8f9fa);
   display: flex;
   align-items: center;
