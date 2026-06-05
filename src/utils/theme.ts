@@ -202,8 +202,8 @@ export const themes: Record<ThemeName, Theme> = {
     },
     colors: {
       primary: '#FF7F50',
-      secondary: '#FFB347', // Pastel Orange for accents
-      accent: '#FF6B6B', // Soft Red for alerts/highlights
+      secondary: '#FFA500', // Orange for accents/borders
+      accent: '#FF6B6B',
       background: '#FFFBF8',
       surface: '#FFF5F0',
       surfaceHover: '#FFE8DE',
@@ -212,16 +212,17 @@ export const themes: Record<ThemeName, Theme> = {
       textMuted: '#A8948C',
       border: '#F0DCCF',
       borderLight: '#F7ECE4',
+      // 关键优化：使用辅助色作为边框和光晕，增加层次
       active: '#FF7F50',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(255, 127, 80, 0.15)',
+      activeHover: 'rgba(255, 165, 0, 0.2)', // Use secondary for hover tint
       scrollbarTrack: '#FFF5F0',
       scrollbarThumb: '#E0C4B8',
-      scrollbarThumbHover: '#CFAE9F',
+      scrollbarThumbHover: '#FFA500', // Thumb hover becomes secondary color
       inputBackground: '#FFFFFF',
       inputBorder: '#E0D0C5',
       inputText: '#2D2420',
-      inputFocusBorder: '#FF7F50',
+      inputFocusBorder: '#FFA500', // Focus border uses secondary
       buttonPrimary: '#FF7F50',
       buttonPrimaryHover: '#E56A3D',
       buttonText: '#FFFFFF',
@@ -229,12 +230,13 @@ export const themes: Record<ThemeName, Theme> = {
       successBackground: '#ECFDF5',
       error: '#EF4444',
       errorBackground: '#FEF2F2',
-      // New Gradient System
       gradients: {
         main: 'linear-gradient(135deg, #FF7F50 0%, #FFA500 100%)',
         subtle: 'linear-gradient(135deg, rgba(255, 127, 80, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)',
+        surface: 'linear-gradient(180deg, #FFF5F0 0%, #FFFBF8 100%)',
         text: 'linear-gradient(to right, #FF7F50, #FF4500)',
-        header: 'linear-gradient(135deg, #FFFBF8 0%, #FFF5F0 100%)',
+        // 新增：边框渐变，用于特殊卡片
+        border: 'linear-gradient(135deg, #FF7F50, #FFA500)',
       }
     },
   },
@@ -249,9 +251,9 @@ export const themes: Record<ThemeName, Theme> = {
       inputFocus: 'border',
     },
     colors: {
-      primary: '#2563EB', // Deepened Blue-600 for better contrast
-      secondary: '#06B6D4', // Cyan-500
-      accent: '#6366F1', // Indigo-500
+      primary: '#2563EB',
+      secondary: '#06B6D4', // Cyan
+      accent: '#6366F1',
       background: '#FFFFFF',
       surface: '#F8FAFC',
       surfaceHover: '#F1F5F9',
@@ -262,14 +264,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#F1F5F9',
       active: '#2563EB',
       activeBackground: '#EFF6FF',
-      activeHover: 'rgba(37, 99, 235, 0.1)',
+      activeHover: 'rgba(6, 182, 212, 0.1)', // Cyan tint on hover
       scrollbarTrack: '#F8FAFC',
       scrollbarThumb: '#CBD5E1',
-      scrollbarThumbHover: '#94A3B8',
+      scrollbarThumbHover: '#06B6D4',
       inputBackground: '#FFFFFF',
       inputBorder: '#CBD5E1',
       inputText: '#0F172A',
-      inputFocusBorder: '#2563EB',
+      inputFocusBorder: '#06B6D4', // Focus reveals the Cyan
       buttonPrimary: '#2563EB',
       buttonPrimaryHover: '#1D4ED8',
       buttonText: '#FFFFFF',
@@ -278,10 +280,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#EF4444',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)', // Blue to Cyan
+        main: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)',
         subtle: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%)',
+        surface: 'linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%)',
         text: 'linear-gradient(to right, #2563EB, #06B6D4)',
-        header: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
+        border: 'linear-gradient(135deg, #2563EB, #06B6D4)',
       }
     },
   },
@@ -297,8 +300,8 @@ export const themes: Record<ThemeName, Theme> = {
     },
     colors: {
       primary: '#8B5CF6',
-      secondary: '#EC4899', // Pink-500
-      accent: '#F472B6', 
+      secondary: '#EC4899', // Pink
+      accent: '#F472B6',
       background: '#FAF5FF',
       surface: '#F3E8FF',
       surfaceHover: '#E9D5FF',
@@ -309,14 +312,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#EDE9FE',
       active: '#8B5CF6',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(139, 92, 246, 0.15)',
+      activeHover: 'rgba(236, 72, 153, 0.15)', // Pink hover
       scrollbarTrack: '#F3E8FF',
       scrollbarThumb: '#C4B5FD',
-      scrollbarThumbHover: '#A78BFA',
+      scrollbarThumbHover: '#EC4899',
       inputBackground: '#FFFFFF',
       inputBorder: '#DDD6FE',
       inputText: '#4C1D95',
-      inputFocusBorder: '#8B5CF6',
+      inputFocusBorder: '#EC4899', // Pink focus
       buttonPrimary: '#8B5CF6',
       buttonPrimaryHover: '#7C3AED',
       buttonText: '#FFFFFF',
@@ -325,10 +328,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#F43F5E',
       errorBackground: '#FFF1F2',
       gradients: {
-        main: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #F43F5E 100%)', // Purple -> Pink -> Rose
+        main: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
         subtle: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%)',
+        surface: 'linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%)',
         text: 'linear-gradient(to right, #8B5CF6, #EC4899)',
-        header: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+        border: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
       }
     },
   },
@@ -344,7 +348,7 @@ export const themes: Record<ThemeName, Theme> = {
     },
     colors: {
       primary: '#0EA5E9',
-      secondary: '#14B8A6', // Teal-500
+      secondary: '#14B8A6', // Teal
       accent: '#6366F1',
       background: '#F0F9FF',
       surface: '#E0F2FE',
@@ -356,14 +360,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#E0F2FE',
       active: '#0EA5E9',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(14, 165, 233, 0.12)',
+      activeHover: 'rgba(20, 184, 166, 0.12)', // Teal hover
       scrollbarTrack: '#E0F2FE',
       scrollbarThumb: '#7DD3FC',
-      scrollbarThumbHover: '#38BDF8',
+      scrollbarThumbHover: '#14B8A6',
       inputBackground: '#FFFFFF',
       inputBorder: '#BAE6FD',
       inputText: '#0C4A6E',
-      inputFocusBorder: '#0EA5E9',
+      inputFocusBorder: '#14B8A6', // Teal focus
       buttonPrimary: '#0EA5E9',
       buttonPrimaryHover: '#0284C7',
       buttonText: '#FFFFFF',
@@ -372,10 +376,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#EF4444',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%)', // Sky to Teal (Fresh air feel)
+        main: 'linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%)',
         subtle: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(20, 184, 166, 0.05) 100%)',
+        surface: 'linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 100%)',
         text: 'linear-gradient(to right, #0284C7, #0D9488)',
-        header: 'linear-gradient(180deg, #F0F9FF 0%, #E0F2FE 100%)',
+        border: 'linear-gradient(135deg, #0EA5E9, #14B8A6)',
       }
     },
   },
@@ -403,14 +408,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#FDF2F8',
       active: '#DB2777',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(219, 39, 119, 0.12)',
+      activeHover: 'rgba(244, 114, 182, 0.12)',
       scrollbarTrack: '#FCE7F3',
       scrollbarThumb: '#F9A8D4',
       scrollbarThumbHover: '#F472B6',
       inputBackground: '#FFFFFF',
       inputBorder: '#FBCFE8',
       inputText: '#831843',
-      inputFocusBorder: '#DB2777',
+      inputFocusBorder: '#F472B6',
       buttonPrimary: '#DB2777',
       buttonPrimaryHover: '#BE185D',
       buttonText: '#FFFFFF',
@@ -421,8 +426,9 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #DB2777 0%, #F472B6 100%)',
         subtle: 'linear-gradient(135deg, rgba(219, 39, 119, 0.1) 0%, rgba(244, 114, 182, 0.05) 100%)',
+        surface: 'linear-gradient(135deg, #FCE7F3 0%, #FDF2F8 100%)',
         text: 'linear-gradient(to right, #BE185D, #DB2777)',
-        header: 'linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%)',
+        border: 'linear-gradient(135deg, #DB2777, #F472B6)',
       }
     },
   },
@@ -437,8 +443,8 @@ export const themes: Record<ThemeName, Theme> = {
       inputFocus: 'glow',
     },
     colors: {
-      primary: '#B45309', // Amber-700
-      secondary: '#D97706', // Amber-600
+      primary: '#B45309',
+      secondary: '#D97706',
       accent: '#92400E',
       background: '#FFFBEB',
       surface: '#FEF3C7',
@@ -450,14 +456,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#FEF3C7',
       active: '#B45309',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(180, 83, 9, 0.15)',
+      activeHover: 'rgba(217, 119, 6, 0.15)',
       scrollbarTrack: '#FEF3C7',
       scrollbarThumb: '#FCD34D',
-      scrollbarThumbHover: '#FBBF24',
+      scrollbarThumbHover: '#D97706',
       inputBackground: '#FFFBEB',
       inputBorder: '#FCD34D',
       inputText: '#451A03',
-      inputFocusBorder: '#B45309',
+      inputFocusBorder: '#D97706',
       buttonPrimary: '#B45309',
       buttonPrimaryHover: '#92400E',
       buttonText: '#FFFFFF',
@@ -466,10 +472,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#DC2626',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', // Rich Amber
+        main: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)',
         subtle: 'linear-gradient(135deg, rgba(180, 83, 9, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%)',
+        surface: 'linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)',
         text: 'linear-gradient(to right, #92400E, #B45309)',
-        header: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+        border: 'linear-gradient(135deg, #B45309, #D97706)',
       }
     },
   },
@@ -484,8 +491,8 @@ export const themes: Record<ThemeName, Theme> = {
       inputFocus: 'border',
     },
     colors: {
-      primary: '#292524', // Stone-800
-      secondary: '#57534E', // Stone-600
+      primary: '#292524',
+      secondary: '#57534E',
       accent: '#78716C',
       background: '#FAFAF9',
       surface: '#F5F5F4',
@@ -497,14 +504,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#E7E5E4',
       active: '#292524',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(41, 37, 36, 0.1)',
+      activeHover: 'rgba(87, 83, 78, 0.1)',
       scrollbarTrack: '#F5F5F4',
       scrollbarThumb: '#D6D3D1',
-      scrollbarThumbHover: '#A8A29E',
+      scrollbarThumbHover: '#57534E',
       inputBackground: '#FFFFFF',
       inputBorder: '#D6D3D1',
       inputText: '#1C1917',
-      inputFocusBorder: '#292524',
+      inputFocusBorder: '#57534E',
       buttonPrimary: '#292524',
       buttonPrimaryHover: '#1C1917',
       buttonText: '#FFFFFF',
@@ -513,10 +520,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#991B1B',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #292524 0%, #57534E 100%)', // Ink wash gradient
+        main: 'linear-gradient(135deg, #292524 0%, #57534E 100%)',
         subtle: 'linear-gradient(135deg, rgba(41, 37, 36, 0.08) 0%, rgba(87, 83, 78, 0.04) 100%)',
+        surface: 'linear-gradient(180deg, #F5F5F4 0%, #FAFAF9 100%)',
         text: 'linear-gradient(to right, #1C1917, #44403C)',
-        header: 'linear-gradient(180deg, #FAFAF9 0%, #F5F5F4 100%)',
+        border: 'linear-gradient(135deg, #292524, #57534E)',
       }
     },
   },
@@ -531,8 +539,8 @@ export const themes: Record<ThemeName, Theme> = {
       inputFocus: 'border',
     },
     colors: {
-      primary: '#52525B', // Zinc-600
-      secondary: '#71717A', // Zinc-500
+      primary: '#52525B',
+      secondary: '#71717A',
       accent: '#A1A1AA',
       background: '#FFFFFF',
       surface: '#F4F4F5',
@@ -544,14 +552,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#F4F4F5',
       active: '#52525B',
       activeBackground: '#FAFAFA',
-      activeHover: 'rgba(82, 82, 91, 0.1)',
+      activeHover: 'rgba(113, 113, 122, 0.1)',
       scrollbarTrack: '#F4F4F5',
       scrollbarThumb: '#D4D4D8',
-      scrollbarThumbHover: '#A1A1AA',
+      scrollbarThumbHover: '#71717A',
       inputBackground: '#FFFFFF',
       inputBorder: '#E4E4E7',
       inputText: '#18181B',
-      inputFocusBorder: '#52525B',
+      inputFocusBorder: '#71717A',
       buttonPrimary: '#52525B',
       buttonPrimaryHover: '#3F3F46',
       buttonText: '#FFFFFF',
@@ -562,8 +570,9 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #52525B 0%, #71717A 100%)',
         subtle: 'linear-gradient(135deg, rgba(82, 82, 91, 0.08) 0%, rgba(113, 113, 122, 0.04) 100%)',
+        surface: 'linear-gradient(180deg, #F4F4F5 0%, #FFFFFF 100%)',
         text: 'linear-gradient(to right, #3F3F46, #52525B)',
-        header: 'linear-gradient(180deg, #FFFFFF 0%, #F4F4F5 100%)',
+        border: 'linear-gradient(135deg, #52525B, #71717A)',
       }
     },
   },
@@ -578,8 +587,8 @@ export const themes: Record<ThemeName, Theme> = {
       inputFocus: 'border',
     },
     colors: {
-      primary: '#C2410C', // Orange-700
-      secondary: '#EA580C', // Orange-600
+      primary: '#C2410C',
+      secondary: '#EA580C',
       accent: '#9A3412',
       background: '#FFF7ED',
       surface: '#FFEDD5',
@@ -591,14 +600,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#FFEDD5',
       active: '#C2410C',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(194, 65, 12, 0.15)',
+      activeHover: 'rgba(234, 88, 12, 0.15)',
       scrollbarTrack: '#FFEDD5',
       scrollbarThumb: '#FDBA74',
-      scrollbarThumbHover: '#FB923C',
+      scrollbarThumbHover: '#EA580C',
       inputBackground: '#FFF7ED',
       inputBorder: '#FDBA74',
       inputText: '#431407',
-      inputFocusBorder: '#C2410C',
+      inputFocusBorder: '#EA580C',
       buttonPrimary: '#C2410C',
       buttonPrimaryHover: '#9A3412',
       buttonText: '#FFFFFF',
@@ -607,10 +616,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#9F1239',
       errorBackground: '#FFF1F2',
       gradients: {
-        main: 'linear-gradient(135deg, #9A3412 0%, #C2410C 100%)', // Earthy Red-Orange
+        main: 'linear-gradient(135deg, #9A3412 0%, #C2410C 100%)',
         subtle: 'linear-gradient(135deg, rgba(154, 52, 18, 0.1) 0%, rgba(194, 65, 12, 0.05) 100%)',
+        surface: 'linear-gradient(135deg, #FFEDD5 0%, #FFF7ED 100%)',
         text: 'linear-gradient(to right, #7C2D12, #C2410C)',
-        header: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
+        border: 'linear-gradient(135deg, #9A3412, #C2410C)',
       }
     },
   },
@@ -638,14 +648,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#DDD6FE',
       active: '#7C3AED',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(124, 58, 237, 0.15)',
+      activeHover: 'rgba(192, 132, 252, 0.15)',
       scrollbarTrack: '#EDE9FE',
       scrollbarThumb: '#C4B5FD',
-      scrollbarThumbHover: '#A78BFA',
+      scrollbarThumbHover: '#C084FC',
       inputBackground: '#FFFFFF',
       inputBorder: '#C4B5FD',
       inputText: '#2E1065',
-      inputFocusBorder: '#7C3AED',
+      inputFocusBorder: '#C084FC',
       buttonPrimary: '#7C3AED',
       buttonPrimaryHover: '#6D28D9',
       buttonText: '#FFFFFF',
@@ -654,10 +664,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#E11D48',
       errorBackground: '#FFF1F2',
       gradients: {
-        main: 'linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #C084FC 100%)', // Deep Space Violet
+        main: 'linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #C084FC 100%)',
         subtle: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(192, 132, 252, 0.1) 100%)',
+        surface: 'linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%)',
         text: 'linear-gradient(to right, #6D28D9, #A78BFA)',
-        header: 'linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)',
+        border: 'linear-gradient(135deg, #7C3AED, #C084FC)',
       }
     },
   },
@@ -669,11 +680,11 @@ export const themes: Record<ThemeName, Theme> = {
       shadow: 'medium',
       tabIndicator: 'underline',
       transition: 'normal',
-      inputFocus: 'border',
+      inputFocus: 'glow', // Changed to glow to show off the green ring
     },
     colors: {
       primary: '#B45309', // Ocher
-      secondary: '#15803D', // Malachite Green
+      secondary: '#15803D', // Malachite Green - NOW USED FOR BORDERS/FOCUS
       accent: '#D97706',
       background: '#FEFCE8',
       surface: '#FEF3C7',
@@ -681,31 +692,33 @@ export const themes: Record<ThemeName, Theme> = {
       text: '#422006',
       textSecondary: '#78350F',
       textMuted: '#B45309',
-      border: '#FCD34D',
+      border: '#FCD34D', // Gold-ish border base
       borderLight: '#FEF3C7',
       active: '#D97706',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(217, 119, 6, 0.15)',
+      activeHover: 'rgba(21, 128, 61, 0.15)', // Green tint hover
       scrollbarTrack: '#FEF3C7',
       scrollbarThumb: '#FCD34D',
-      scrollbarThumbHover: '#FBBF24',
+      scrollbarThumbHover: '#15803D', // Green thumb on hover
       inputBackground: '#FFFBEB',
       inputBorder: '#FCD34D',
       inputText: '#422006',
-      inputFocusBorder: '#B45309',
+      inputFocusBorder: '#15803D', // KEY: Focus ring is GREEN
       buttonPrimary: '#B45309',
       buttonPrimaryHover: '#92400E',
       buttonText: '#FFFFFF',
-      success: '#15803D',
+      success: '#15803D', // Success is also Green to reinforce theme
       successBackground: '#F0FDF4',
       error: '#991B1B',
       errorBackground: '#FEF2F2',
       gradients: {
-        // Classic Dunhuang: Ocher to Malachite Green
+        // Ocher to Green gradient for large areas
         main: 'linear-gradient(135deg, #B45309 0%, #D97706 40%, #15803D 100%)', 
-        subtle: 'linear-gradient(135deg, rgba(180, 83, 9, 0.1) 0%, rgba(21, 128, 61, 0.05) 100%)',
+        subtle: 'linear-gradient(135deg, rgba(180, 83, 9, 0.1) 0%, rgba(21, 128, 61, 0.08) 100%)',
+        surface: 'linear-gradient(135deg, #FEF3C7 0%, #FEFCE8 100%)',
         text: 'linear-gradient(to right, #92400E, #15803D)',
-        header: 'linear-gradient(135deg, #FEFCE8 0%, #FEF3C7 100%)',
+        // Border gradient explicitly shows the transition from Gold/Ocher to Green
+        border: 'linear-gradient(135deg, #D97706, #15803D)',
       }
     },
   },
@@ -733,14 +746,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#DCFCE7',
       active: '#15803D',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(21, 128, 61, 0.12)',
+      activeHover: 'rgba(22, 163, 74, 0.12)',
       scrollbarTrack: '#DCFCE7',
       scrollbarThumb: '#86EFAC',
-      scrollbarThumbHover: '#4ADE80',
+      scrollbarThumbHover: '#16A34A',
       inputBackground: '#F0FDF4',
       inputBorder: '#BBF7D0',
       inputText: '#14532D',
-      inputFocusBorder: '#15803D',
+      inputFocusBorder: '#16A34A',
       buttonPrimary: '#15803D',
       buttonPrimaryHover: '#166534',
       buttonText: '#FFFFFF',
@@ -749,10 +762,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#991B1B',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #14532D 0%, #15803D 100%)', // Deep Forest
+        main: 'linear-gradient(135deg, #14532D 0%, #15803D 100%)',
         subtle: 'linear-gradient(135deg, rgba(21, 128, 61, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)',
+        surface: 'linear-gradient(135deg, #DCFCE7 0%, #F0FDF4 100%)',
         text: 'linear-gradient(to right, #166534, #15803D)',
-        header: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+        border: 'linear-gradient(135deg, #15803D, #16A34A)',
       }
     },
   },
@@ -780,14 +794,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#E0F2FE',
       active: '#0284C7',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(2, 132, 199, 0.12)',
+      activeHover: 'rgba(14, 165, 233, 0.12)',
       scrollbarTrack: '#E0F2FE',
       scrollbarThumb: '#7DD3FC',
-      scrollbarThumbHover: '#38BDF8',
+      scrollbarThumbHover: '#0EA5E9',
       inputBackground: '#F0F9FF',
       inputBorder: '#BAE6FD',
       inputText: '#082F49',
-      inputFocusBorder: '#0284C7',
+      inputFocusBorder: '#0EA5E9',
       buttonPrimary: '#0284C7',
       buttonPrimaryHover: '#0369A1',
       buttonText: '#FFFFFF',
@@ -796,10 +810,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#BE123C',
       errorBackground: '#FFF1F2',
       gradients: {
-        main: 'linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%)', // Ice Blue
+        main: 'linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%)',
         subtle: 'linear-gradient(135deg, rgba(3, 105, 161, 0.1) 0%, rgba(14, 165, 233, 0.05) 100%)',
+        surface: 'linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 100%)',
         text: 'linear-gradient(to right, #075985, #0284C7)',
-        header: 'linear-gradient(180deg, #F0F9FF 0%, #E0F2FE 100%)',
+        border: 'linear-gradient(135deg, #0369A1, #0EA5E9)',
       }
     },
   },
@@ -827,14 +842,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#E2E8F0',
       active: '#1E40AF',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(30, 64, 175, 0.12)',
+      activeHover: 'rgba(59, 130, 246, 0.12)',
       scrollbarTrack: '#F1F5F9',
       scrollbarThumb: '#CBD5E1',
-      scrollbarThumbHover: '#94A3B8',
+      scrollbarThumbHover: '#3B82F6',
       inputBackground: '#FFFFFF',
       inputBorder: '#CBD5E1',
       inputText: '#0F172A',
-      inputFocusBorder: '#1E40AF',
+      inputFocusBorder: '#3B82F6',
       buttonPrimary: '#1E40AF',
       buttonPrimaryHover: '#1E3A8A',
       buttonText: '#FFFFFF',
@@ -843,10 +858,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#9F1239',
       errorBackground: '#FFF1F2',
       gradients: {
-        main: 'linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%)', // Deep Lapis
+        main: 'linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%)',
         subtle: 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
+        surface: 'linear-gradient(180deg, #F1F5F9 0%, #F8FAFC 100%)',
         text: 'linear-gradient(to right, #1E40AF, #3B82F6)',
-        header: 'linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)',
+        border: 'linear-gradient(135deg, #1E40AF, #3B82F6)',
       }
     },
   },
@@ -874,14 +890,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#ECFCCB',
       active: '#65A30D',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(101, 163, 13, 0.15)',
+      activeHover: 'rgba(132, 204, 22, 0.15)',
       scrollbarTrack: '#ECFCCB',
       scrollbarThumb: '#BEF264',
-      scrollbarThumbHover: '#A3E635',
+      scrollbarThumbHover: '#84CC16',
       inputBackground: '#F7FEE7',
       inputBorder: '#D9F99D',
       inputText: '#365314',
-      inputFocusBorder: '#65A30D',
+      inputFocusBorder: '#84CC16',
       buttonPrimary: '#65A30D',
       buttonPrimaryHover: '#4D7C0F',
       buttonText: '#FFFFFF',
@@ -890,10 +906,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#B91C1C',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #4D7C0F 0%, #65A30D 100%)', // Sprout Green
+        main: 'linear-gradient(135deg, #4D7C0F 0%, #65A30D 100%)',
         subtle: 'linear-gradient(135deg, rgba(101, 163, 13, 0.1) 0%, rgba(132, 204, 22, 0.05) 100%)',
+        surface: 'linear-gradient(135deg, #ECFCCB 0%, #F7FEE7 100%)',
         text: 'linear-gradient(to right, #4D7C0F, #65A30D)',
-        header: 'linear-gradient(135deg, #F7FEE7 0%, #ECFCCB 100%)',
+        border: 'linear-gradient(135deg, #65A30D, #84CC16)',
       }
     },
   },
@@ -905,11 +922,11 @@ export const themes: Record<ThemeName, Theme> = {
       shadow: 'medium',
       tabIndicator: 'underline',
       transition: 'normal',
-      inputFocus: 'border',
+      inputFocus: 'glow',
     },
     colors: {
-      primary: '#B91C1C',
-      secondary: '#F59E0B', // Imperial Yellow
+      primary: '#B91C1C', // Red
+      secondary: '#F59E0B', // Gold
       accent: '#DC2626',
       background: '#FEF2F2',
       surface: '#FEE2E2',
@@ -921,14 +938,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#FEE2E2',
       active: '#B91C1C',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(185, 28, 28, 0.12)',
+      activeHover: 'rgba(245, 158, 11, 0.12)', // Gold hover
       scrollbarTrack: '#FEE2E2',
       scrollbarThumb: '#FCA5A5',
-      scrollbarThumbHover: '#F87171',
+      scrollbarThumbHover: '#F59E0B', // Gold thumb
       inputBackground: '#FEF2F2',
       inputBorder: '#FECACA',
       inputText: '#450A0A',
-      inputFocusBorder: '#B91C1C',
+      inputFocusBorder: '#F59E0B', // KEY: Focus ring is GOLD
       buttonPrimary: '#B91C1C',
       buttonPrimaryHover: '#991B1B',
       buttonText: '#FFFFFF',
@@ -937,11 +954,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#991B1B',
       errorBackground: '#FEF2F2',
       gradients: {
-        // Forbidden City: Cinnabar Red to Imperial Gold
         main: 'linear-gradient(135deg, #991B1B 0%, #B91C1C 50%, #F59E0B 100%)', 
         subtle: 'linear-gradient(135deg, rgba(185, 28, 28, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
+        surface: 'linear-gradient(135deg, #FEE2E2 0%, #FEF2F2 100%)',
         text: 'linear-gradient(to right, #991B1B, #B91C1C)',
-        header: 'linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)',
+        border: 'linear-gradient(135deg, #B91C1C, #F59E0B)',
       }
     },
   },
@@ -969,14 +986,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#E2E8F0',
       active: '#64748B',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(100, 116, 139, 0.12)',
+      activeHover: 'rgba(148, 163, 184, 0.12)',
       scrollbarTrack: '#F1F5F9',
       scrollbarThumb: '#CBD5E1',
       scrollbarThumbHover: '#94A3B8',
       inputBackground: '#FFFFFF',
       inputBorder: '#CBD5E1',
       inputText: '#334155',
-      inputFocusBorder: '#64748B',
+      inputFocusBorder: '#94A3B8',
       buttonPrimary: '#64748B',
       buttonPrimaryHover: '#475569',
       buttonText: '#FFFFFF',
@@ -985,11 +1002,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#DC2626',
       errorBackground: '#FEF2F2',
       gradients: {
-        // Ru Kiln: Subtle Blue-Grey Glaze
         main: 'linear-gradient(135deg, #64748B 0%, #94A3B8 100%)',
         subtle: 'linear-gradient(135deg, rgba(100, 116, 139, 0.08) 0%, rgba(148, 163, 184, 0.04) 100%)',
+        surface: 'linear-gradient(180deg, #F1F5F9 0%, #F8FAFC 100%)',
         text: 'linear-gradient(to right, #475569, #64748B)',
-        header: 'linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)',
+        border: 'linear-gradient(135deg, #64748B, #94A3B8)',
       }
     },
   },
@@ -1001,12 +1018,12 @@ export const themes: Record<ThemeName, Theme> = {
       shadow: 'medium',
       tabIndicator: 'underline',
       transition: 'normal',
-      inputFocus: 'border',
+      inputFocus: 'glow',
     },
     colors: {
-      primary: '#7E22CE',
-      secondary: '#BE185D',
-      accent: '#F59E0B', // Gold accent for Brocade
+      primary: '#7E22CE', // Purple
+      secondary: '#BE185D', // Magenta
+      accent: '#F59E0B', // Gold
       background: '#FAF5FF',
       surface: '#F3E8FF',
       surfaceHover: '#E9D5FF',
@@ -1017,14 +1034,14 @@ export const themes: Record<ThemeName, Theme> = {
       borderLight: '#F3E8FF',
       active: '#7E22CE',
       activeBackground: '#FFFFFF',
-      activeHover: 'rgba(126, 34, 206, 0.15)',
+      activeHover: 'rgba(190, 24, 93, 0.15)', // Magenta hover
       scrollbarTrack: '#F3E8FF',
       scrollbarThumb: '#D8B4FE',
-      scrollbarThumbHover: '#C084FC',
+      scrollbarThumbHover: '#BE185D',
       inputBackground: '#FAF5FF',
       inputBorder: '#E9D5FF',
       inputText: '#3B0764',
-      inputFocusBorder: '#7E22CE',
+      inputFocusBorder: '#BE185D', // Magenta focus
       buttonPrimary: '#7E22CE',
       buttonPrimaryHover: '#6B21A8',
       buttonText: '#FFFFFF',
@@ -1033,11 +1050,11 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#BE123C',
       errorBackground: '#FFF1F2',
       gradients: {
-        // Han Brocade: Deep Purple to Magenta with a hint of Gold logic in design
         main: 'linear-gradient(135deg, #581C87 0%, #7E22CE 50%, #BE185D 100%)',
         subtle: 'linear-gradient(135deg, rgba(126, 34, 206, 0.15) 0%, rgba(190, 24, 93, 0.1) 100%)',
+        surface: 'linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%)',
         text: 'linear-gradient(to right, #6B21A8, #BE185D)',
-        header: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+        border: 'linear-gradient(135deg, #7E22CE, #BE185D)',
       }
     },
   },
