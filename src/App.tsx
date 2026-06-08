@@ -335,9 +335,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const save = () => { if (isPersistedTab(activeTab)) saveActiveTab(activeTab); };
+    const onVisibility = () => { if (document.visibilityState === 'hidden') save(); };
     window.addEventListener('beforeunload', save);
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
-    return () => window.removeEventListener('beforeunload', save);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', save);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [activeTab]);
 
   useEffect(() => () => { if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current); }, []);

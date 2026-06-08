@@ -47,9 +47,11 @@ const TimestampConverter: React.FC = () => {
   const timestampToDateTime = (timestamp: string) => {
     try {
       setError('');
-      const ts = parseInt(timestamp.trim(), 10);
+      const tsStr = timestamp.trim();
+      const ts = parseInt(tsStr, 10);
       if (isNaN(ts)) { setError('请输入有效的时间戳（数字）'); setConvertedTime(''); return; }
-      const date = ts > 9999999999 ? new Date(ts) : new Date(ts * 1000);
+      const len = tsStr.replace('-', '').length;
+      const date = len >= 13 ? new Date(ts) : new Date(ts * 1000);
       if (isNaN(date.getTime())) { setError('无效的时间戳'); setConvertedTime(''); return; }
       setConvertedTime(formatDateTime(date));
     } catch {
@@ -93,8 +95,9 @@ const TimestampConverter: React.FC = () => {
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    antdMessage.success('已复制到剪贴板');
+    navigator.clipboard.writeText(text)
+      .then(() => antdMessage.success('已复制到剪贴板'))
+      .catch(() => antdMessage.error('复制失败，请手动复制'));
   };
 
   const useCurrentTimestamp = () => {

@@ -246,11 +246,10 @@ export function mountMouseTrail(doc: Document, initialConfig: MouseTrailStoredCo
       for (let i = 0; i < frameCount; i++) {
         const out = await decoder.decode({ frameIndex: i });
         const vf = out.image;
+        const durUs = Number(vf.duration ?? GIF_FRAME_FALLBACK_MS * 1000);
         const bmp = await createImageBitmap(vf);
         vf.close?.();
         frames.push(bmp);
-
-        const durUs = Number(vf.duration ?? GIF_FRAME_FALLBACK_MS * 1000);
         const durMs = Math.max(GIF_FRAME_MIN_MS, Math.round(durUs / 1000) || GIF_FRAME_FALLBACK_MS);
         durations.push(durMs);
 

@@ -14,7 +14,6 @@ import {
   CheckCircleOutlined,
 } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../../utils/message';
 
 interface DiffResult {
   path: string;
@@ -30,22 +29,27 @@ const JSONCompare: React.FC = () => {
   const [error, setError] = useState<string>('');
 
   // 比较两个JSON对象
-  const compareJSON = (obj1: any, obj2: any, path: string = ''): DiffResult[] => {
+  const compareJSON = (obj1: unknown, obj2: unknown, path = '', depth = 0): DiffResult[] => {
+    if (depth > 50) {
+      return [{ path, type: 'modified', oldValue: obj1, newValue: obj2 }];
+    }
     const differences: DiffResult[] = [];
+    const o1 = obj1 as Record<string, unknown> | null | undefined;
+    const o2 = obj2 as Record<string, unknown> | null | undefined;
 
     // 获取所有键的并集
     const allKeys = new Set([
-      ...Object.keys(obj1 || {}),
-      ...Object.keys(obj2 || {}),
+      ...Object.keys(o1 || {}),
+      ...Object.keys(o2 || {}),
     ]);
 
     allKeys.forEach((key) => {
       const currentPath = path ? `${path}.${key}` : key;
-      const val1 = obj1?.[key];
-      const val2 = obj2?.[key];
+      const val1 = o1?.[key];
+      const val2 = o2?.[key];
 
       // 如果键在obj1中不存在，说明是新增的
-      if (!(key in (obj1 || {}))) {
+      if (!(key in (o1 || {}))) {
         differences.push({
           path: currentPath,
           type: 'added',
@@ -53,7 +57,7 @@ const JSONCompare: React.FC = () => {
         });
       }
       // 如果键在obj2中不存在，说明是删除的
-      else if (!(key in (obj2 || {}))) {
+      else if (!(key in (o2 || {}))) {
         differences.push({
           path: currentPath,
           type: 'removed',
@@ -69,7 +73,7 @@ const JSONCompare: React.FC = () => {
         val2 !== null &&
         !Array.isArray(val2)
       ) {
-        differences.push(...compareJSON(val1, val2, currentPath));
+        differences.push(...compareJSON(val1, val2, currentPath, depth + 1));
       }
       // 如果两个值都是数组，比较数组
       else if (Array.isArray(val1) && Array.isArray(val2)) {
@@ -96,7 +100,7 @@ const JSONCompare: React.FC = () => {
             val2[i] !== null &&
             !Array.isArray(val2[i])
           ) {
-            differences.push(...compareJSON(val1[i], val2[i], arrayPath));
+            differences.push(...compareJSON(val1[i], val2[i], arrayPath, depth + 1));
           } else if (JSON.stringify(val1[i]) !== JSON.stringify(val2[i])) {
             differences.push({
               path: arrayPath,

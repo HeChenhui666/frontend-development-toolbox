@@ -25,10 +25,10 @@ function asciiToUnicodeEscape(input: string): { ok: true; out: string } | { ok: 
 }
 
 function decodeUnicodeEscapes(input: string): string {
-  let s = input;
-  s = s.replace(/\\\\u([0-9a-fA-F]{4})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
-  s = s.replace(/\\u([0-9a-fA-F]{4})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
-  return s;
+  return input.replace(/\\(\\u[0-9a-fA-F]{4}|u[0-9a-fA-F]{4})/gi, (_, g: string) => {
+    if (g.startsWith('\\u')) return g;
+    return String.fromCharCode(parseInt(g.slice(1), 16));
+  });
 }
 
 function isAllAscii(s: string): boolean {

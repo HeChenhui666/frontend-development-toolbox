@@ -186,13 +186,7 @@ const Tetris: React.FC = () => {
           const newLevel = Math.floor(newLines / 10) + 1;
           setLevel(newLevel);
           dropTimeRef.current = Math.max(100, 1000 - (newLevel - 1) * 100);
-          
-          // 重新设置定时器以更新速度
-          if (gameLoopRef.current) {
-            clearInterval(gameLoopRef.current);
-          }
-          gameLoopRef.current = setInterval(dropPiece, dropTimeRef.current);
-          
+
           // 计算分数
           setScore(prevScore => {
             const newScore = prevScore + linesCleared * 100 * newLevel;
@@ -201,7 +195,7 @@ const Tetris: React.FC = () => {
             setHighScore(newHighScore);
             return newScore;
           });
-          
+
           return newLines;
         });
         
@@ -235,31 +229,31 @@ const Tetris: React.FC = () => {
   // 移动方块
   const movePiece = useCallback((dx: number, dy: number) => {
     if (gameOver || isPaused) return;
-    
+
     setCurrentPiece(prev => {
       const newX = prev.x + dx;
       const newY = prev.y + dy;
-      
-      if (!checkCollision(board, prev.shape, newX, newY)) {
+
+      if (!checkCollision(boardRef.current, prev.shape, newX, newY)) {
         return { ...prev, x: newX, y: newY };
       }
       return prev;
     });
-  }, [board, gameOver, isPaused]);
+  }, [gameOver, isPaused]);
 
   // 旋转方块
   const rotatePiece = useCallback(() => {
     if (gameOver || isPaused) return;
-    
+
     setCurrentPiece(prev => {
       const rotatedShape = rotateTetromino(prev.shape);
-      
-      if (!checkCollision(board, rotatedShape, prev.x, prev.y)) {
+
+      if (!checkCollision(boardRef.current, rotatedShape, prev.x, prev.y)) {
         return { ...prev, shape: rotatedShape };
       }
       return prev;
     });
-  }, [board, gameOver, isPaused]);
+  }, [gameOver, isPaused]);
 
   // 快速下落
   const hardDrop = useCallback(() => {

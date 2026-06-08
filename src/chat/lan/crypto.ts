@@ -58,7 +58,7 @@ export async function encryptText(key: CryptoKey, plaintext: string): Promise<st
 
 export async function decryptText(key: CryptoKey, payload: string): Promise<string> {
   const combined = b64ToU8(payload);
-  if (combined.length < 13) throw new Error('invalid payload');
+  if (combined.length < 28) throw new Error('invalid payload');
   const iv = combined.slice(0, 12);
   const ct = combined.slice(12);
   const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);

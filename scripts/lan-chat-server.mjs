@@ -53,7 +53,10 @@ wss.on('listening', () => {
   console.log(`[lan-chat-server] ws://${HOST}:${PORT} (cipher 由客户端加密，本服务不读取明文)`);
 });
 
+wss.on('error', (err) => { console.error('[lan-chat-server] 服务器错误：', err); });
+
 wss.on('connection', (ws) => {
+  if (clients.size >= 100) { ws.close(1013, 'Too many connections'); return; }
   const id = randomId();
   clients.set(ws, { id, name: '匿名', rooms: new Set(), pub: null });
 
@@ -75,7 +78,7 @@ wss.on('connection', (ws) => {
 
     if (data.t === 'hello') {
       meta.name = String(data.name || '匿名').trim().slice(0, 32) || '匿名';
-      if (typeof data.pub === 'string' && data.pub.length > 0) {
+      if (typeof data.pub === 'string' && data.pub.length > 0 && data.pub.length <= 200) {
         meta.pub = data.pub;
       }
       broadcast({ t: 'peer', peer: { id: meta.id, name: meta.name, pub: meta.pub } }, (w) => w !== ws);
@@ -97,15 +100,17 @@ wss.on('connection', (ws) => {
     }
 
     if (data.t === 'room' && data.room && typeof data.cipher === 'string') {
+      if (data.cipher.length > 65536) { send(ws, { t: 'error', msg: 'cipher too large' }); return; }
       const room = sanitizeRoom(data.room);
       if (!meta.rooms.has(room)) return;
       broadcast(
         { t: 'room', from: meta.id, room, cipher: data.cipher },
-        (w, m) => m.rooms.has(room)
+        (w, m) => m.rooms.has(room) && w !== ws
       );
     }
 
     if (data.t === 'dm' && data.to && typeof data.cipher === 'string') {
+      if (data.cipher.length > 65536) { send(ws, { t: 'error', msg: 'cipher too large' }); return; }
       for (const [w, m] of clients) {
         if (m.id === data.to) {
           send(w, { t: 'dm', from: meta.id, cipher: data.cipher });
@@ -115,11 +120,13 @@ wss.on('connection', (ws) => {
     }
   });
 
+  ws.on('error', (err) => { console.error('[lan-chat-server] 客户端错误：', err); });
+
   ws.on('close', () => {
     const m = clients.get(ws);
+    clients.delete(ws);
     if (m) {
       broadcast({ t: 'peer_left', id: m.id });
     }
-    clients.delete(ws);
   });
 });

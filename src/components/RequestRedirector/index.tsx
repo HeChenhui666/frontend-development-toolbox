@@ -95,79 +95,26 @@ const RequestRedirector: React.FC = () => {
   // 应用规则
   const handleApplyRules = async () => {
     setLoading(true);
-    console.log('[重定向] 开始应用规则...');
     try {
       // 先通知后台脚本应用规则
-      console.log('[重定向] 发送消息到后台脚本...');
       const response = await chrome.runtime.sendMessage({ type: 'APPLY_RULES' });
-      console.log('[重定向] 后台脚本响应:', response);
 
       if (response?.success) {
-        console.log('[重定向] 后台脚本成功应用规则');
         // 验证规则是否生效
         const activeRules = await chrome.declarativeNetRequest.getDynamicRules();
         const ourRules = activeRules.filter(r => r.id >= 10000 && r.id < 20000);
-        console.log('[重定向] 当前生效的规则数:', ourRules.length);
         if (ourRules.length > 0) {
-          console.log('[重定向] 生效的规则详情:', ourRules);
-          // 显示规则匹配方式，帮助调试
-          ourRules.forEach((rule, idx) => {
-            const conditionInfo = rule.condition.regexFilter
-              ? `regexFilter: ${rule.condition.regexFilter}`
-              : rule.condition.urlFilter
-                ? `urlFilter: ${rule.condition.urlFilter}`
-                : '未知匹配方式';
-            const actionInfo = (rule.action as any).redirect?.url
-              ? `重定向到: ${(rule.action as any).redirect.url}`
-              : (rule.action as any).redirect?.regexSubstitution
-                ? `正则替换: ${(rule.action as any).redirect.regexSubstitution}`
-                : '未知重定向方式';
-            const resourceTypes = rule.condition.resourceTypes?.join(', ') || '未知';
-
-            console.log(`[重定向] 规则 ${idx + 1}:`, {
-              id: rule.id,
-              priority: rule.priority,
-              匹配条件: conditionInfo,
-              重定向动作: actionInfo,
-              资源类型: resourceTypes,
-            });
-          });
           antdMessage.success(`规则已应用（${ourRules.length} 条规则生效）`);
         } else {
           antdMessage.warning('规则已应用，但当前没有启用的规则');
         }
       } else {
         // 如果消息发送失败，直接调用函数
-        console.log('[重定向] 后台脚本响应失败，直接调用函数');
         const success = await applyRulesToDeclarativeNetRequest();
-        console.log('[重定向] 直接调用结果:', success);
         if (success) {
           const activeRules = await chrome.declarativeNetRequest.getDynamicRules();
           const ourRules = activeRules.filter(r => r.id >= 10000 && r.id < 20000);
-          console.log('[重定向] 当前生效的规则数:', ourRules.length);
           if (ourRules.length > 0) {
-            console.log('[重定向] 生效的规则详情:', ourRules);
-            // 显示规则匹配方式，帮助调试
-            ourRules.forEach((rule, idx) => {
-              const conditionInfo = rule.condition.regexFilter
-                ? `regexFilter: ${rule.condition.regexFilter}`
-                : rule.condition.urlFilter
-                  ? `urlFilter: ${rule.condition.urlFilter}`
-                  : '未知匹配方式';
-              const actionInfo = (rule.action as any).redirect?.url
-                ? `重定向到: ${(rule.action as any).redirect.url}`
-                : (rule.action as any).redirect?.regexSubstitution
-                  ? `正则替换: ${(rule.action as any).redirect.regexSubstitution}`
-                  : '未知重定向方式';
-
-              console.log(`[重定向] 规则 ${idx + 1}:`, {
-                id: rule.id,
-                priority: rule.priority,
-                匹配条件: conditionInfo,
-                重定向动作: actionInfo,
-                资源类型: rule.condition.resourceTypes,
-              });
-            });
             antdMessage.success(`规则已应用（${ourRules.length} 条规则生效）`);
           } else {
             antdMessage.warning('规则已应用，但当前没有启用的规则');
@@ -184,7 +131,6 @@ const RequestRedirector: React.FC = () => {
       antdMessage.error(`应用规则失败: ${error instanceof Error ? error.message : '未知错误'}`);
     } finally {
       setLoading(false);
-      console.log('[重定向] 应用规则流程结束');
     }
   };
 

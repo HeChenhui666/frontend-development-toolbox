@@ -14,7 +14,6 @@ import {
   CheckCircleOutlined,
 } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../../utils/message';
 
 const JSONParser: React.FC = () => {
   const [inputJson, setInputJson] = useState<string>('');
@@ -132,8 +131,9 @@ const JSONParser: React.FC = () => {
   // 复制结果
   const copyResult = () => {
     if (outputJson) {
-      navigator.clipboard.writeText(outputJson);
-      antdMessage.success('已复制到剪贴板');
+      navigator.clipboard.writeText(outputJson)
+        .then(() => antdMessage.success('已复制到剪贴板'))
+        .catch(() => antdMessage.error('复制失败，请手动复制'));
     }
   };
 
