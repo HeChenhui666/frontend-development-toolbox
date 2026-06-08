@@ -43,7 +43,9 @@ const Base64Encoder: React.FC = () => {
     }
     try {
       setError('');
-      const encoded = btoa(unescape(encodeURIComponent(inputText)));
+      const bytes = new TextEncoder().encode(inputText);
+      const binary = String.fromCharCode(...bytes);
+      const encoded = btoa(binary);
       setOutputText(encoded);
       antdMessage.success('编码成功');
     } catch (err) {
@@ -61,7 +63,10 @@ const Base64Encoder: React.FC = () => {
     }
     try {
       setError('');
-      const decoded = decodeURIComponent(escape(atob(inputText.trim())));
+      const binary = atob(inputText.trim());
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const decoded = new TextDecoder().decode(bytes);
       setOutputText(decoded);
       antdMessage.success('解码成功');
     } catch (err) {
@@ -177,7 +182,9 @@ const Base64Encoder: React.FC = () => {
     try {
       const link = document.createElement('a');
       link.href = imagePreview;
-      link.download = `image-${Date.now()}.png`;
+      const mimeMatch = imagePreview.match(/^data:(image\/\w+);/);
+      const ext = mimeMatch ? mimeMatch[1].split('/')[1].replace('jpeg', 'jpg') : 'png';
+      link.download = `image-${Date.now()}.${ext}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

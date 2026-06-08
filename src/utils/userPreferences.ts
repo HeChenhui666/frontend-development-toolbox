@@ -94,13 +94,7 @@ export const getTabOrder = (): FeatureTab[] => {
           saveTabOrder(newOrder);
           return newOrder;
         }
-        // 如果顺序完整且包含所有默认标签页，直接返回
-        if (validParsed.length === DEFAULT_TAB_ORDER.length) {
-          return validParsed as FeatureTab[];
-        }
-        // 如果顺序不完整，补充缺失的标签页
-        const missing = DEFAULT_TAB_ORDER.filter(tab => !validParsed.includes(tab));
-        return [...validParsed, ...missing] as FeatureTab[];
+        return validParsed as FeatureTab[];
       }
     }
   } catch (error) {
@@ -317,9 +311,14 @@ export const importUserConfig = (jsonString: string): { success: boolean; messag
       'apiTemplates', // API模板
     ];
     
+    const jsonKeys = [TAB_ORDER_KEY, 'apiTemplates', 'app-theme'];
+
     Object.entries(data.config).forEach(([key, value]) => {
       // 只导入有效的key
       if (validKeys.includes(key) && value !== null && typeof value === 'string') {
+        if (jsonKeys.includes(key)) {
+          try { JSON.parse(value as string); } catch { return; }
+        }
         try {
           localStorage.setItem(key, value);
           importedCount++;

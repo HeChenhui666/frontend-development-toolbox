@@ -64,7 +64,7 @@ function sanitizeConfig(raw: unknown): MouseTrailStoredConfig {
   const lerpFactor = clampNum(o.lerpFactor, 0.05, 0.95, DEFAULT_MOUSE_TRAIL_CONFIG.lerpFactor);
   const gifPerfGuardEnabled = o.gifPerfGuardEnabled !== false;
   const imageDataUrl =
-    typeof o.imageDataUrl === 'string' && o.imageDataUrl.startsWith('data:')
+    typeof o.imageDataUrl === 'string' && o.imageDataUrl.startsWith('data:image/')
       ? o.imageDataUrl
       : null;
   let imageRemoteUrl: string | null = null;
@@ -156,7 +156,7 @@ function subscribeMouseTrailConfig(onChange: (config: MouseTrailStoredConfig) =>
 
 function getEffectiveImageTrailBase(config: MouseTrailStoredConfig): string | null {
   if (config.mode !== 'image') return null;
-  if (typeof config.imageDataUrl === 'string' && config.imageDataUrl.startsWith('data:')) {
+  if (typeof config.imageDataUrl === 'string' && config.imageDataUrl.startsWith('data:image/')) {
     return config.imageDataUrl;
   }
   if (typeof config.imageRemoteUrl === 'string') {
@@ -418,11 +418,10 @@ function mountMouseTrail(doc: Document, initialConfig: MouseTrailStoredConfig): 
       for (let i = 0; i < frameCount; i++) {
         const out = await decoder.decode({ frameIndex: i });
         const vf = out.image;
+        const durUs = Number(vf.duration ?? GIF_FRAME_FALLBACK_MS * 1000);
         const bmp = await createImageBitmap(vf);
         vf.close?.();
         frames.push(bmp);
-
-        const durUs = Number(vf.duration ?? GIF_FRAME_FALLBACK_MS * 1000);
         const durMs = Math.max(GIF_FRAME_MIN_MS, Math.round(durUs / 1000) || GIF_FRAME_FALLBACK_MS);
         durations.push(durMs);
 
@@ -647,5 +646,11 @@ export function bootMouseTrailContentScript(): void {
   };
 
   void getMouseTrailConfig().then(apply);
-  subscribeMouseTrailConfig(apply);
+  const unsubscribe = subscribeMouseTrailConfig(apply);
+
+  window.addEventListener('unload', () => {
+    unsubscribe();
+    handle?.unmount();
+    handle = null;
+  });
 }

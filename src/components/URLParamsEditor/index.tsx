@@ -44,10 +44,12 @@ const parseQueryStringToParams = (queryString: string): URLParam[] => {
   const paramsArray: URLParam[] = [];
   if (!queryString) return paramsArray;
   queryString.split('&').forEach((param) => {
-    const [key, value = ''] = param.split('=');
+    const eqIdx = param.indexOf('=');
+    const key = eqIdx >= 0 ? param.slice(0, eqIdx) : param;
+    const rawValue = eqIdx >= 0 ? param.slice(eqIdx + 1) : '';
     if (key) {
-      try { paramsArray.push({ key: decodeURIComponent(key), value: decodeURIComponent(value) }); }
-      catch { paramsArray.push({ key, value }); }
+      try { paramsArray.push({ key: decodeURIComponent(key), value: decodeURIComponent(rawValue) }); }
+      catch { paramsArray.push({ key, value: rawValue }); }
     }
   });
   return paramsArray;

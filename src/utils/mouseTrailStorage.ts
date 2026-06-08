@@ -60,7 +60,7 @@ function sanitizeConfig(raw: unknown): MouseTrailStoredConfig {
   const lerpFactor = clampNum(o.lerpFactor, 0.05, 0.95, DEFAULT_MOUSE_TRAIL_CONFIG.lerpFactor);
   const gifPerfGuardEnabled = o.gifPerfGuardEnabled !== false;
   const imageDataUrl =
-    typeof o.imageDataUrl === 'string' && o.imageDataUrl.startsWith('data:')
+    typeof o.imageDataUrl === 'string' && o.imageDataUrl.startsWith('data:image/')
       ? o.imageDataUrl
       : null;
   let imageRemoteUrl = sanitizeImageRemoteUrl(o.imageRemoteUrl);
@@ -97,7 +97,7 @@ function clampNum(v: unknown, min: number, max: number, fallback: number): numbe
 /** 当前用于拖尾显示的图片地址（data: 或 http(s)），无则 null */
 export function getEffectiveImageTrailBase(config: MouseTrailStoredConfig): string | null {
   if (config.mode !== 'image') return null;
-  if (typeof config.imageDataUrl === 'string' && config.imageDataUrl.startsWith('data:')) {
+  if (typeof config.imageDataUrl === 'string' && config.imageDataUrl.startsWith('data:image/')) {
     return config.imageDataUrl;
   }
   if (typeof config.imageRemoteUrl === 'string') {

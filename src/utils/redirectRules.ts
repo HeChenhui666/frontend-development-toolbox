@@ -53,7 +53,7 @@ export async function addRedirectRule(rule: Omit<RedirectRule, 'id' | 'createdAt
     const rules = await getRedirectRules();
     const newRule: RedirectRule = {
       ...rule,
-      id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `rule_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -164,6 +164,13 @@ export function validateRule(rule: Partial<RedirectRule>): { valid: boolean; err
     } catch (e) {
       return { valid: false, error: '源正则表达式格式无效' };
     }
+    // 正则模式：验证目标URL协议安全性
+    if (rule.target) {
+      const allowedProtocols = ['http://', 'https://', 'ws://', 'wss://'];
+      if (!allowedProtocols.some(p => rule.target!.startsWith(p))) {
+        return { valid: false, error: '目标 URL 必须使用 http/https/ws/wss 协议' };
+      }
+    }
   }
   
   return { valid: true };
@@ -198,6 +205,9 @@ function convertPatternToRegex(pattern: string): string {
   regexPattern = regexPattern
     .replace(/\*\*/g, '___DOUBLE_STAR___') // 临时标记双星号
     .replace(/\*/g, '___SINGLE_STAR___'); // 临时标记单星号
+
+  // 转义正则特殊字符（排除已标记的通配符占位符）
+  regexPattern = regexPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
   
   // 特殊处理：如果以 /** 开头（现在是 /___DOUBLE_STAR___），应该匹配协议和域名部分
   if (regexPattern.startsWith('/___DOUBLE_STAR___')) {
@@ -342,9 +352,6 @@ export async function applyRulesToDeclarativeNetRequest(): Promise<boolean> {
       await chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: ourRuleIds,
       });
-      // 等待一下确保移除完成
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
       // 验证是否真的移除了
       const verifyRemoved = await chrome.declarativeNetRequest.getDynamicRules();
       const remainingIds = verifyRemoved

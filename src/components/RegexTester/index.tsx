@@ -106,9 +106,25 @@ const RegexTester: React.FC = () => {
     }
   }, [regexPattern, flags]);
 
+  const toggleFlag = useCallback((flag: string, checked: boolean) => {
+    const set = new Set(flags.split('').filter(f => f));
+    if (checked) set.add(flag);
+    else set.delete(flag);
+    setFlags([...set].join(''));
+  }, [flags]);
+
   const testRegex = useCallback(() => {
     if (!regexPattern.trim()) { setError('请输入正则表达式'); setIsMatch(null); setIsValid(true); return; }
     if (!testText.trim()) { setError('请输入测试文本'); setIsMatch(null); setIsValid(true); return; }
+    const REDOS_PATTERN = /(\(.*[+*?]\).*[+*?]|\(\?:.*[+*?]\).*[+*?])/;
+    if (REDOS_PATTERN.test(regexPattern)) {
+      antdMessage.warning('检测到可能导致灾难性回溯的正则表达式，已阻止执行');
+      return;
+    }
+    if (testText.length > 50000) {
+      antdMessage.warning('测试文本过长（最大 50000 字符），请缩短后重试');
+      return;
+    }
     try {
       setError('');
       setIsValid(true);
@@ -125,6 +141,15 @@ const RegexTester: React.FC = () => {
     if (!testText.trim()) { setActionResult(''); return; }
     const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
     if (!preset || !preset.hasAction || !preset.actionType) { setActionResult(''); return; }
+    const REDOS_PATTERN = /(\(.*[+*?]\).*[+*?]|\(\?:.*[+*?]\).*[+*?])/;
+    if (REDOS_PATTERN.test(regexPattern)) {
+      antdMessage.warning('检测到可能导致灾难性回溯的正则表达式，已阻止执行');
+      return;
+    }
+    if (testText.length > 50000) {
+      antdMessage.warning('测试文本过长（最大 50000 字符），请缩短后重试');
+      return;
+    }
     try {
       const regex = new RegExp(preset.pattern, flags);
       let result = '';
@@ -135,6 +160,10 @@ const RegexTester: React.FC = () => {
           if (flags.includes('g')) {
             const gr = new RegExp(preset.pattern, flags);
             while ((match = gr.exec(testText)) !== null) {
+              if (matches.length >= 10000) {
+                antdMessage.warning('匹配结果超过 10000 条，已截断');
+                break;
+              }
               matches.push(match[0]);
               if (match[0].length === 0) gr.lastIndex++;
             }
@@ -235,9 +264,9 @@ const RegexTester: React.FC = () => {
         <div className="rx-section-header">
           <span className="rx-label">正则表达式</span>
           <div className="rx-flags">
-            <Checkbox checked={flags.includes('g')} onChange={(e) => setFlags(e.target.checked ? flags.replace(/[im]/g, '') + 'g' : flags.replace(/g/g, ''))}>g</Checkbox>
-            <Checkbox checked={flags.includes('i')} onChange={(e) => setFlags(e.target.checked ? flags + 'i' : flags.replace(/i/g, ''))}>i</Checkbox>
-            <Checkbox checked={flags.includes('m')} onChange={(e) => setFlags(e.target.checked ? flags + 'm' : flags.replace(/m/g, ''))}>m</Checkbox>
+            <Checkbox checked={flags.includes('g')} onChange={(e) => toggleFlag('g', e.target.checked)}>g</Checkbox>
+            <Checkbox checked={flags.includes('i')} onChange={(e) => toggleFlag('i', e.target.checked)}>i</Checkbox>
+            <Checkbox checked={flags.includes('m')} onChange={(e) => toggleFlag('m', e.target.checked)}>m</Checkbox>
           </div>
         </div>
         <Space.Compact style={{ width: '100%' }}>

@@ -98,7 +98,6 @@
       const sr = node.shadowRoot;
       if (sr) {
         for (const c of sr.querySelectorAll('*')) {
-          stripHandlerAttrs(c);
           stack.push(c);
         }
       }
@@ -132,7 +131,7 @@
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: [...HANDLER_ATTRS, 'style'],
+      attributeFilter: [...HANDLER_ATTRS],
     });
   }
 

@@ -134,7 +134,7 @@ const Snake: React.FC = () => {
         gameLoopRef.current = null;
       }
     };
-  }, [gameOver, isPaused, score]);
+  }, [gameOver, isPaused]);
 
   // 处理方向改变
   const changeDirection = useCallback((newDirection: Direction) => {
@@ -196,13 +196,16 @@ const Snake: React.FC = () => {
   // 重新开始游戏
   const handleRestart = () => {
     const initialSnake = INITIAL_SNAKE;
+    const newFood = generateFood(initialSnake);
     setSnake(initialSnake);
-    setFood(generateFood(initialSnake));
+    setFood(newFood);
     setDirection(INITIAL_DIRECTION);
     setScore(0);
     setGameOver(false);
     setIsPaused(false);
     directionRef.current = INITIAL_DIRECTION;
+    snakeRef.current = initialSnake;
+    foodRef.current = newFood;
   };
 
   // 获取方向箭头

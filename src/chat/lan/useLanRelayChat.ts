@@ -182,9 +182,9 @@ export function useLanRelayChat() {
       const list = [...(next[key] || [])];
       list.push({
         ...line,
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       });
-      next[key] = list;
+      next[key] = list.length > 500 ? list.slice(-500) : list;
       return next;
     });
   }, []);
@@ -342,6 +342,11 @@ export function useLanRelayChat() {
     const url = wsUrl.trim();
     if (!url) {
       antdMessage.warning('请填写 WebSocket 地址');
+      return;
+    }
+    if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+      setLastError('WebSocket 地址必须以 ws:// 或 wss:// 开头');
+      antdMessage.warning('WebSocket 地址必须以 ws:// 或 wss:// 开头');
       return;
     }
     if (connection === 'connecting') return;

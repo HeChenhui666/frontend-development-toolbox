@@ -109,7 +109,6 @@ class TranslateBubble {
         if (message.type === 'TOGGLE_PAGE_TRANSLATE') {
           this.setEnabled(message.enabled);
         }
-        return true; // 保持消息通道开放
       });
     }
     
@@ -164,13 +163,6 @@ class TranslateBubble {
 
       // 如果选中的文本为空，隐藏按钮和气泡
       if (!selectedText) {
-        this.hideTriggerButton();
-        this.hideBubble();
-        return;
-      }
-
-      // 如果选中的文本太短，不显示按钮
-      if (selectedText.length < 1) {
         this.hideTriggerButton();
         this.hideBubble();
         return;

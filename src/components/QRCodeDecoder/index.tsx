@@ -40,6 +40,7 @@ function decodeWithJsQRSafe(
 
 const QRCodeDecoder: React.FC = () => {
   const [decodedResults, setDecodedResults] = useState<QRCodeResult[]>([]);
+  const decodedResultsRef = useRef<QRCodeResult[]>([]);
   const [error, setError] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -62,6 +63,7 @@ const QRCodeDecoder: React.FC = () => {
 
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith('image/')) { setError('请选择图片文件'); return false; }
+    if (file.size > 20 * 1024 * 1024) { setError('图片文件大小不能超过 20MB'); return false; }
     setError('');
     setDecodedResults([]);
     const reader = new FileReader();
@@ -120,10 +122,12 @@ const QRCodeDecoder: React.FC = () => {
       }
       const uniqueResults = results.filter((r, i, self) => i === self.findIndex((x) => x.data === r.data));
       if (uniqueResults.length > 0) {
+        decodedResultsRef.current = uniqueResults;
         setDecodedResults(uniqueResults);
         setError('');
         antdMessage.success(`成功识别 ${uniqueResults.length} 个二维码`);
       } else {
+        decodedResultsRef.current = [];
         setDecodedResults([]);
         setError('未检测到二维码，请确保图片清晰且包含有效的二维码');
       }
@@ -133,14 +137,19 @@ const QRCodeDecoder: React.FC = () => {
   };
 
   const copyDecodedText = (text: string) => {
-    if (text) { navigator.clipboard.writeText(text); antdMessage.success('已复制到剪贴板'); }
+    if (text) {
+      navigator.clipboard.writeText(text)
+        .then(() => antdMessage.success('已复制到剪贴板'))
+        .catch(() => antdMessage.error('复制失败，请手动复制'));
+    }
   };
 
   const copyAllDecodedText = () => {
     if (decodedResults.length > 0) {
       const allText = decodedResults.map((r, i) => `二维码 ${i + 1}:\n${r.data}`).join('\n\n');
-      navigator.clipboard.writeText(allText);
-      antdMessage.success('已复制所有结果到剪贴板');
+      navigator.clipboard.writeText(allText)
+        .then(() => antdMessage.success('已复制所有结果到剪贴板'))
+        .catch(() => antdMessage.error('复制失败，请手动复制'));
     }
   };
 
@@ -229,9 +238,13 @@ const QRCodeDecoder: React.FC = () => {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const code = decodeWithJsQRSafe(imageData);
     if (code) {
-      const existingResult = decodedResults.find((r) => r.data === code.data);
+      const existingResult = decodedResultsRef.current.find((r) => r.data === code.data);
       if (!existingResult) {
-        setDecodedResults((prev) => [...prev, { data: code.data, location: code.location }]);
+        setDecodedResults((prev) => {
+          const next = [...prev, { data: code.data, location: code.location }];
+          decodedResultsRef.current = next;
+          return next;
+        });
         setError('');
         setImagePreview(canvas.toDataURL('image/png'));
         antdMessage.success('二维码识别成功');

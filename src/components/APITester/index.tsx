@@ -1,13 +1,14 @@
 // src/components/APITester/index.tsx
 import { useState, useEffect } from 'react';
-import { 
-  Button, 
-  Input, 
-  Select, 
-  Space, 
-  Typography, 
+import {
+  Button,
+  Input,
+  Select,
+  Space,
+  Typography,
   message,
-  Popconfirm
+  Popconfirm,
+  Modal,
 } from 'antd';
 import { SendOutlined, SaveOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import './index.css';
@@ -261,35 +262,46 @@ const APITester = () => {
       return;
     }
 
-    const templateName = prompt('请输入模板名称:');
-    if (!templateName) return;
-
-    const newTemplate: Template = {
-      id: `template-${Date.now()}`,
-      name: templateName,
-      method,
-      url,
-      headers: [...headers],
-      body,
-      bodyType
-    };
-    
-    const updated = [...templates, newTemplate];
-    
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ apiTemplates: updated }, () => {
-        setTemplates(updated);
-        message.success('模板已保存');
-      });
-    } else {
-      try {
-        localStorage.setItem('apiTemplates', JSON.stringify(updated));
-        setTemplates(updated);
-        message.success('模板已保存');
-      } catch (e) {
-        message.error('保存失败');
-      }
-    }
+    let inputValue = '';
+    Modal.confirm({
+      title: '保存模板',
+      content: (
+        <Input
+          placeholder="请输入模板名称"
+          onChange={(e) => { inputValue = e.target.value; }}
+          autoFocus
+        />
+      ),
+      onOk: () => {
+        if (!inputValue.trim()) return Promise.reject();
+        const newTemplate: Template = {
+          id: `template-${Date.now()}`,
+          name: inputValue.trim(),
+          method,
+          url,
+          headers: [...headers],
+          body,
+          bodyType,
+        };
+        const updated = [...templates, newTemplate];
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ apiTemplates: updated }, () => {
+            setTemplates(updated);
+            message.success('模板已保存');
+          });
+        } else {
+          try {
+            localStorage.setItem('apiTemplates', JSON.stringify(updated));
+            setTemplates(updated);
+            message.success('模板已保存');
+          } catch (e) {
+            message.error('保存失败');
+          }
+        }
+      },
+      okText: '保存',
+      cancelText: '取消',
+    });
   };
 
   // 删除模板
@@ -368,8 +380,15 @@ const APITester = () => {
       }
 
       let requestBody: string | undefined;
-      if (body) {
+      if (body && !['GET', 'HEAD'].includes(method)) {
         if (bodyType === 'json') {
+          try {
+            JSON.parse(body);
+          } catch {
+            message.warning('请求 body 不是合法的 JSON 格式，请检查后再发送');
+            setLoading(false);
+            return;
+          }
           requestBody = body;
         } else if (bodyType === 'form') {
           requestBody = new URLSearchParams(body.split('\n').map(line => {
@@ -384,8 +403,8 @@ const APITester = () => {
       const config: RequestInit = {
         method,
         headers: headersObj,
-        credentials: 'include', // 自动携带当前页面的Cookie
-        body: requestBody,
+        credentials: 'include',
+        body: ['GET', 'HEAD'].includes(method) ? undefined : requestBody,
       };
 
       const res = await fetch(url, config);

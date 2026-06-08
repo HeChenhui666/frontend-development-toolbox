@@ -273,7 +273,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 chrome.notifications.onClicked.addListener(() => {
-  openSidePanelGuide();
+  void openSidePanelGuide();
 });
 
 chrome.windows.onBoundsChanged.addListener((window) => {
@@ -298,12 +298,7 @@ chrome.windows.onRemoved.addListener((windowId) => {
 // 监听存储变化，自动更新规则
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes['redirect-rules']) {
-    // 规则发生变化，延迟重新应用（避免频繁更新）
-    setTimeout(() => {
-      applyRulesToDeclarativeNetRequest().catch((error) => {
-        console.error('自动应用规则失败:', error);
-      });
-    }, 300);
+    void applyRulesToDeclarativeNetRequest();
   }
 });
 
