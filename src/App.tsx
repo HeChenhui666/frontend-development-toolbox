@@ -541,7 +541,9 @@ const App: React.FC = () => {
           )}
           <div className="content">
             <Suspense fallback={<div className="loading">加载中…</div>}>
-              {showSettings ? (
+              {showEasterEgg ? (
+                <EasterEgg onClose={handleCloseEasterEgg} />
+              ) : showSettings ? (
                 <Settings onClose={() => setShowSettings(false)} embedded={true} />
               ) : isTabPending ? null : (
                 <ActiveTabPanel
@@ -553,11 +555,6 @@ const App: React.FC = () => {
             </Suspense>
           </div>
         </main>
-
-        {/* ── 弹层 ────────────────────────────────── */}
-        <Suspense fallback={null}>
-          {showEasterEgg && <EasterEgg onClose={handleCloseEasterEgg} />}
-        </Suspense>
       </div>
     </ConfigProvider>
   );

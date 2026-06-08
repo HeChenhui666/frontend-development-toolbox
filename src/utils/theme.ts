@@ -111,7 +111,8 @@ export interface Theme {
       main: string;
       subtle: string;
       text: string;
-      header: string;
+      surface: string;
+      border?: string;
     };
   };
 }
@@ -233,9 +234,8 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #FF7F50 0%, #FFA500 100%)',
         subtle: 'linear-gradient(135deg, rgba(255, 127, 80, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)',
-        surface: 'linear-gradient(180deg, #FFF5F0 0%, #FFFBF8 100%)',
+        surface: 'linear-gradient(160deg, #FFF5F0 0%, #FFFBEB 100%)',
         text: 'linear-gradient(to right, #FF7F50, #FF4500)',
-        // 新增：边框渐变，用于特殊卡片
         border: 'linear-gradient(135deg, #FF7F50, #FFA500)',
       }
     },
@@ -282,7 +282,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)',
         subtle: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%)',
-        surface: 'linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%)',
+        surface: 'linear-gradient(160deg, #EFF6FF 0%, #ECFEFF 100%)',
         text: 'linear-gradient(to right, #2563EB, #06B6D4)',
         border: 'linear-gradient(135deg, #2563EB, #06B6D4)',
       }
@@ -330,7 +330,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
         subtle: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%)',
-        surface: 'linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%)',
+        surface: 'linear-gradient(160deg, #FAF5FF 0%, #FFF0F9 100%)',
         text: 'linear-gradient(to right, #8B5CF6, #EC4899)',
         border: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
       }
@@ -378,7 +378,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%)',
         subtle: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(20, 184, 166, 0.05) 100%)',
-        surface: 'linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 100%)',
+        surface: 'linear-gradient(160deg, #F0F9FF 0%, #F0FDFA 100%)',
         text: 'linear-gradient(to right, #0284C7, #0D9488)',
         border: 'linear-gradient(135deg, #0EA5E9, #14B8A6)',
       }
@@ -666,7 +666,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #C084FC 100%)',
         subtle: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(192, 132, 252, 0.1) 100%)',
-        surface: 'linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%)',
+        surface: 'linear-gradient(160deg, #EDE9FE 0%, #F7F0FF 100%)',
         text: 'linear-gradient(to right, #6D28D9, #A78BFA)',
         border: 'linear-gradient(135deg, #7C3AED, #C084FC)',
       }
@@ -713,11 +713,10 @@ export const themes: Record<ThemeName, Theme> = {
       errorBackground: '#FEF2F2',
       gradients: {
         // Ocher to Green gradient for large areas
-        main: 'linear-gradient(135deg, #B45309 0%, #D97706 40%, #15803D 100%)', 
+        main: 'linear-gradient(135deg, #B45309 0%, #D97706 40%, #15803D 100%)',
         subtle: 'linear-gradient(135deg, rgba(180, 83, 9, 0.1) 0%, rgba(21, 128, 61, 0.08) 100%)',
-        surface: 'linear-gradient(135deg, #FEF3C7 0%, #FEFCE8 100%)',
+        surface: 'linear-gradient(160deg, #FEF3C7 0%, #F0FFF4 100%)',
         text: 'linear-gradient(to right, #92400E, #15803D)',
-        // Border gradient explicitly shows the transition from Gold/Ocher to Green
         border: 'linear-gradient(135deg, #D97706, #15803D)',
       }
     },
@@ -812,7 +811,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%)',
         subtle: 'linear-gradient(135deg, rgba(3, 105, 161, 0.1) 0%, rgba(14, 165, 233, 0.05) 100%)',
-        surface: 'linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 100%)',
+        surface: 'linear-gradient(180deg, #E8F4FD 0%, #F5FBFF 100%)',
         text: 'linear-gradient(to right, #075985, #0284C7)',
         border: 'linear-gradient(135deg, #0369A1, #0EA5E9)',
       }
@@ -860,7 +859,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%)',
         subtle: 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-        surface: 'linear-gradient(180deg, #F1F5F9 0%, #F8FAFC 100%)',
+        surface: 'linear-gradient(160deg, #F0F4FB 0%, #F5F8FF 100%)',
         text: 'linear-gradient(to right, #1E40AF, #3B82F6)',
         border: 'linear-gradient(135deg, #1E40AF, #3B82F6)',
       }
@@ -908,7 +907,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #4D7C0F 0%, #65A30D 100%)',
         subtle: 'linear-gradient(135deg, rgba(101, 163, 13, 0.1) 0%, rgba(132, 204, 22, 0.05) 100%)',
-        surface: 'linear-gradient(135deg, #ECFCCB 0%, #F7FEE7 100%)',
+        surface: 'linear-gradient(160deg, #ECFCCB 0%, #F7FFF5 100%)',
         text: 'linear-gradient(to right, #4D7C0F, #65A30D)',
         border: 'linear-gradient(135deg, #65A30D, #84CC16)',
       }
@@ -954,9 +953,9 @@ export const themes: Record<ThemeName, Theme> = {
       error: '#991B1B',
       errorBackground: '#FEF2F2',
       gradients: {
-        main: 'linear-gradient(135deg, #991B1B 0%, #B91C1C 50%, #F59E0B 100%)', 
+        main: 'linear-gradient(135deg, #991B1B 0%, #B91C1C 50%, #F59E0B 100%)',
         subtle: 'linear-gradient(135deg, rgba(185, 28, 28, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
-        surface: 'linear-gradient(135deg, #FEE2E2 0%, #FEF2F2 100%)',
+        surface: 'linear-gradient(160deg, #FEE2E2 0%, #FFFDF0 100%)',
         text: 'linear-gradient(to right, #991B1B, #B91C1C)',
         border: 'linear-gradient(135deg, #B91C1C, #F59E0B)',
       }
@@ -1004,7 +1003,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #64748B 0%, #94A3B8 100%)',
         subtle: 'linear-gradient(135deg, rgba(100, 116, 139, 0.08) 0%, rgba(148, 163, 184, 0.04) 100%)',
-        surface: 'linear-gradient(180deg, #F1F5F9 0%, #F8FAFC 100%)',
+        surface: 'linear-gradient(160deg, #EEF3F8 0%, #F5F9FC 100%)',
         text: 'linear-gradient(to right, #475569, #64748B)',
         border: 'linear-gradient(135deg, #64748B, #94A3B8)',
       }
@@ -1052,7 +1051,7 @@ export const themes: Record<ThemeName, Theme> = {
       gradients: {
         main: 'linear-gradient(135deg, #581C87 0%, #7E22CE 50%, #BE185D 100%)',
         subtle: 'linear-gradient(135deg, rgba(126, 34, 206, 0.15) 0%, rgba(190, 24, 93, 0.1) 100%)',
-        surface: 'linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%)',
+        surface: 'linear-gradient(160deg, #F3E8FF 0%, #FFF0F8 100%)',
         text: 'linear-gradient(to right, #6B21A8, #BE185D)',
         border: 'linear-gradient(135deg, #7E22CE, #BE185D)',
       }
@@ -1128,9 +1127,9 @@ export const applyTheme = (theme: ThemeName): void => {
     '--theme-gradient-main': gradients.main,
     '--theme-gradient-subtle': gradients.subtle,
     '--theme-gradient-text': gradients.text,
-    '--theme-gradient-header': gradients.header,
+    '--theme-gradient-header': gradients.surface,
     '--theme-accentGradient': gradients.main,
-    '--theme-backgroundGradient': gradients.header,
+    '--theme-backgroundGradient': gradients.surface,
   };
 
   Object.entries(game2048Palette).forEach(([key, value]) => {
@@ -1212,9 +1211,9 @@ export const applyTheme = (theme: ThemeName): void => {
     root.style.removeProperty('--theme-header-gradient');
   }
 
-  // 渐变色 tokens（表面/边框由计算得出；主色调/背景已在 derivedVariables 中使用 gradients 字段设置）
-  const surfaceShift = mixHexColors(surface, surfaceHover, 0.6);
-  root.style.setProperty('--theme-surfaceGradient', `linear-gradient(135deg, ${surface} 0%, ${surfaceShift} 100%)`);
+  // 渐变色 tokens：侧边栏渐变融入 12% secondary 色，让双色主题的次色在侧边栏底部可见
+  const surfaceShift = mixHexColors(surface, secondary, 0.88);
+  root.style.setProperty('--theme-surfaceGradient', `linear-gradient(180deg, ${surface} 0%, ${surfaceShift} 100%)`);
   root.style.setProperty('--theme-borderGradient', `linear-gradient(135deg, ${border} 0%, ${borderLight} 100%)`);
 
   root.removeAttribute('data-theme');

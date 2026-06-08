@@ -1,191 +1,180 @@
-/* 时间戳转换器样式 */
 .timestamp-converter {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   height: 100%;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.current-time-section {
-  padding: 10px;
-  background: var(--theme-surface, #f8f9fa);
-  border-radius: 3px;
-  border: 1.5px solid var(--theme-primary, #667eea);
+/* ── 实时时钟条 ── */
+.ts-clock-strip {
+  padding: 10px 12px;
+  background: var(--theme-gradient-main);
+  border-radius: var(--app-radius);
+  color: #fff;
   flex-shrink: 0;
 }
 
-.current-time-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--theme-primary, #667eea);
+.ts-clock-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.current-time-display {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.time-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px;
-  background: var(--theme-surfaceElevated, rgba(255, 255, 255, 0.7));
-  border-radius: 3px;
-}
-
-.time-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--theme-textSecondary, #475569);
-  min-width: 70px;
-}
-
-.time-value {
-  flex: 1;
-  font-size: 11px;
+.ts-clock-time {
+  font-size: 15px;
+  font-weight: 700;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: var(--theme-primary, #1e40af);
-  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-.copy-time-btn {
-  padding: 6px;
-  border: none;
-  background: transparent;
-  color: var(--theme-text, #334155);
-  cursor: pointer;
-  font-size: 12px;
-  border-radius: 3px;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.copy-time-btn:hover {
-  background: var(--theme-surfaceHover, #e2e8f0);
-}
-
-.converter-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-  background: var(--theme-surface, #f8f9fa);
-  border-radius: 3px;
-  border: 1px solid var(--theme-border, #e2e8f0);
-  flex-shrink: 0;
-}
-
-.converter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.use-current-buttons {
+.ts-clock-stamps {
   display: flex;
   gap: 6px;
 }
 
-.converter-header label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--theme-text, #334155);
+.ts-stamp-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  padding: 4px 7px;
+  min-width: 0;
 }
 
-.use-current-btn {
-  padding: 6px;
-  background: var(--theme-buttonPrimary, #667eea);
-  color: var(--theme-buttonText, white);
-  border: none;
-  border-radius: 3px;
+.ts-stamp-label {
+  font-size: 10px;
+  opacity: 0.8;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.ts-stamp-value {
+  font-size: 10px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 转换区块 ── */
+.ts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--app-radius);
+  flex-shrink: 0;
+}
+
+.ts-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ts-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-primary);
+  flex-shrink: 0;
+}
+
+.ts-fill-group {
+  display: flex;
+  gap: 4px;
+}
+
+.ts-fill-btn {
+  padding: 3px 8px;
+  background: var(--theme-primarySoft);
+  color: var(--theme-active);
+  border: 1px solid var(--theme-primaryOutline);
+  border-radius: var(--app-radius);
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: background 0.15s ease;
+  white-space: nowrap;
 }
 
-.use-current-btn:hover {
-  background: var(--theme-buttonPrimaryHover, #5568d3);
-  transform: translateY(-1px);
+.ts-fill-btn:hover {
+  background: var(--theme-primarySoftHover);
 }
 
-.converter-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.converter-input {
-  padding: 6px;
-  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 3px;
-  font-size: 11px;
-  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  transition: all 0.25s ease;
-  background: var(--theme-inputBackground, #ffffff);
-  color: var(--theme-inputText, #334155);
-}
-
-.converter-input:focus {
-  outline: none;
-  border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
-}
-
-.converted-result {
+/* ── 结果行 ── */
+.ts-result-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px;
-  background: var(--theme-surface, #f8f9fa);
-  border-radius: 3px;
-  border: 1px solid var(--theme-borderLight, #cbd5e1);
+  padding: 5px 8px;
+  background: var(--theme-surfaceElevated);
+  border-radius: var(--app-radius);
+  border: 1px solid var(--theme-borderLight);
 }
 
-.result-label {
-  font-size: 11px;
+.ts-result-label {
+  font-size: 10px;
   font-weight: 600;
-  color: var(--theme-primary, #667eea);
+  color: var(--theme-active);
   flex-shrink: 0;
+  min-width: 26px;
 }
 
-.result-value {
+.ts-result-value {
   flex: 1;
   font-size: 11px;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: var(--theme-primary, #1e40af);
+  color: var(--theme-active);
   font-weight: 600;
   word-break: break-all;
 }
 
-.copy-result-btn {
-  padding: 6px;
+/* ── 复制按钮 ── */
+.ts-copy-btn {
+  padding: 3px 4px;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  background: transparent;
-  color: var(--theme-text, #334155);
+  color: inherit;
   cursor: pointer;
-  font-size: 12px;
-  border-radius: 3px;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.copy-result-btn:hover {
-  background: var(--theme-surfaceHover, #e2e8f0);
-}
-
-.error {
-  padding: 6px;
-  background: var(--theme-errorBackground, #fff5f5);
-  color: var(--theme-error, #c62828);
   border-radius: 3px;
   font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+
+.ts-clock-strip .ts-copy-btn:hover { background: rgba(255, 255, 255, 0.35); }
+
+.ts-copy-btn--inline {
+  background: transparent;
+  color: var(--theme-textMuted);
+}
+
+.ts-copy-btn--inline:hover {
+  background: var(--theme-activeHover);
+  color: var(--theme-active);
+}
+
+/* ── 错误 ── */
+.error {
+  padding: 6px 10px;
+  background: var(--theme-errorBackground, #fff5f5);
+  color: var(--theme-error, #c62828);
+  border-radius: var(--app-radius);
+  font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
+  flex-shrink: 0;
 }

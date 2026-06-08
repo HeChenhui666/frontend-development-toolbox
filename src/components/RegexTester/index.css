@@ -1,288 +1,108 @@
 .regex-tester {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   height: 100%;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.preset-section {
+/* ── 基础行 ── */
+.rx-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── 预设描述 ── */
+.rx-preset-desc {
+  font-size: 10px;
+  color: var(--theme-textSecondary);
+  padding: 4px 8px;
+  background: var(--theme-surfaceSunken);
+  border-radius: var(--app-radius);
+  border: 1px solid var(--theme-borderMuted);
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+/* ── 功能区块 ── */
+.rx-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
+  padding: 8px 10px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--app-radius);
   flex-shrink: 0;
 }
 
-.section-header {
+.rx-section-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: space-between;
 }
 
-.section-header label {
+.rx-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary);
 }
 
-.preset-select {
-  width: 100%;
-}
-
-.preset-select .ant-select-selector {
-  font-size: 11px;
-}
-
-.preset-description {
-  font-size: 10px;
-  color: var(--theme-textSecondary, #64748b);
-  padding: 6px;
-  background: var(--theme-surfaceSunken, #f8f9fa);
-  border-radius: 3px;
-  margin-top: 6px;
-  font-style: italic;
-}
-
-.regex-input-section {
+/* ── 标志位复选框 ── */
+.rx-flags {
   display: flex;
-  flex-direction: column;
   gap: 8px;
-  flex-shrink: 0;
-}
-
-.flags-control {
-  display: flex;
-  gap: 6px;
   align-items: center;
 }
 
-.flag-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  color: var(--theme-textSecondary, #64748b);
-  cursor: pointer;
+.rx-flags .ant-checkbox-wrapper {
+  font-size: 11px !important;
+  color: var(--theme-textSecondary) !important;
 }
 
-.flag-label input[type="checkbox"] {
-  cursor: pointer;
-}
-
-.input-wrapper {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.button-group {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.regex-input {
-  flex: 1;
-  padding: 6px;
-  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 3px;
-  font-size: 11px;
-  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  transition: all 0.25s ease;
-  background: var(--theme-inputBackground, #ffffff);
-  color: var(--theme-inputText, #334155);
-}
-
-.regex-input:focus {
-  outline: none;
-  border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
-}
-
-.regex-input.error {
-  border-color: var(--theme-error, #ef4444);
-  background: var(--theme-errorBackground, #fff5f5);
-}
-.generate-btn,
-.test-btn {
-  padding: 6px;
-  background: var(--theme-buttonPrimary, #667eea);
-  color: var(--theme-buttonText, white);
-  border: none;
-  border-radius: 3px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  line-height: 1.4;
-  height: auto;
-  box-sizing: border-box;
-}
-
-.generate-btn:hover:not(:disabled),
-.test-btn:hover {
-  background: var(--theme-buttonPrimaryHover, #5568d3);
-  transform: translateY(-1px);
-}
-
-.generate-btn:active:not(:disabled),
-.test-btn:active {
-  transform: translateY(0);
-}
-
-.generate-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.test-text-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.test-textarea {
-  height: 100px;
-  min-height: 100px;
-  max-height: 200px;
-  padding: 6px;
-  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 3px;
-  font-size: 11px;
-  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  resize: vertical;
-  background: var(--theme-inputBackground, #ffffff);
-  color: var(--theme-inputText, #334155);
-  transition: all 0.25s ease;
-}
-
-.test-textarea:focus {
-  outline: none;
-  border-color: var(--theme-inputFocusBorder, #667eea);
-  box-shadow: 0 0 0 3px var(--theme-primarySoft, rgba(102, 126, 234, 0.1));
-}
-
-.error {
-  padding: 6px;
+/* ── 错误 ── */
+.rx-error {
+  padding: 5px 10px;
   background: var(--theme-errorBackground, #fff5f5);
   color: var(--theme-error, #c62828);
-  border-radius: 3px;
+  border-radius: var(--app-radius);
   font-size: 11px;
   border-left: 3px solid var(--theme-error, #c62828);
-  box-shadow: 0 2px 4px var(--theme-errorShadow, rgba(198, 40, 40, 0.1));
+  box-shadow: 0 2px 6px var(--theme-errorShadow, rgba(239, 68, 68, 0.18));
   flex-shrink: 0;
 }
 
-.results-section {
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-
-.match-result {
+/* ── 匹配结果 ── */
+.rx-match-result {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  padding: 6px;
-  border-radius: 3px;
+  padding: 6px 10px;
+  border-radius: var(--app-radius);
   font-size: 11px;
-  font-weight: 500;
-  text-align: center;
-}
-
-.match-result.success {
-  background: var(--theme-successBackground, #d1fae5);
-  color: var(--theme-success, #059669);
-}
-
-.match-result.failure {
-  background: var(--theme-errorBackground, #fee2e2);
-  color: var(--theme-error, #dc2626);
-}
-
-.result-icon {
-  font-size: 16px;
   font-weight: 600;
-}
-
-.result-text {
-  flex: 1;
-}
-
-.actions {
-  display: flex;
-  gap: 6px;
   flex-shrink: 0;
 }
 
-.clear-btn {
-  padding: 6px;
-  background: var(--theme-error, #ef4444);
-  color: white;
-  border: none;
-  border-radius: 3px;
+.rx-match-success {
+  background: var(--theme-successBackground, #ecfdf5);
+  color: var(--theme-success, #059669);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.rx-match-fail {
+  background: var(--theme-errorBackground, #fef2f2);
+  color: var(--theme-error, #dc2626);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── 占位文本 ── */
+.rx-placeholder {
   font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px var(--theme-errorShadow, rgba(239, 68, 68, 0.2));
-}
-
-.clear-btn:hover {
-  background: var(--theme-error, #dc2626);
-  opacity: 0.9;
-}
-
-/* 操作区域样式 */
-.action-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.copy-action-btn {
-  padding: 6px;
-  background: var(--theme-buttonSecondary, #64748b);
-  color: white;
-  border: none;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.copy-action-btn:hover {
-  background: var(--theme-borderStrong, #475569);
-}
-
-.action-result {
-  min-height: 100px;
-  max-height: 200px;
-  padding: 6px;
-  border: 1.5px solid var(--theme-inputBorder, #e2e8f0);
-  border-radius: 3px;
-  background: var(--theme-inputBackground, #ffffff);
-  overflow-y: auto;
-  font-size: 11px;
-  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: var(--theme-inputText, #334155);
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.action-result-content {
-  color: var(--theme-inputText, #334155);
-}
-
-.action-result-placeholder {
-  color: var(--theme-textMuted, #94a3b8);
+  color: var(--theme-textMuted);
   font-style: italic;
+  padding: 4px 0;
 }

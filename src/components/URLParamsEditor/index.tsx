@@ -3,7 +3,6 @@ import {
   Input,
   Button,
   Space,
-  Card,
   Modal,
   Popconfirm,
   message as antdMessage,
@@ -20,7 +19,6 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 import './index.css';
-import { showMessage } from '../../utils/message';
 
 const { Text } = Typography;
 import {
@@ -32,15 +30,9 @@ import {
   type PresetParam,
 } from '../../utils/presetParams';
 
-interface URLParam {
-  key: string;
-  value: string;
-}
-
-/** 序列化后查询串写在 `#` 之前，还是写在 hash 路由段之后（如 `#/home?a=1`） */
+interface URLParam { key: string; value: string; }
 type ParamWriteMode = 'leading' | 'fragment' | 'both';
 
-/** 从 hash（含 `#`）中拆出「无查询的 hash」与 hash 内查询串 */
 const splitHashBaseAndFragmentQuery = (hash: string): { hashBase: string; fragQS: string } => {
   if (!hash) return { hashBase: '', fragQS: '' };
   const q = hash.indexOf('?');
@@ -54,24 +46,14 @@ const parseQueryStringToParams = (queryString: string): URLParam[] => {
   queryString.split('&').forEach((param) => {
     const [key, value = ''] = param.split('=');
     if (key) {
-      try {
-        paramsArray.push({
-          key: decodeURIComponent(key),
-          value: decodeURIComponent(value),
-        });
-      } catch {
-        paramsArray.push({ key, value });
-      }
+      try { paramsArray.push({ key: decodeURIComponent(key), value: decodeURIComponent(value) }); }
+      catch { paramsArray.push({ key, value }); }
     }
   });
   return paramsArray;
 };
 
-const resolveParamWriteMode = (
-  leadingSearchHadParams: boolean,
-  fragmentSearchHadParams: boolean,
-  hashBase: string
-): ParamWriteMode => {
+const resolveParamWriteMode = (leadingSearchHadParams: boolean, fragmentSearchHadParams: boolean, hashBase: string): ParamWriteMode => {
   if (leadingSearchHadParams && fragmentSearchHadParams) return 'both';
   if (leadingSearchHadParams) return 'leading';
   if (fragmentSearchHadParams) return 'fragment';
@@ -82,7 +64,6 @@ const resolveParamWriteMode = (
 const URLParamsEditor: React.FC = () => {
   const [currentUrl, setCurrentUrl] = useState<string>('');
   const [baseUrl, setBaseUrl] = useState<string>('');
-  /** hash 中「路由」部分，不含 `?` 后的查询，如 `#/home`；无 hash 则为 `''` */
   const [hashBase, setHashBase] = useState<string>('');
   const [paramWriteMode, setParamWriteMode] = useState<ParamWriteMode>('leading');
   const [params, setParams] = useState<URLParam[]>([]);
@@ -93,52 +74,32 @@ const URLParamsEditor: React.FC = () => {
   const [newPresetName, setNewPresetName] = useState<string>('');
   const [newPresetParams, setNewPresetParams] = useState<URLParam[]>([]);
 
-  // 加载预设参数
-  useEffect(() => {
-    setPresetParams(getPresetParams());
-  }, []);
+  useEffect(() => { setPresetParams(getPresetParams()); }, []);
 
-  // 获取当前标签页URL并解析参数
   useEffect(() => {
-    // 延迟执行，避免阻塞初始渲染
     const timer = setTimeout(() => {
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0]?.url) {
-            parseURL(tabs[0].url);
-          }
+          if (tabs[0]?.url) parseURL(tabs[0].url);
         });
       }
     }, 0);
-
     return () => clearTimeout(timer);
   }, []);
 
-  // 解析URL（兼容性处理）
   const parseURL = (url: string) => {
     try {
       setError('');
       setCurrentUrl(url);
-
-      // 处理 chrome://、about: 及各类 *-extension: 扩展页（含 QQ 等 Chromium 变体可能使用的协议名）
       let isExtensionPage = false;
-      try {
-        isExtensionPage = new URL(url).protocol.toLowerCase().endsWith('-extension:');
-      } catch {
-        /* ignore */
-      }
+      try { isExtensionPage = new URL(url).protocol.toLowerCase().endsWith('-extension:'); } catch { /* ignore */ }
       if (url.startsWith('chrome://') || url.startsWith('about:') || isExtensionPage) {
         setError('当前页面不支持URL参数编辑（内置页或扩展页）');
-        setBaseUrl(url);
-        setHashBase('');
-        setParamWriteMode('leading');
+        setBaseUrl(url); setHashBase(''); setParamWriteMode('leading');
         setParams([{ key: '', value: '' }]);
         return;
       }
-
-      // 检查 URL API 支持
       if (typeof URL === 'undefined') {
-        // 降级方案：手动解析（含 `#/path?query`）
         const hashIdx = url.indexOf('#');
         const beforeHash = hashIdx >= 0 ? url.slice(0, hashIdx) : url;
         const hashFull = hashIdx >= 0 ? url.slice(hashIdx) : '';
@@ -146,404 +107,255 @@ const URLParamsEditor: React.FC = () => {
         const qIdx = beforeHash.indexOf('?');
         const pathOnly = qIdx >= 0 ? beforeHash.slice(0, qIdx) : beforeHash;
         const mainQS = qIdx >= 0 ? beforeHash.slice(qIdx + 1) : '';
-
-        const leadingSearchHadParams = Boolean(mainQS);
-        const fragmentSearchHadParams = Boolean(fragQS);
-        const mode = resolveParamWriteMode(leadingSearchHadParams, fragmentSearchHadParams, hb);
-
-        setBaseUrl(pathOnly);
-        setHashBase(hb);
-        setParamWriteMode(mode);
-
-        const fromMain = parseQueryStringToParams(mainQS);
-        const fromFrag = parseQueryStringToParams(fragQS);
-        let paramsArray: URLParam[] = [...fromMain, ...fromFrag];
-        if (paramsArray.length === 0) {
-          paramsArray = [{ key: '', value: '' }];
-        }
+        const mode = resolveParamWriteMode(Boolean(mainQS), Boolean(fragQS), hb);
+        setBaseUrl(pathOnly); setHashBase(hb); setParamWriteMode(mode);
+        let paramsArray = [...parseQueryStringToParams(mainQS), ...parseQueryStringToParams(fragQS)];
+        if (paramsArray.length === 0) paramsArray = [{ key: '', value: '' }];
         setParams(paramsArray);
         return;
       }
-
       const urlObj = new URL(url);
       setBaseUrl(`${urlObj.origin}${urlObj.pathname}`);
-
       const mainQS = urlObj.search.startsWith('?') ? urlObj.search.slice(1) : '';
       const { hashBase: hb, fragQS } = splitHashBaseAndFragmentQuery(urlObj.hash);
-      const leadingSearchHadParams = Boolean(mainQS);
-      const fragmentSearchHadParams = Boolean(fragQS);
-      const mode = resolveParamWriteMode(leadingSearchHadParams, fragmentSearchHadParams, hb);
-      setHashBase(hb);
-      setParamWriteMode(mode);
-
-      const mergeIntoParamsArray = (): URLParam[] => {
-        const fromMain = parseQueryStringToParams(mainQS);
-        const fromFrag = parseQueryStringToParams(fragQS);
-        return [...fromMain, ...fromFrag];
-      };
-
-      // 检查 URLSearchParams API 支持
-      if (typeof URLSearchParams === 'undefined') {
-        let merged = mergeIntoParamsArray();
-        if (merged.length === 0) {
-          merged = [{ key: '', value: '' }];
-        }
-        setParams(merged);
-        return;
-      }
-
-      let paramsArray: URLParam[] = mergeIntoParamsArray();
-
-      // 如果没有参数，添加一个空行方便添加
-      if (paramsArray.length === 0) {
-        paramsArray = [{ key: '', value: '' }];
-      }
-
+      const mode = resolveParamWriteMode(Boolean(mainQS), Boolean(fragQS), hb);
+      setHashBase(hb); setParamWriteMode(mode);
+      let paramsArray = [...parseQueryStringToParams(mainQS), ...parseQueryStringToParams(fragQS)];
+      if (paramsArray.length === 0) paramsArray = [{ key: '', value: '' }];
       setParams(paramsArray);
     } catch (err) {
       setError('无法解析URL，请确保是有效的HTTP/HTTPS地址');
-      console.error(err);
-      // 即使解析失败，也尝试显示原始URL
       setBaseUrl(url.split('?')[0].split('#')[0] || url);
-      setHashBase('');
-      setParamWriteMode('leading');
+      setHashBase(''); setParamWriteMode('leading');
       setParams([{ key: '', value: '' }]);
     }
   };
 
-  // 更新参数
   const updateParam = (index: number, field: 'key' | 'value', newValue: string) => {
     const newParams = [...params];
     newParams[index] = { ...newParams[index], [field]: newValue };
     setParams(newParams);
   };
 
-  // 添加新参数
-  const addParam = () => {
-    setParams([...params, { key: '', value: '' }]);
-  };
+  const addParam = () => setParams([...params, { key: '', value: '' }]);
 
-  // 删除参数
   const removeParam = (index: number) => {
     const newParams = params.filter((_, i) => i !== index);
-    // 如果删除后没有参数了，添加一个空行方便添加
-    if (newParams.length === 0) {
-      newParams.push({ key: '', value: '' });
-    }
+    if (newParams.length === 0) newParams.push({ key: '', value: '' });
     setParams(newParams);
   };
 
-  const buildUrlFromParts = (
-    pathPart: string,
-    hb: string,
-    mode: ParamWriteMode,
-    paramList: URLParam[]
-  ): string => {
+  const buildUrlFromParts = (pathPart: string, hb: string, mode: ParamWriteMode, paramList: URLParam[]): string => {
     const urlParams = new URLSearchParams();
-    paramList.forEach((param) => {
-      if (param.key.trim()) {
-        urlParams.append(param.key.trim(), param.value);
-      }
-    });
+    paramList.forEach((param) => { if (param.key.trim()) urlParams.append(param.key.trim(), param.value); });
     const queryString = urlParams.toString();
-    if (mode === 'fragment') {
-      if (!queryString) {
-        return `${pathPart}${hb}`;
-      }
-      return `${pathPart}${hb}?${queryString}`;
-    }
-    if (!queryString) {
-      return `${pathPart}${hb}`;
-    }
-    return `${pathPart}?${queryString}${hb}`;
+    if (mode === 'fragment') return queryString ? `${pathPart}${hb}?${queryString}` : `${pathPart}${hb}`;
+    return queryString ? `${pathPart}?${queryString}${hb}` : `${pathPart}${hb}`;
   };
 
-  // 生成新URL（保留 hash 路由段，并按解析时的规则把查询写在 `?` 前或写在 `#/path` 之后）
   const generateNewURL = (): string => buildUrlFromParts(baseUrl, hashBase, paramWriteMode, params);
 
-  // 更新当前标签页URL
   const updateCurrentTabURL = () => {
     try {
       const newURL = generateNewURL();
-      // 验证URL是否有效
       new URL(newURL);
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.update(tabs[0].id, { url: newURL });
-          setCurrentUrl(newURL);
-          setError('');
-        }
+        if (tabs[0]?.id) { chrome.tabs.update(tabs[0].id, { url: newURL }); setCurrentUrl(newURL); setError(''); }
       });
-    } catch (err) {
-      setError('无效的URL，请检查基础URL格式');
-    }
+    } catch { setError('无效的URL，请检查基础URL格式'); }
   };
 
-  // 在新标签页打开
   const openInNewTab = () => {
-    try {
-      const newURL = generateNewURL();
-      // 验证URL是否有效
-      new URL(newURL);
-      chrome.tabs.create({ url: newURL });
-      setError('');
-    } catch (err) {
-      setError('无效的URL，请检查基础URL格式');
-    }
+    try { const newURL = generateNewURL(); new URL(newURL); chrome.tabs.create({ url: newURL }); setError(''); }
+    catch { setError('无效的URL，请检查基础URL格式'); }
   };
 
-  // 复制新URL
   const copyNewURL = () => {
-    const newURL = generateNewURL();
-    navigator.clipboard.writeText(newURL);
+    navigator.clipboard.writeText(generateNewURL());
     antdMessage.success('URL已复制到剪贴板');
   };
 
-  // 刷新当前URL
   const refreshURL = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.url) {
-        parseURL(tabs[0].url);
-      }
+      if (tabs[0]?.url) parseURL(tabs[0].url);
     });
   };
 
-  // 打开预设管理器
-  const openPresetManager = () => {
-    setShowPresetManager(true);
-    setEditingPreset(null);
-    setNewPresetName('');
-    setNewPresetParams([{ key: '', value: '' }]);
-  };
+  const openPresetManager = () => { setShowPresetManager(true); setEditingPreset(null); setNewPresetName(''); setNewPresetParams([{ key: '', value: '' }]); };
+  const closePresetManager = () => { setShowPresetManager(false); setEditingPreset(null); setNewPresetName(''); setNewPresetParams([{ key: '', value: '' }]); };
 
-  // 关闭预设管理器
-  const closePresetManager = () => {
-    setShowPresetManager(false);
-    setEditingPreset(null);
-    setNewPresetName('');
-    setNewPresetParams([{ key: '', value: '' }]);
-  };
-
-  // 开始编辑预设
   const startEditPreset = (index: number) => {
     const preset = presetParams[index];
     setEditingPreset({ index, preset: { ...preset } });
     setNewPresetName(preset.name);
-    setNewPresetParams(
-      preset.params.length > 0 ? [...preset.params] : [{ key: '', value: '' }]
-    );
+    setNewPresetParams(preset.params.length > 0 ? [...preset.params] : [{ key: '', value: '' }]);
   };
 
-  // 取消编辑
-  const cancelEdit = () => {
-    setEditingPreset(null);
-    setNewPresetName('');
-    setNewPresetParams([{ key: '', value: '' }]);
-  };
+  const cancelEdit = () => { setEditingPreset(null); setNewPresetName(''); setNewPresetParams([{ key: '', value: '' }]); };
 
-  // 保存预设（新增或编辑）
   const savePreset = () => {
-    if (!newPresetName.trim()) {
-      antdMessage.warning('请输入预设名称');
-      return;
-    }
-
+    if (!newPresetName.trim()) { antdMessage.warning('请输入预设名称'); return; }
     const validParams = newPresetParams.filter((p) => p.key.trim() && p.value.trim());
-    if (validParams.length === 0) {
-      antdMessage.warning('请至少添加一个有效的参数');
-      return;
-    }
-
+    if (validParams.length === 0) { antdMessage.warning('请至少添加一个有效的参数'); return; }
     try {
       if (editingPreset && editingPreset.index >= 0) {
-        // 编辑现有预设
-        updatePresetParam(editingPreset.index, {
-          name: newPresetName.trim(),
-          params: validParams,
-        });
+        updatePresetParam(editingPreset.index, { name: newPresetName.trim(), params: validParams });
         antdMessage.success('预设已更新');
       } else {
-        // 添加新预设
-        addPresetParam({
-          name: newPresetName.trim(),
-          params: validParams,
-        });
+        addPresetParam({ name: newPresetName.trim(), params: validParams });
         antdMessage.success('预设已添加');
       }
       setPresetParams(getPresetParams());
       cancelEdit();
-    } catch (error: any) {
-      antdMessage.error(error.message || '保存失败');
-    }
+    } catch (error: any) { antdMessage.error(error.message || '保存失败'); }
   };
 
-  // 删除预设
   const handleDeletePreset = (index: number) => {
     try {
       deletePresetParam(index);
       setPresetParams(getPresetParams());
       antdMessage.success('预设已删除');
-      if (editingPreset && editingPreset.index === index) {
-        cancelEdit();
-      }
-    } catch (error: any) {
-      antdMessage.error(error.message || '删除失败');
-    }
+      if (editingPreset && editingPreset.index === index) cancelEdit();
+    } catch (error: any) { antdMessage.error(error.message || '删除失败'); }
   };
 
-  // 重置预设
-  const handleResetPresets = () => {
-    resetPresetParams();
-    setPresetParams(getPresetParams());
-    antdMessage.success('已重置为默认预设');
-    cancelEdit();
-  };
+  const handleResetPresets = () => { resetPresetParams(); setPresetParams(getPresetParams()); antdMessage.success('已重置为默认预设'); cancelEdit(); };
 
-  // 更新新预设的参数
   const updateNewPresetParam = (index: number, field: 'key' | 'value', newValue: string) => {
     const newParams = [...newPresetParams];
     newParams[index] = { ...newParams[index], [field]: newValue };
     setNewPresetParams(newParams);
   };
 
-  // 添加新预设的参数行
-  const addNewPresetParam = () => {
-    setNewPresetParams([...newPresetParams, { key: '', value: '' }]);
-  };
+  const addNewPresetParam = () => setNewPresetParams([...newPresetParams, { key: '', value: '' }]);
 
-  // 删除新预设的参数行
   const removeNewPresetParam = (index: number) => {
     const newParams = newPresetParams.filter((_, i) => i !== index);
-    if (newParams.length === 0) {
-      newParams.push({ key: '', value: '' });
-    }
+    if (newParams.length === 0) newParams.push({ key: '', value: '' });
     setNewPresetParams(newParams);
   };
 
-  // 添加预设参数
   const addPresetParams = (preset: (typeof presetParams)[0]) => {
-    // 检查预设参数是否已存在
     const existingParams: string[] = [];
     preset.params.forEach((presetParam) => {
-      const existingIndex = params.findIndex((p) => p.key === presetParam.key);
-      if (existingIndex >= 0) {
-        existingParams.push(presetParam.key);
-      }
+      if (params.findIndex((p) => p.key === presetParam.key) >= 0) existingParams.push(presetParam.key);
     });
-
-    // 如果存在预设参数，弹出提醒并返回
-    if (existingParams.length > 0) {
-      const paramNames = existingParams.join('、');
-      antdMessage.warning(`参数 ${paramNames} 已存在，无需重复添加`);
-      return;
-    }
-
+    if (existingParams.length > 0) { antdMessage.warning(`参数 ${existingParams.join('、')} 已存在，无需重复添加`); return; }
     const newParams = [...params];
-
     preset.params.forEach((presetParam) => {
-      // 如果不存在，添加新参数
-      // 如果最后一个参数是空的，替换它，否则添加新行
       if (newParams.length > 0 && !newParams[newParams.length - 1].key.trim()) {
         newParams[newParams.length - 1] = { ...presetParam };
       } else {
         newParams.push({ ...presetParam });
       }
     });
-
     setParams(newParams);
-
     const newURL = buildUrlFromParts(baseUrl, hashBase, paramWriteMode, newParams);
-
     try {
       new URL(newURL);
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.update(tabs[0].id, { url: newURL });
-          setCurrentUrl(newURL);
-          setError('');
-        }
+        if (tabs[0]?.id) { chrome.tabs.update(tabs[0].id, { url: newURL }); setCurrentUrl(newURL); setError(''); }
       });
-    } catch (err) {
-      // 如果URL无效，不更新但也不报错
-      console.error('无效的URL', err);
-    }
+    } catch { /* ignore */ }
   };
 
   return (
-    <div className='url-params-editor' style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px'}}>
-      <Card size="small" title="当前URL">
+    <div className="url-params-editor">
+      {/* URL 输入行 */}
+      <div className="upe-section">
         <Space.Compact style={{ width: '100%' }}>
           <Input
             value={currentUrl}
-            onChange={(e) => {
-              setCurrentUrl(e.target.value);
-            }}
-            onBlur={(e) => {
-              // 失去焦点时，如果URL有效则重新解析
-              if (e.target.value.trim()) {
-                parseURL(e.target.value);
-              }
-            }}
-            onPressEnter={(e) => {
-              // 按Enter键时解析URL
-              (e.target as HTMLInputElement).blur();
-            }}
-            placeholder='输入或粘贴URL，按Enter或失去焦点时解析'
+            onChange={(e) => setCurrentUrl(e.target.value)}
+            onBlur={(e) => { if (e.target.value.trim()) parseURL(e.target.value); }}
+            onPressEnter={(e) => (e.target as HTMLInputElement).blur()}
+            placeholder="输入或粘贴URL，按Enter或失焦时解析"
+            size="small"
           />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={refreshURL}
-            title='刷新URL'
-          />
+          <Button icon={<ReloadOutlined />} onClick={refreshURL} size="small" title="刷新URL" />
         </Space.Compact>
-      </Card>
-
-      <Card size="small" title="基础URL">
-        <Space direction="vertical" style={{ width: '100%' }} size="small">
-          <Input
-            value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
-            placeholder="不含查询与 hash 的路径（origin + pathname）"
-          />
-          {hashBase ? (
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              将保留的 Hash：{hashBase}
-              {paramWriteMode === 'fragment' && '（当前查询写在 hash 之后）'}
-              {paramWriteMode === 'both' && '（解析时 ? 与 hash 内均有参数，保存时合并到路径 ? 前）'}
-            </Text>
-          ) : null}
-        </Space>
-      </Card>
-
-      <Card 
-        size="small" 
-        title={
-          <Space>
-            <Text>预设参数</Text>
-            <Button
+        {baseUrl && (
+          <div className="upe-base-url">
+            <Input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="基础路径"
               size="small"
-              icon={<SettingOutlined />}
-              onClick={openPresetManager}
-              type="link"
-            >
-              管理
-            </Button>
+            />
+            {hashBase && (
+              <div className="upe-hash-hint">Hash: {hashBase}{paramWriteMode === 'fragment' ? '（查询在 hash 后）' : ''}</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 预设参数标签 */}
+      {presetParams.length > 0 && (
+        <div className="upe-presets">
+          <div className="upe-presets-header">
+            <span className="upe-section-label">预设参数</span>
+            <Button size="small" icon={<SettingOutlined />} onClick={openPresetManager} type="text">管理</Button>
+          </div>
+          <Space wrap size={4}>
+            {presetParams.map((preset, index) => (
+              <Tag
+                key={index}
+                onClick={() => addPresetParams(preset)}
+                style={{ cursor: 'pointer', fontSize: 11 }}
+                title={preset.params.map((p) => `${p.key}=${p.value}`).join(' & ')}
+              >
+                {preset.name}
+              </Tag>
+            ))}
           </Space>
-        }
-      >
-        <Space wrap>
-          {presetParams.map((preset, index) => (
-            <Tag
-              key={index}
-              onClick={() => addPresetParams(preset)}
-              style={{ cursor: 'pointer' }}
-              title={preset.params.map((p) => `${p.key}=${p.value}`).join(' & ')}
-            >
-              {preset.name}
-            </Tag>
+        </div>
+      )}
+
+      {/* 参数列表 */}
+      <div className="upe-params">
+        <div className="upe-params-header">
+          <span className="upe-section-label">URL 参数</span>
+          <Button size="small" icon={<PlusOutlined />} onClick={addParam} type="text">添加</Button>
+        </div>
+        <div className="upe-params-list">
+          {params.map((param, index) => (
+            <Space.Compact key={index} style={{ width: '100%' }}>
+              <Input
+                value={param.key}
+                onChange={(e) => updateParam(index, 'key', e.target.value)}
+                placeholder="参数名"
+                size="small"
+                style={{ flex: 1 }}
+              />
+              <Input
+                value={param.value}
+                onChange={(e) => updateParam(index, 'value', e.target.value)}
+                placeholder="参数值"
+                size="small"
+                style={{ flex: 1 }}
+              />
+              <Button icon={<CloseOutlined />} onClick={() => removeParam(index)} danger size="small" />
+            </Space.Compact>
           ))}
-        </Space>
-      </Card>
+        </div>
+      </div>
+
+      {error && <div className="upe-error">{error}</div>}
+
+      {/* URL 预览 */}
+      <div className="upe-preview">
+        <div className="upe-preview-header">
+          <span className="upe-section-label">新 URL</span>
+          <Button size="small" icon={<CopyOutlined />} onClick={copyNewURL} type="text">复制</Button>
+        </div>
+        <div className="upe-preview-url">{generateNewURL() || '—'}</div>
+      </div>
+
+      {/* 操作按钮 */}
+      <Space wrap>
+        <Button type="primary" size="small" onClick={updateCurrentTabURL}>更新当前标签页</Button>
+        <Button size="small" onClick={openInNewTab}>新标签页打开</Button>
+      </Space>
 
       {/* 预设管理器弹窗 */}
       <Modal
@@ -557,197 +369,65 @@ const URLParamsEditor: React.FC = () => {
         maskClosable={false}
         getContainer={() => document.body}
       >
-
         {editingPreset ? (
-          // 编辑模式
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
             <div>
               <Text strong>预设名称</Text>
-              <Input
-                value={newPresetName}
-                onChange={(e) => setNewPresetName(e.target.value)}
-                placeholder='输入预设名称'
-                style={{ marginTop: '6px'}}
-              />
+              <Input value={newPresetName} onChange={(e) => setNewPresetName(e.target.value)} placeholder="输入预设名称" style={{ marginTop: 6 }} />
             </div>
-
             <div>
-              <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: '6px'}}>
+              <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 6 }}>
                 <Text strong>参数列表</Text>
-                <Button
-                  size="small"
-                  icon={<PlusOutlined />}
-                  onClick={addNewPresetParam}
-                >
-                  添加参数
-                </Button>
+                <Button size="small" icon={<PlusOutlined />} onClick={addNewPresetParam}>添加参数</Button>
               </Space>
               <Space direction="vertical" style={{ width: '100%' }} size="small">
                 {newPresetParams.map((param, index) => (
                   <Space.Compact key={index} style={{ width: '100%' }}>
-                    <Input
-                      value={param.key}
-                      onChange={(e) => updateNewPresetParam(index, 'key', e.target.value)}
-                      placeholder='参数名'
-                      style={{ flex: 1 }}
-                    />
-                    <Input
-                      value={param.value}
-                      onChange={(e) => updateNewPresetParam(index, 'value', e.target.value)}
-                      placeholder='参数值'
-                      style={{ flex: 1 }}
-                    />
-                    <Button
-                      icon={<CloseOutlined />}
-                      onClick={() => removeNewPresetParam(index)}
-                      danger
-                    />
+                    <Input value={param.key} onChange={(e) => updateNewPresetParam(index, 'key', e.target.value)} placeholder="参数名" style={{ flex: 1 }} />
+                    <Input value={param.value} onChange={(e) => updateNewPresetParam(index, 'value', e.target.value)} placeholder="参数值" style={{ flex: 1 }} />
+                    <Button icon={<CloseOutlined />} onClick={() => removeNewPresetParam(index)} danger />
                   </Space.Compact>
                 ))}
               </Space>
             </div>
-
             <Space style={{ justifyContent: 'flex-end', width: '100%' }}>
               <Button onClick={cancelEdit}>取消</Button>
               <Button type="primary" onClick={savePreset}>保存</Button>
             </Space>
           </Space>
         ) : (
-          // 列表模式
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
             <Space style={{ justifyContent: 'flex-end', width: '100%' }}>
-              <Button
-                icon={<PlusOutlined />}
-                onClick={() => setEditingPreset({ index: -1, preset: { name: '', params: [] } })}
-              >
-                添加预设
-              </Button>
-              <Popconfirm
-                title="确定要重置为默认预设吗？这将删除所有自定义预设。"
-                onConfirm={handleResetPresets}
-                okText="确定"
-                cancelText="取消"
-              >
+              <Button icon={<PlusOutlined />} onClick={() => setEditingPreset({ index: -1, preset: { name: '', params: [] } })}>添加预设</Button>
+              <Popconfirm title="确定要重置为默认预设吗？这将删除所有自定义预设。" onConfirm={handleResetPresets} okText="确定" cancelText="取消">
                 <Button danger>重置为默认</Button>
               </Popconfirm>
             </Space>
             <Space direction="vertical" style={{ width: '100%' }} size="small">
               {presetParams.map((preset, index) => (
-                <Card key={index} size="small">
+                <div key={index} style={{ padding: '8px 12px', background: 'var(--theme-surface)', border: '1px solid var(--theme-border)', borderRadius: 4 }}>
                   <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                     <div>
                       <Text strong>{preset.name}</Text>
-                      <div style={{ marginTop: '6px'}}>
+                      <div style={{ marginTop: 4 }}>
                         <Space wrap>
-                          {preset.params.map((p, i) => (
-                            <Tag key={i}>{p.key}={p.value}</Tag>
-                          ))}
+                          {preset.params.map((p, i) => <Tag key={i}>{p.key}={p.value}</Tag>)}
                         </Space>
                       </div>
                     </div>
                     <Space>
-                      <Button
-                        size="small"
-                        icon={<EditOutlined />}
-                        onClick={() => startEditPreset(index)}
-                      >
-                        编辑
-                      </Button>
-                      <Popconfirm
-                        title={`确定要删除预设 "${preset.name}" 吗？`}
-                        onConfirm={() => handleDeletePreset(index)}
-                        okText="确定"
-                        cancelText="取消"
-                      >
-                        <Button
-                          size="small"
-                          danger
-                          icon={<DeleteOutlined />}
-                        >
-                          删除
-                        </Button>
+                      <Button size="small" icon={<EditOutlined />} onClick={() => startEditPreset(index)}>编辑</Button>
+                      <Popconfirm title={`确定要删除预设 "${preset.name}" 吗？`} onConfirm={() => handleDeletePreset(index)} okText="确定" cancelText="取消">
+                        <Button size="small" danger icon={<DeleteOutlined />}>删除</Button>
                       </Popconfirm>
                     </Space>
                   </Space>
-                </Card>
+                </div>
               ))}
             </Space>
           </Space>
         )}
       </Modal>
-
-      <Card 
-        size="small" 
-        title={
-          <Space>
-            <Text>URL参数</Text>
-            <Button
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={addParam}
-              type="link"
-            >
-              添加参数
-            </Button>
-          </Space>
-        }
-      >
-        <Space direction="vertical" style={{ width: '100%' }} size="small">
-          {params.map((param, index) => (
-            <Space.Compact key={index} style={{ width: '100%' }}>
-              <Input
-                value={param.key}
-                onChange={(e) => updateParam(index, 'key', e.target.value)}
-                placeholder='参数名'
-                style={{ flex: 1 }}
-              />
-              <Input
-                value={param.value}
-                onChange={(e) => updateParam(index, 'value', e.target.value)}
-                placeholder='参数值'
-                style={{ flex: 1 }}
-              />
-              <Button
-                icon={<CloseOutlined />}
-                onClick={() => removeParam(index)}
-                danger
-              />
-            </Space.Compact>
-          ))}
-        </Space>
-      </Card>
-
-      {error && (
-        <Card size="small" style={{ borderColor: 'var(--theme-error)' }}>
-          <Text type="danger">{error}</Text>
-        </Card>
-      )}
-
-      <Card size="small" title="新URL预览">
-        <Text code copyable style={{ wordBreak: 'break-all' }}>
-          {generateNewURL()}
-        </Text>
-      </Card>
-
-      <Card size="small">
-        <Space wrap>
-          <Button
-            type="primary"
-            onClick={updateCurrentTabURL}
-          >
-            更新当前标签页
-          </Button>
-          <Button onClick={openInNewTab}>
-            新标签页打开
-          </Button>
-          <Button
-            icon={<CopyOutlined />}
-            onClick={copyNewURL}
-          >
-            复制URL
-          </Button>
-        </Space>
-      </Card>
     </div>
   );
 };
