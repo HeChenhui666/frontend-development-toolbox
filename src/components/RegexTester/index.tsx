@@ -1,15 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  Select,
-  Input,
-  Button,
-  Space,
-  Card,
-  Typography,
-  Alert,
-  Checkbox,
-  message as antdMessage,
-} from 'antd';
+import { Select, Input, Button, Space, Checkbox, message as antdMessage } from 'antd';
 import {
   CopyOutlined,
   ClearOutlined,
@@ -22,276 +12,64 @@ import CompatibilityWarning from '../CompatibilityWarning';
 import { useCompatibility } from '../../hooks/useCompatibility';
 import './index.css';
 
-const { Text } = Typography;
-
 type ActionType = 'extract' | 'filter' | 'remove' | 'replace' | 'transform';
 
 interface PresetRegex {
   name: string;
   pattern: string;
   description: string;
-  hasAction?: boolean; // 是否有操作意向
-  actionType?: ActionType; // 操作类型
+  hasAction?: boolean;
+  actionType?: ActionType;
 }
 
-// 预设正则表达式 - 移到组件外部，避免每次渲染重新创建
 const PRESET_REGEXES: PresetRegex[] = [
-    // 手机号相关
-    {
-      name: '中国大陆手机号',
-      pattern: '^1[3-9]\\d{9}$',
-      description: '匹配11位中国大陆手机号码（1开头，第二位3-9）',
-    },
-    {
-      name: '国际手机号格式',
-      pattern: '^\\+?[\\d\\s\\-\\(\\)]+$',
-      description: '匹配国际手机号格式（可包含+、数字、空格、横线、括号）',
-    },
-    // 邮箱相关
-    {
-      name: '邮箱校验',
-      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-      description: '匹配常见邮箱格式',
-    },
-    {
-      name: '严格邮箱验证',
-      pattern: '^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\\.[a-zA-Z]{2,}$',
-      description: '更严格的邮箱验证（首尾不能是特殊字符）',
-    },
-    // 身份证相关
-    {
-      name: '中国身份证号码',
-      pattern: '^(\\d{15}|\\d{17}[\\dXx])$',
-      description: '匹配15位或18位中国身份证号码（支持X结尾）',
-    },
-    // 密码相关
-    {
-      name: '强密码（8位+大小写+数字+特殊字符）',
-      pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$',
-      description: '至少8位，包含数字、大小写字母、特殊字符',
-    },
-    {
-      name: '简单密码（6-20位字母数字）',
-      pattern: '^[A-Za-z0-9]{6,20}$',
-      description: '6-20位字母数字组合',
-    },
-    // 数字相关
-    {
-      name: '正整数',
-      pattern: '^[1-9]\\d*$',
-      description: '匹配正整数（不包括0）',
-    },
-    {
-      name: '非负整数',
-      pattern: '^\\d+$',
-      description: '匹配非负整数（包括0）',
-    },
-    {
-      name: '浮点数',
-      pattern: '^-?(\\d+(\\.\\d+)?|\\.\\d+)$',
-      description: '匹配浮点数（可正可负，支持.5格式）',
-    },
-    {
-      name: '最多两位小数',
-      pattern: '^\\d+(\\.\\d{1,2})?$',
-      description: '匹配最多两位小数的数字',
-    },
-    {
-      name: '百分比（0-100）',
-      pattern: '^(100(\\.0+)?|[0-9]?\\d(\\.\\d+)?)$',
-      description: '匹配0-100的百分比数值（不包括100.5等）',
-    },
-    // URL相关
-    {
-      name: 'URL链接',
-      pattern: '^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z]{2,6})(?:\\/([\\w\\.-]+(?:\\/[\\w\\.-]*)*))?\\/?$',
-      description: '匹配URL链接格式',
-    },
-    {
-      name: '包含端口的URL',
-      pattern:
-        '^https?:\\/\\/(?:[-\\w.])+(?::[0-9]{1,5})?(?:\\/(?:[\\w\\/_.-])*(?:\\?(?:[\\w&=%.])*)?(?:\\#(?:[\\w.-])*)?)?$',
-      description: '匹配包含端口的URL链接（端口号1-5位数字）',
-    },
-    {
-      name: 'IP地址',
-      pattern: '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
-      description: '匹配IPv4地址格式',
-    },
-    // 颜色相关
-    {
-      name: '十六进制颜色',
-      pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
-      description: '匹配十六进制颜色值（#RGB或#RRGGBB）',
-    },
-    {
-      name: 'RGB颜色',
-      pattern: '^rgb\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*\\)$',
-      description: '匹配RGB颜色格式 rgb(r, g, b)，r/g/b值范围0-255',
-    },
-    {
-      name: 'RGBA颜色',
-      pattern: '^rgba\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:0|1|0\\.\\d+|1\\.0+))\\s*\\)$',
-      description: '匹配RGBA颜色格式 rgba(r, g, b, a)，r/g/b值范围0-255，a值范围0-1',
-    },
-    // 时间日期相关
-    {
-      name: '24小时制时间',
-      pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$',
-      description: '匹配24小时制时间格式 HH:MM',
-    },
-    {
-      name: '12小时制时间',
-      pattern: '^(0?[1-9]|1[0-2]):([0-5]\\d)\\s?(AM|am|PM|pm)$',
-      description: '匹配12小时制时间格式 HH:MM AM/PM',
-    },
-    {
-      name: '日期格式（YYYY-MM-DD）',
-      pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$',
-      description: '匹配日期格式 YYYY-MM-DD（验证月份1-12，日期1-31）',
-    },
-    {
-      name: '日期时间格式',
-      pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])\\s+([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$',
-      description: '匹配日期时间格式 YYYY-MM-DD HH:MM:SS（验证日期和时间有效性）',
-    },
-    // 中文相关
-    {
-      name: '纯中文',
-      pattern: '^[\\u4e00-\\u9fa5]+$',
-      description: '匹配纯中文字符串',
-    },
-    {
-      name: '中文姓名（2-4个汉字）',
-      pattern: '^[\\u4e00-\\u9fa5]{2,4}$',
-      description: '匹配2-4个汉字的中文姓名',
-    },
-    {
-      name: '包含中文',
-      pattern: '[\\u4e00-\\u9fa5]',
-      description: '匹配包含中文字符的字符串',
-    },
-    // 字符过滤相关
-    {
-      name: '过滤特殊字符',
-      pattern: '[~`!@#$%^&*()_\\-+=|\\\\[\\]{};\'\\":<>/?]',
-      description: '匹配特殊字符（用于过滤）',
-      hasAction: true,
-      actionType: 'filter',
-    },
-    {
-      name: '字母数字下划线',
-      pattern: '^[a-zA-Z0-9_]+$',
-      description: '只允许字母、数字、下划线',
-    },
-    {
-      name: '过滤HTML标签',
-      pattern: '<[^>]*>',
-      description: '匹配HTML标签（用于过滤）',
-      hasAction: true,
-      actionType: 'filter',
-    },
-    {
-      name: '去除首尾空格',
-      pattern: '^\\s+|\\s+$',
-      description: '匹配首尾空格（用于去除）',
-      hasAction: true,
-      actionType: 'remove',
-    },
-    {
-      name: '去除所有空格',
-      pattern: '\\s',
-      description: '匹配所有空格（用于去除）',
-      hasAction: true,
-      actionType: 'remove',
-    },
-    {
-      name: '去除多余空格',
-      pattern: '\\s+',
-      description: '匹配多个连续空格（用于保留一个）',
-      hasAction: true,
-      actionType: 'replace',
-    },
-    // 文件相关
-    {
-      name: '文件扩展名',
-      pattern: '\\.(jpg|jpeg|png|gif|pdf|doc|docx)$',
-      description: '匹配文件扩展名（jpg, jpeg, png, gif, pdf, doc, docx）',
-    },
-    {
-      name: 'Windows文件名',
-      pattern: '^[^<>:"/\\\\|?*\\x00-\\x1f]*$',
-      description: '匹配Windows合法文件名（不包含非法字符和控制字符）',
-    },
-    // 金额相关
-    {
-      name: '人民币金额',
-      pattern: '^¥?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$',
-      description: '匹配人民币金额格式（支持千分位，小数部分必须是两位）',
-    },
-    {
-      name: '美元金额',
-      pattern: '^[\\$]?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$',
-      description: '匹配美元金额格式（支持千分位，小数部分必须是两位）',
-    },
-    // 其他
-    {
-      name: '中国车牌号',
-      pattern:
-        '^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]$',
-      description: '匹配中国车牌号格式',
-    },
-    {
-      name: '银行卡号',
-      pattern: '^\\d{16,19}$',
-      description: '匹配银行卡号（16-19位数字）',
-    },
-    {
-      name: '提取数字',
-      pattern: '\\d+',
-      description: '匹配数字（用于提取）',
-      hasAction: true,
-      actionType: 'extract',
-    },
-    {
-      name: '提取中文',
-      pattern: '[\\u4e00-\\u9fa5]+',
-      description: '匹配中文字符（用于提取）',
-      hasAction: true,
-      actionType: 'extract',
-    },
-    {
-      name: '检测连续重复字符',
-      pattern: '(.)\\1{2,}',
-      description: '检测连续重复3次及以上的字符',
-    },
-    {
-      name: '驼峰转短横线',
-      pattern: '([a-z])([A-Z])',
-      description: '匹配驼峰命名中的大小写转换点（用于转换）',
-      hasAction: true,
-      actionType: 'transform',
-    },
-    {
-      name: '短横线转驼峰',
-      pattern: '-([a-z])',
-      description: '匹配短横线命名中的短横线（用于转换）',
-      hasAction: true,
-      actionType: 'transform',
-    },
-    {
-      name: 'JSON对象结构',
-      pattern: '^\\s*\\{.*\\}\\s*$',
-      description: '简单JSON对象结构验证',
-    },
+  { name: '中国大陆手机号', pattern: '^1[3-9]\\d{9}$', description: '匹配11位中国大陆手机号码（1开头，第二位3-9）' },
+  { name: '国际手机号格式', pattern: '^\\+?[\\d\\s\\-\\(\\)]+$', description: '匹配国际手机号格式（可包含+、数字、空格、横线、括号）' },
+  { name: '邮箱校验', pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$', description: '匹配常见邮箱格式' },
+  { name: '严格邮箱验证', pattern: '^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\\.[a-zA-Z]{2,}$', description: '更严格的邮箱验证（首尾不能是特殊字符）' },
+  { name: '中国身份证号码', pattern: '^(\\d{15}|\\d{17}[\\dXx])$', description: '匹配15位或18位中国身份证号码（支持X结尾）' },
+  { name: '强密码（8位+大小写+数字+特殊字符）', pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$', description: '至少8位，包含数字、大小写字母、特殊字符' },
+  { name: '简单密码（6-20位字母数字）', pattern: '^[A-Za-z0-9]{6,20}$', description: '6-20位字母数字组合' },
+  { name: '正整数', pattern: '^[1-9]\\d*$', description: '匹配正整数（不包括0）' },
+  { name: '非负整数', pattern: '^\\d+$', description: '匹配非负整数（包括0）' },
+  { name: '浮点数', pattern: '^-?(\\d+(\\.\\d+)?|\\.\\d+)$', description: '匹配浮点数（可正可负，支持.5格式）' },
+  { name: '最多两位小数', pattern: '^\\d+(\\.\\d{1,2})?$', description: '匹配最多两位小数的数字' },
+  { name: '百分比（0-100）', pattern: '^(100(\\.0+)?|[0-9]?\\d(\\.\\d+)?)$', description: '匹配0-100的百分比数值' },
+  { name: 'URL链接', pattern: '^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z]{2,6})(?:\\/([\\w\\.-]+(?:\\/[\\w\\.-]*)*))?\\/?$', description: '匹配URL链接格式' },
+  { name: '包含端口的URL', pattern: '^https?:\\/\\/(?:[-\\w.])+(?::[0-9]{1,5})?(?:\\/(?:[\\w\\/_.-])*(?:\\?(?:[\\w&=%.])*)?(?:\\#(?:[\\w.-])*)?)?$', description: '匹配包含端口的URL链接' },
+  { name: 'IP地址', pattern: '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', description: '匹配IPv4地址格式' },
+  { name: '十六进制颜色', pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', description: '匹配十六进制颜色值（#RGB或#RRGGBB）' },
+  { name: 'RGB颜色', pattern: '^rgb\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*\\)$', description: '匹配RGB颜色格式 rgb(r, g, b)' },
+  { name: 'RGBA颜色', pattern: '^rgba\\(\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?))\\s*,\\s*((?:0|1|0\\.\\d+|1\\.0+))\\s*\\)$', description: '匹配RGBA颜色格式' },
+  { name: '24小时制时间', pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$', description: '匹配24小时制时间格式 HH:MM' },
+  { name: '12小时制时间', pattern: '^(0?[1-9]|1[0-2]):([0-5]\\d)\\s?(AM|am|PM|pm)$', description: '匹配12小时制时间格式 HH:MM AM/PM' },
+  { name: '日期格式（YYYY-MM-DD）', pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$', description: '匹配日期格式 YYYY-MM-DD' },
+  { name: '日期时间格式', pattern: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])\\s+([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$', description: '匹配日期时间格式 YYYY-MM-DD HH:MM:SS' },
+  { name: '纯中文', pattern: '^[\\u4e00-\\u9fa5]+$', description: '匹配纯中文字符串' },
+  { name: '中文姓名（2-4个汉字）', pattern: '^[\\u4e00-\\u9fa5]{2,4}$', description: '匹配2-4个汉字的中文姓名' },
+  { name: '包含中文', pattern: '[\\u4e00-\\u9fa5]', description: '匹配包含中文字符的字符串' },
+  { name: '过滤特殊字符', pattern: '[~`!@#$%^&*()_\\-+=|\\\\[\\]{};\'\\":<>/?]', description: '匹配特殊字符（用于过滤）', hasAction: true, actionType: 'filter' },
+  { name: '字母数字下划线', pattern: '^[a-zA-Z0-9_]+$', description: '只允许字母、数字、下划线' },
+  { name: '过滤HTML标签', pattern: '<[^>]*>', description: '匹配HTML标签（用于过滤）', hasAction: true, actionType: 'filter' },
+  { name: '去除首尾空格', pattern: '^\\s+|\\s+$', description: '匹配首尾空格（用于去除）', hasAction: true, actionType: 'remove' },
+  { name: '去除所有空格', pattern: '\\s', description: '匹配所有空格（用于去除）', hasAction: true, actionType: 'remove' },
+  { name: '去除多余空格', pattern: '\\s+', description: '匹配多个连续空格（用于保留一个）', hasAction: true, actionType: 'replace' },
+  { name: '文件扩展名', pattern: '\\.(jpg|jpeg|png|gif|pdf|doc|docx)$', description: '匹配文件扩展名' },
+  { name: 'Windows文件名', pattern: '^[^<>:"/\\\\|?*\\x00-\\x1f]*$', description: '匹配Windows合法文件名' },
+  { name: '人民币金额', pattern: '^¥?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$', description: '匹配人民币金额格式' },
+  { name: '美元金额', pattern: '^[\\$]?(\\d{1,3}(?:,\\d{3})*|\\d+)(\\.\\d{2})?$', description: '匹配美元金额格式' },
+  { name: '中国车牌号', pattern: '^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]$', description: '匹配中国车牌号格式' },
+  { name: '银行卡号', pattern: '^\\d{16,19}$', description: '匹配银行卡号（16-19位数字）' },
+  { name: '提取数字', pattern: '\\d+', description: '匹配数字（用于提取）', hasAction: true, actionType: 'extract' },
+  { name: '提取中文', pattern: '[\\u4e00-\\u9fa5]+', description: '匹配中文字符（用于提取）', hasAction: true, actionType: 'extract' },
+  { name: '检测连续重复字符', pattern: '(.)\\1{2,}', description: '检测连续重复3次及以上的字符' },
+  { name: '驼峰转短横线', pattern: '([a-z])([A-Z])', description: '匹配驼峰命名中的大小写转换点（用于转换）', hasAction: true, actionType: 'transform' },
+  { name: '短横线转驼峰', pattern: '-([a-z])', description: '匹配短横线命名中的短横线（用于转换）', hasAction: true, actionType: 'transform' },
+  { name: 'JSON对象结构', pattern: '^\\s*\\{.*\\}\\s*$', description: '简单JSON对象结构验证' },
 ];
 
 const RegexTester: React.FC = () => {
-  const { isCompatible } = useCompatibility({
-    featureName: '正则表达式测试',
-    requiredFeatures: ['RegExp'],
-    checkTypes: ['regex', 'basic'],
-  });
+  const { isCompatible } = useCompatibility({ featureName: '正则表达式测试', requiredFeatures: ['RegExp'], checkTypes: ['regex', 'basic'] });
   const [regexPattern, setRegexPattern] = useState<string>('');
   const [testText, setTestText] = useState<string>('');
   const [flags, setFlags] = useState<string>('g');
@@ -301,87 +79,41 @@ const RegexTester: React.FC = () => {
   const [selectedPreset, setSelectedPreset] = useState<string>('');
   const [actionResult, setActionResult] = useState<string>('');
 
-  // 应用预设正则表达式 - 使用 useCallback 优化
   const applyPreset = useCallback((presetName: string) => {
     const preset = PRESET_REGEXES.find((p) => p.name === presetName);
-    if (preset) {
-      setRegexPattern(preset.pattern);
-      setSelectedPreset(preset.name);
-      setFlags('g');
-    }
+    if (preset) { setRegexPattern(preset.pattern); setSelectedPreset(preset.name); setFlags('g'); }
   }, []);
 
-  // 处理预设选择变化 - 使用 useCallback 优化
-  const handlePresetChange = useCallback((value: string) => {
-    applyPreset(value);
-  }, [applyPreset]);
+  const handlePresetChange = useCallback((value: string) => { applyPreset(value); }, [applyPreset]);
 
-  // 生成符合正则表达式的随机文本 - 使用 useCallback 优化
   const handleGenerateText = useCallback(() => {
-    if (!regexPattern.trim()) {
-      setError('请输入正则表达式');
-      setIsMatch(null);
-      setIsValid(true);
-      return;
-    }
-
+    if (!regexPattern.trim()) { setError('请输入正则表达式'); setIsMatch(null); setIsValid(true); return; }
     try {
       setError('');
       setIsValid(true);
-
-      // 使用 randexp 生成符合正则表达式的文本
       const regex = new RegExp(regexPattern, flags);
       const randexp = new RandExp(regex);
-
-      // 设置最大重复次数，避免生成过长的文本
       randexp.max = 10;
-
-      // 生成文本
       const generated = randexp.gen();
-
-      if (generated) {
-        setTestText(generated);
-      } else {
-        setError('无法生成匹配的文本');
-      }
+      if (generated) setTestText(generated);
+      else setError('无法生成匹配的文本');
     } catch (err) {
       setIsValid(false);
-      const errorMessage = err instanceof Error ? err.message : '未知错误';
-
-      // 提供更友好的错误提示
-      if (errorMessage.includes('lookbehind') || errorMessage.includes('lookahead')) {
-        setError('该正则表达式包含不支持的语法（如 lookbehind/lookahead），无法生成示例文本');
-      } else if (errorMessage.includes('backreference')) {
-        setError('该正则表达式包含反向引用，生成功能可能无法正常工作');
-      } else {
-        setError(`生成失败: ${errorMessage}`);
-      }
-      console.error('Generate text failed:', err);
+      const msg = err instanceof Error ? err.message : '未知错误';
+      setError(msg.includes('lookbehind') || msg.includes('lookahead')
+        ? '该正则含不支持的语法（lookbehind/lookahead），无法生成示例'
+        : `生成失败: ${msg}`);
     }
   }, [regexPattern, flags]);
 
-  // 测试正则表达式 - 使用 useCallback 优化
   const testRegex = useCallback(() => {
-    if (!regexPattern.trim()) {
-      setError('请输入正则表达式');
-      setIsMatch(null);
-      setIsValid(true);
-      return;
-    }
-
-    if (!testText.trim()) {
-      setError('请输入测试文本');
-      setIsMatch(null);
-      setIsValid(true);
-      return;
-    }
-
+    if (!regexPattern.trim()) { setError('请输入正则表达式'); setIsMatch(null); setIsValid(true); return; }
+    if (!testText.trim()) { setError('请输入测试文本'); setIsMatch(null); setIsValid(true); return; }
     try {
       setError('');
       setIsValid(true);
       const regex = new RegExp(regexPattern, flags);
-      const result = regex.test(testText);
-      setIsMatch(result);
+      setIsMatch(regex.test(testText));
     } catch (err) {
       setIsValid(false);
       setError(`正则表达式错误: ${err instanceof Error ? err.message : '未知错误'}`);
@@ -389,114 +121,67 @@ const RegexTester: React.FC = () => {
     }
   }, [regexPattern, testText, flags]);
 
-  // 执行操作 - 使用 useCallback 优化
   const performAction = useCallback(() => {
-    if (!testText.trim()) {
-      setActionResult('');
-      return;
-    }
-
+    if (!testText.trim()) { setActionResult(''); return; }
     const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
-    if (!preset || !preset.hasAction || !preset.actionType) {
-      setActionResult('');
-      return;
-    }
-
+    if (!preset || !preset.hasAction || !preset.actionType) { setActionResult(''); return; }
     try {
       const regex = new RegExp(preset.pattern, flags);
       let result = '';
-
       switch (preset.actionType) {
-        case 'extract':
-          // 提取匹配的内容
+        case 'extract': {
           const matches: string[] = [];
           let match;
-          // 使用全局标志时，需要循环匹配所有结果
           if (flags.includes('g')) {
-            const globalRegex = new RegExp(preset.pattern, flags);
-            while ((match = globalRegex.exec(testText)) !== null) {
+            const gr = new RegExp(preset.pattern, flags);
+            while ((match = gr.exec(testText)) !== null) {
               matches.push(match[0]);
-              // 避免无限循环（如果正则表达式匹配空字符串）
-              if (match[0].length === 0) {
-                globalRegex.lastIndex++;
-              }
+              if (match[0].length === 0) gr.lastIndex++;
             }
           } else {
             match = testText.match(regex);
-            if (match) {
-              matches.push(match[0]);
-            }
+            if (match) matches.push(match[0]);
           }
-          if (matches.length > 0) {
-            result = matches.join('\n');
-          } else {
-            result = '未找到匹配内容';
-          }
+          result = matches.length > 0 ? matches.join('\n') : '未找到匹配内容';
           break;
-
+        }
         case 'filter':
-          // 过滤掉匹配的内容
-          result = testText.replace(regex, '');
-          break;
-
         case 'remove':
-          // 移除匹配的内容
           result = testText.replace(regex, '');
           break;
-
         case 'replace':
-          // 替换匹配的内容
-          if (preset.name === '去除多余空格') {
-            result = testText.replace(/\s+/g, ' ');
-          } else {
-            result = testText.replace(regex, '');
-          }
+          result = preset.name === '去除多余空格' ? testText.replace(/\s+/g, ' ') : testText.replace(regex, '');
           break;
-
         case 'transform':
-          // 转换格式
-          if (preset.name === '驼峰转短横线') {
-            result = testText.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-          } else if (preset.name === '短横线转驼峰') {
-            result = testText.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-          } else {
-            result = testText;
-          }
+          if (preset.name === '驼峰转短横线') result = testText.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+          else if (preset.name === '短横线转驼峰') result = testText.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+          else result = testText;
           break;
-
         default:
           result = testText;
       }
-
       setActionResult(result);
     } catch (err) {
       setActionResult(`操作失败: ${err instanceof Error ? err.message : '未知错误'}`);
     }
   }, [testText, selectedPreset, flags]);
 
-  // 当测试文本或预设改变时，自动执行操作
   useEffect(() => {
     const preset = PRESET_REGEXES.find((p) => p.name === selectedPreset);
-    if (preset && preset.hasAction && testText.trim()) {
-      performAction();
-    } else {
-      setActionResult('');
-    }
+    if (preset && preset.hasAction && testText.trim()) performAction();
+    else setActionResult('');
   }, [testText, selectedPreset, flags, performAction]);
 
-  // 复制操作结果 - 使用 useCallback 优化
   const copyActionResult = useCallback(async () => {
     if (!actionResult) return;
     try {
       await navigator.clipboard.writeText(actionResult);
       antdMessage.success('已复制到剪贴板');
-    } catch (err) {
-      console.error('复制失败:', err);
+    } catch {
       antdMessage.error('复制失败');
     }
   }, [actionResult]);
 
-  // 清空 - 使用 useCallback 优化
   const clearAll = useCallback(() => {
     setRegexPattern('');
     setTestText('');
@@ -507,228 +192,111 @@ const RegexTester: React.FC = () => {
     setActionResult('');
   }, []);
 
-  // 使用 useMemo 缓存预设选项，避免每次渲染重新计算
-  const presetOptions = useMemo(() => 
-    PRESET_REGEXES.map((preset) => ({
-      value: preset.name,
-      label: preset.name,
-    })).filter((option) => option.value && option.label), []
-  );
+  const presetOptions = useMemo(() =>
+    PRESET_REGEXES.map((p) => ({ value: p.name, label: p.name })).filter((o) => o.value && o.label), []);
 
-  // 使用 useMemo 缓存当前预设的描述
-  const currentPresetDescription = useMemo(() => {
-    if (!selectedPreset) return null;
-    return PRESET_REGEXES.find((p) => p.name === selectedPreset)?.description;
-  }, [selectedPreset]);
-
-  // 使用 useMemo 缓存当前预设的配置
-  const currentPreset = useMemo(() => {
-    if (!selectedPreset) return null;
-    return PRESET_REGEXES.find((p) => p.name === selectedPreset);
-  }, [selectedPreset]);
+  const currentPreset = useMemo(() =>
+    selectedPreset ? PRESET_REGEXES.find((p) => p.name === selectedPreset) : null, [selectedPreset]);
 
   return (
-    <div className='regex-tester' style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+    <div className="regex-tester">
       {!isCompatible && (
-        <CompatibilityWarning
-          featureName="正则表达式测试"
-          requiredFeatures={['RegExp']}
-        />
+        <CompatibilityWarning featureName="正则表达式测试" requiredFeatures={['RegExp']} />
       )}
-      
-      {/* 预设正则表达式 */}
-      <Card size="small" title="预设正则表达式">
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          <Select
-            placeholder='选择预设正则表达式'
-            value={selectedPreset || null}
-            onChange={(value) => {
-              if (value) {
-                handlePresetChange(value);
-              }
-            }}
-            onClear={() => {
-              setSelectedPreset('');
-              setRegexPattern('');
-            }}
-            allowClear
-            showSearch
-            filterOption={(input, option) => {
-              if (!option || !option.value) return false;
-              const preset = PRESET_REGEXES.find((p) => p.name === option.value);
-              const label = String(option.label || option.value || '').toLowerCase();
-              const description = preset?.description?.toLowerCase() ?? '';
-              const searchText = input.toLowerCase();
-              return label.includes(searchText) || description.includes(searchText);
-            }}
-            style={{ width: '100%' }}
-            size='small'
-            options={presetOptions}
+
+      {/* 预设选择 */}
+      <div className="rx-row">
+        <Select
+          placeholder="选择预设正则表达式"
+          value={selectedPreset || null}
+          onChange={(value) => { if (value) handlePresetChange(value); }}
+          onClear={() => { setSelectedPreset(''); setRegexPattern(''); }}
+          allowClear
+          showSearch
+          filterOption={(input, option) => {
+            if (!option || !option.value) return false;
+            const preset = PRESET_REGEXES.find((p) => p.name === option.value);
+            const label = String(option.label || option.value || '').toLowerCase();
+            const desc = preset?.description?.toLowerCase() ?? '';
+            const s = input.toLowerCase();
+            return label.includes(s) || desc.includes(s);
+          }}
+          style={{ flex: 1 }}
+          size="small"
+          options={presetOptions}
+        />
+      </div>
+      {currentPreset?.description && (
+        <div className="rx-preset-desc">{currentPreset.description}</div>
+      )}
+
+      {/* 正则输入行 */}
+      <div className="rx-section">
+        <div className="rx-section-header">
+          <span className="rx-label">正则表达式</span>
+          <div className="rx-flags">
+            <Checkbox checked={flags.includes('g')} onChange={(e) => setFlags(e.target.checked ? flags.replace(/[im]/g, '') + 'g' : flags.replace(/g/g, ''))}>g</Checkbox>
+            <Checkbox checked={flags.includes('i')} onChange={(e) => setFlags(e.target.checked ? flags + 'i' : flags.replace(/i/g, ''))}>i</Checkbox>
+            <Checkbox checked={flags.includes('m')} onChange={(e) => setFlags(e.target.checked ? flags + 'm' : flags.replace(/m/g, ''))}>m</Checkbox>
+          </div>
+        </div>
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            value={regexPattern || ''}
+            onChange={(e) => { setRegexPattern(e.target.value || ''); setSelectedPreset(''); }}
+            placeholder="输入正则表达式，例如: ^\\d+$"
+            status={!isValid ? 'error' : ''}
+            onPressEnter={testRegex}
+            size="small"
           />
-          {currentPresetDescription && (
-            <Text type="secondary" style={{ fontSize: '12px' }}>{currentPresetDescription}</Text>
-          )}
-        </Space>
-      </Card>
+          <Button size="small" onClick={testRegex} type="primary">测试</Button>
+          <Button size="small" icon={<ThunderboltOutlined />} onClick={handleGenerateText} disabled={!regexPattern.trim()}>生成</Button>
+        </Space.Compact>
+      </div>
 
-      {/* 正则表达式输入 */}
-      <Card 
-        size="small" 
-        title={
-          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-            <Text strong>正则表达式</Text>
-            <Space>
-              <Checkbox
-                checked={flags.includes('g')}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setFlags(flags.replace(/[im]/g, '') + 'g');
-                  } else {
-                    setFlags(flags.replace(/g/g, ''));
-                  }
-                }}
-              >
-                全局(g)
-              </Checkbox>
-              <Checkbox
-                checked={flags.includes('i')}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setFlags(flags + 'i');
-                  } else {
-                    setFlags(flags.replace(/i/g, ''));
-                  }
-                }}
-              >
-                忽略大小写(i)
-              </Checkbox>
-              <Checkbox
-                checked={flags.includes('m')}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setFlags(flags + 'm');
-                  } else {
-                    setFlags(flags.replace(/m/g, ''));
-                  }
-                }}
-              >
-                多行(m)
-              </Checkbox>
-            </Space>
-          </Space>
-        }
-      >
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          <Space.Compact style={{ width: '100%' }}>
-            <Input
-              value={regexPattern || ''}
-              onChange={(e) => {
-                if (e && e.target) {
-                  setRegexPattern(e.target.value || '');
-                  setSelectedPreset('');
-                }
-              }}
-              placeholder='输入正则表达式，例如: ^\\d+$'
-              status={!isValid ? 'error' : ''}
-              onPressEnter={testRegex}
-            />
-            <Button onClick={testRegex} type="primary">测试</Button>
-            <Button
-              icon={<ThunderboltOutlined />}
-              onClick={handleGenerateText}
-              title='生成符合正则表达式的随机文本'
-              disabled={!regexPattern.trim()}
-            >
-              生成
-            </Button>
-          </Space.Compact>
-        </Space>
-      </Card>
-
-      {/* 测试文本输入 */}
-      <Card size="small" title="测试文本">
+      {/* 测试文本 */}
+      <div className="rx-section">
+        <span className="rx-label">测试文本</span>
         <Input.TextArea
           value={testText || ''}
-          onChange={(e) => {
-            if (e && e.target) {
-              setTestText(e.target.value || '');
-            }
-          }}
-          placeholder='输入要测试的文本...'
+          onChange={(e) => { setTestText(e.target.value || ''); }}
+          placeholder="输入要测试的文本..."
           rows={4}
+          size="small"
         />
-      </Card>
+      </div>
 
-      {/* 错误提示 */}
-      {error && (
-        <Alert
-          message={error}
-          type="error"
-          showIcon
-          closable
-          onClose={() => setError('')}
-        />
-      )}
+      {/* 错误 */}
+      {error && <div className="rx-error">{error}</div>}
 
       {/* 匹配结果 */}
       {isMatch !== null && (
-        <Alert
-          message={
-            <Space>
-              {isMatch ? (
-                <CheckCircleOutlined style={{ color: 'var(--theme-success, #52c41a)' }} />
-              ) : (
-                <CloseCircleOutlined style={{ color: 'var(--theme-error, #ff4d4f)' }} />
-              )}
-              <Text>{isMatch ? '匹配成功' : '匹配失败'}</Text>
-            </Space>
+        <div className={`rx-match-result ${isMatch ? 'rx-match-success' : 'rx-match-fail'}`}>
+          {isMatch
+            ? <><CheckCircleOutlined /> 匹配成功</>
+            : <><CloseCircleOutlined /> 匹配失败</>
           }
-          type={isMatch ? 'success' : 'error'}
-          showIcon={false}
-        />
+        </div>
       )}
 
-      {/* 操作区域 */}
-      {currentPreset && currentPreset.hasAction && (
-        <Card 
-          size="small" 
-          title={
-            <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-              <Text strong>操作结果</Text>
-              {actionResult && (
-                <Button
-                  size="small"
-                  icon={<CopyOutlined />}
-                  onClick={copyActionResult}
-                >
-                  复制
-                </Button>
-              )}
-            </Space>
+      {/* 操作结果 */}
+      {currentPreset?.hasAction && (
+        <div className="rx-section">
+          <div className="rx-section-header">
+            <span className="rx-label">操作结果</span>
+            {actionResult && (
+              <Button size="small" icon={<CopyOutlined />} onClick={copyActionResult} type="text">复制</Button>
+            )}
+          </div>
+          {actionResult
+            ? <Input.TextArea value={actionResult} readOnly rows={3} size="small" />
+            : <div className="rx-placeholder">操作结果将显示在这里…</div>
           }
-        >
-          {actionResult ? (
-            <Input.TextArea
-              value={actionResult || ''}
-              readOnly
-              rows={4}
-            />
-          ) : (
-            <Text type="secondary" style={{ fontSize: '12px' }}>操作结果将显示在这里...</Text>
-          )}
-        </Card>
+        </div>
       )}
 
-      {/* 操作按钮 */}
-      <Card size="small">
-        <Button
-          icon={<ClearOutlined />}
-          onClick={clearAll}
-          block
-        >
-          清空
-        </Button>
-      </Card>
+      {/* 清空 */}
+      <Button icon={<ClearOutlined />} onClick={clearAll} size="small" block>清空</Button>
     </div>
   );
 };

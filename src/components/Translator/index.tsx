@@ -1,26 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Select,
-  Input,
-  Button,
-  Switch,
-  Card,
-  Space,
-  Typography,
-  Alert,
-} from 'antd';
-import {
-  SwapOutlined,
-  ClearOutlined,
-  CopyOutlined,
-  TranslationOutlined,
-} from '@ant-design/icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Select, Switch } from 'antd';
+import { CheckOutlined, SwapOutlined } from '@ant-design/icons';
 import './index.css';
 import { parseGoogleTranslateSingleResult } from '../../utils/parseGoogleTranslateResult';
 
-const { Text } = Typography;
-
-// 支持的语言列表
 const languages = [
   { code: 'zh', name: '中文' },
   { code: 'en', name: '英语' },
@@ -41,24 +24,15 @@ const languages = [
   { code: 'hi', name: '印地语' },
 ];
 
-// 翻译API函数
 async function translateText(text: string, targetLang: string = 'zh'): Promise<string | null> {
   try {
     const response = await fetch(
       `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
     );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
-
     const translated = parseGoogleTranslateSingleResult(data);
-    if (translated !== null) {
-      return translated;
-    }
-
+    if (translated !== null) return translated;
     throw new Error('翻译结果格式不正确');
   } catch (error) {
     console.error('翻译失败:', error);
@@ -66,151 +40,116 @@ async function translateText(text: string, targetLang: string = 'zh'): Promise<s
   }
 }
 
-// 页面内翻译开关的storage key
 const PAGE_TRANSLATE_ENABLED_KEY = 'translator-page-translate-enabled';
 
-// 获取页面内翻译开关状态
-const getPageTranslateEnabled = (): Promise<boolean> => {
-  return new Promise((resolve) => {
+const getPageTranslateEnabled = (): Promise<boolean> =>
+  new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get([PAGE_TRANSLATE_ENABLED_KEY], (result) => {
-        const enabled = result[PAGE_TRANSLATE_ENABLED_KEY] !== false; // 默认开启
-        resolve(enabled);
+        resolve(result[PAGE_TRANSLATE_ENABLED_KEY] !== false);
       });
     } else {
-      // 降级到localStorage
       try {
         const saved = localStorage.getItem(PAGE_TRANSLATE_ENABLED_KEY);
         resolve(saved !== null ? saved === 'true' : true);
-      } catch (error) {
-        console.error('获取页面内翻译开关状态失败:', error);
+      } catch {
         resolve(true);
       }
     }
   });
-};
 
-// 保存页面内翻译开关状态
-const setPageTranslateEnabled = (enabled: boolean): Promise<void> => {
-  return new Promise((resolve) => {
+const setPageTranslateEnabled = (enabled: boolean): Promise<void> =>
+  new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ [PAGE_TRANSLATE_ENABLED_KEY]: enabled }, () => {
-        resolve();
-      });
+      chrome.storage.local.set({ [PAGE_TRANSLATE_ENABLED_KEY]: enabled }, () => resolve());
     } else {
-      // 降级到localStorage
       try {
         localStorage.setItem(PAGE_TRANSLATE_ENABLED_KEY, enabled.toString());
-      } catch (error) {
-        console.error('保存页面内翻译开关状态失败:', error);
+      } catch {
+        /* ignore */
       }
       resolve();
     }
   });
-};
 
 const Translator: React.FC = () => {
-  const [inputText, setInputText] = useState<string>('');
-  const [targetLang, setTargetLang] = useState<string>('en');
-  const [translatedText, setTranslatedText] = useState<string>('');
-  const [isTranslating, setIsTranslating] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [copySuccess, setCopySuccess] = useState<boolean>(false);
-  const [pageTranslateEnabled, setPageTranslateEnabledState] = useState<boolean>(true);
+  const [inputText, setInputText] = useState('');
+  const [targetLang, setTargetLang] = useState('en');
+  const [translatedText, setTranslatedText] = useState('');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [error, setError] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [pageTranslateEnabled, setPageTranslateEnabledState] = useState(true);
 
-  // 初始化时读取开关状态
   useEffect(() => {
-    getPageTranslateEnabled().then((enabled) => {
-      setPageTranslateEnabledState(enabled);
-    });
+    getPageTranslateEnabled().then((enabled) => setPageTranslateEnabledState(enabled));
   }, []);
 
-  // 处理开关变化
   const handlePageTranslateToggle = async (checked: boolean) => {
     setPageTranslateEnabledState(checked);
     await setPageTranslateEnabled(checked);
-
-    // 通知所有标签页的content script
     if (typeof chrome !== 'undefined' && chrome.tabs) {
       chrome.tabs.query({}, (tabs) => {
         tabs.forEach((tab) => {
           if (tab.id) {
-            chrome.tabs.sendMessage(tab.id, {
-              type: 'TOGGLE_PAGE_TRANSLATE',
-              enabled: checked,
-            }).catch(() => {
-              // 忽略错误（可能是content script未加载）
-            });
+            chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_PAGE_TRANSLATE', enabled: checked }).catch(() => {});
           }
         });
       });
     }
   };
 
-  // 执行翻译
-  const handleTranslate = async () => {
-    if (!inputText.trim()) {
-      setError('请输入要翻译的文本');
-      return;
-    }
-
+  const handleTranslate = useCallback(async () => {
+    if (!inputText.trim()) { setError('请输入要翻译的文本'); return; }
     setIsTranslating(true);
     setError('');
-
     try {
       const result = await translateText(inputText, targetLang);
-      if (result) {
-        setTranslatedText(result);
-      } else {
-        setError('翻译失败，请稍后重试');
-      }
+      if (result) setTranslatedText(result);
+      else setError('翻译失败，请稍后重试');
     } catch (err) {
       setError(`翻译出错: ${err instanceof Error ? err.message : '未知错误'}`);
     } finally {
       setIsTranslating(false);
     }
-  };
+  }, [inputText, targetLang]);
 
-  // 复制翻译结果到剪贴板
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      handleTranslate();
+    }
+  }, [handleTranslate]);
+
   const handleCopy = async () => {
     if (!translatedText) return;
-
     try {
       await navigator.clipboard.writeText(translatedText);
       setCopySuccess(true);
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
-    } catch (err) {
-      console.error('复制失败:', err);
-      // 降级方案：使用传统方法
-      const textArea = document.createElement('textarea');
-      textArea.value = translatedText;
-      textArea.style.position = 'fixed';
-      textArea.style.opacity = '0';
-      document.body.appendChild(textArea);
-      textArea.select();
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = translatedText;
+      el.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(el);
+      el.select();
       try {
         document.execCommand('copy');
         setCopySuccess(true);
-        setTimeout(() => {
-          setCopySuccess(false);
-        }, 2000);
+        setTimeout(() => setCopySuccess(false), 2000);
       } catch (e) {
         console.error('复制失败:', e);
       }
-      document.body.removeChild(textArea);
+      document.body.removeChild(el);
     }
   };
 
-  // 清空所有内容
   const handleClear = () => {
     setInputText('');
     setTranslatedText('');
     setError('');
   };
 
-  // 交换输入和输出（复制翻译结果到输入框）
   const handleSwap = () => {
     if (translatedText) {
       setInputText(translatedText);
@@ -218,139 +157,94 @@ const Translator: React.FC = () => {
     }
   };
 
+  const targetLangName = languages.find((l) => l.code === targetLang)?.name ?? targetLang;
+
   return (
-    <div className="translator" style={{ padding: '6px', height: '100%', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
-      <Card size="small" title="翻译设置">
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            <Text strong>目标语言</Text>
-            <Select
-              value={targetLang || 'en'}
-              onChange={(value) => {
-                if (value) {
-                  setTargetLang(value);
-                }
-              }}
-              style={{ width: '100%' }}
-              size="small"
-              options={languages
-                .filter((lang) => lang.code && lang.name)
-                .map((lang) => ({
-                  value: lang.code,
-                  label: lang.name,
-                }))}
-            />
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              使用免费版 Google 翻译服务
-            </Text>
-          </Space>
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-              <Text strong>页面内翻译</Text>
-              <Switch
-                checked={pageTranslateEnabled ?? true}
-                onChange={(checked) => {
-                  if (typeof checked === 'boolean') {
-                    handlePageTranslateToggle(checked);
-                  }
-                }}
-                size="small"
-              />
-            </Space>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              开启后，在网页上选中文本时会显示翻译按钮
-            </Text>
-          </Space>
-        </Space>
-      </Card>
+    <div className="translator">
+      {/* 语言栏 */}
+      <div className="tl-lang-bar">
+        <div className="tl-lang-row">
+          <span className="tl-lang-auto">自动检测</span>
+          <button className="tl-swap-btn" onClick={handleSwap} disabled={!translatedText} title="互换文本">
+            <SwapOutlined className="tl-swap-icon" />
+          </button>
+          <Select
+            value={targetLang}
+            onChange={(v) => setTargetLang(v)}
+            size="small"
+            style={{ width: 90 }}
+            options={languages.map((l) => ({ value: l.code, label: l.name }))}
+            className="tl-lang-select"
+          />
+        </div>
+        <div className="tl-page-row">
+          <span className="tl-label">页面翻译</span>
+          <Switch
+            checked={pageTranslateEnabled}
+            onChange={(checked) => handlePageTranslateToggle(checked)}
+            size="small"
+          />
+        </div>
+      </div>
 
       {error && (
-        <Alert
-          message={error}
-          type="error"
-          showIcon
-          closable
-          onClose={() => setError('')}
-        />
+        <div className="tl-error" onClick={() => setError('')}>
+          {error}
+          <span className="tl-error-close">✕</span>
+        </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 auto', minHeight: '300px' }}>
-        {/* 上：输入文本区域 */}
-        <Card
-          size="small"
-          title="输入文本"
-          style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
-          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '6px' }}
-        >
-          <Input.TextArea
-            value={inputText || ''}
-            onChange={(e) => {
-              if (e && e.target) {
-                setInputText(e.target.value || '');
-              }
-            }}
-            placeholder="请输入要翻译的文本..."
-            rows={12}
-            style={{ resize: 'none', flex: 1 }}
-          />
-        </Card>
+      {/* 输入区 */}
+      <div className="tl-input-section">
+        <div className="tl-section-header">
+          <span className="tl-section-label">原文</span>
+          <span className="tl-char-count">{inputText.length}</span>
+        </div>
+        <textarea
+          className="tl-textarea"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="请输入要翻译的文本…"
+          rows={5}
+        />
+      </div>
 
-        {/* 中：翻译按钮 */}
-        <Card size="small" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <Space direction="horizontal" size="middle" style={{ width: '100%', justifyContent: 'center' }} wrap>
-            <Button
-              icon={<ClearOutlined />}
-              onClick={handleClear}
-              style={{ minWidth: '100px', width: '33%' }}
-            >
-              清空
-            </Button>
-            <Button
-              icon={<SwapOutlined />}
-              onClick={handleSwap}
-              disabled={!translatedText}
-              style={{ minWidth: '100px', width: '33%' }}
-            >
-              交换
-            </Button>
-            <Button
-              type="primary"
-              icon={<TranslationOutlined />}
-              onClick={handleTranslate}
-              loading={isTranslating}
-              style={{ minWidth: '100px', width: '33%' }}
-            >
-              {isTranslating ? '翻译中...' : '翻译'}
-            </Button>
-          </Space>
-        </Card>
+      {/* 操作栏 */}
+      <div className="tl-action-bar">
+        <button className="tl-translate-btn" onClick={handleTranslate} disabled={isTranslating}>
+          {isTranslating && <span className="tl-spinner" />}
+          {isTranslating ? '翻译中…' : '翻译'}
+        </button>
+        <button className="tl-ghost-btn" onClick={handleClear} disabled={!inputText && !translatedText}>
+          清空
+        </button>
+        <span className="tl-shortcut-hint">⌘↵</span>
+      </div>
 
-        {/* 下：翻译结果区域 */}
-        <Card
-          size="small"
-          title="翻译结果"
-          extra={
-            <Button
-              icon={<CopyOutlined />}
-              onClick={handleCopy}
-              disabled={!translatedText}
-              size="small"
-              type="default"
-            >
-              {copySuccess ? '已复制' : '复制'}
-            </Button>
-          }
-          style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
-          bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '6px' }}
-        >
-          <Input.TextArea
-            value={translatedText || ''}
-            readOnly
-            placeholder="翻译结果将显示在这里..."
-            rows={12}
-            style={{ resize: 'none', flex: 1 }}
-          />
-        </Card>
+      {/* 输出区 */}
+      <div className="tl-output-section">
+        <div className="tl-section-header">
+          <span className="tl-section-label">{targetLangName}</span>
+          {translatedText && (
+            <button className="tl-copy-btn" onClick={handleCopy}>
+              {copySuccess ? <><CheckOutlined /> 已复制</> : '复制'}
+            </button>
+          )}
+        </div>
+        <div className="tl-output">
+          {isTranslating ? (
+            <div className="tl-skeleton">
+              <div className="tl-skeleton-line tl-skeleton-line--80" />
+              <div className="tl-skeleton-line tl-skeleton-line--60" />
+              <div className="tl-skeleton-line tl-skeleton-line--70" />
+            </div>
+          ) : translatedText ? (
+            <span>{translatedText}</span>
+          ) : (
+            <span className="tl-placeholder">翻译结果显示在此…</span>
+          )}
+        </div>
       </div>
     </div>
   );

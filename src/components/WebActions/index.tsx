@@ -251,8 +251,7 @@ const WebActions: React.FC = () => {
     <div className="feature-content web-actions">
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
         <Paragraph type="secondary" className="web-actions-intro">
-          在<strong>当前浏览器标签页</strong>上执行网页级操作。以下功能会向页面注入脚本（MAIN
-          world），请仅在可信站点使用。
+          在当前标签页执行网页操作，需向页面注入脚本，请仅在可信站点使用。
         </Paragraph>
 
         <div className="web-actions-list">
@@ -302,23 +301,14 @@ const WebActions: React.FC = () => {
                           : `短时补注晚加载 iframe（${LATE_IFRAME_TOTAL_MS / 1000} 秒内每 ${LATE_IFRAME_TICK_MS / 1000} 秒扫描）`}
                       </Button>
                       <Text type="secondary" className="web-actions-hint">
-                        使用 Chromium 扩展的 <code>chrome.scripting</code>（<code>allFrames: true</code>
-                        ），在扩展有权访问的<strong>每一个子框架</strong>内各注入一次脚本，正文在跨域或深层
-                        iframe 里时优先点第二项。无法注入的框架（如 <code>chrome://</code> 内嵌、部分沙箱）会被跳过，成功数见提示。
+                        正文在跨域或深层 iframe 中时优先选第二项；无法注入的框架（如 <code>chrome://</code>、沙箱）会被跳过，成功数见提示。
                       </Text>
                       <Text type="secondary" className="web-actions-hint">
-                        <strong>晚加载 iframe</strong>：第三项会先全框架注入一次，随后在约 {LATE_IFRAME_TOTAL_MS / 1000}{' '}
-                        秒内每隔 {LATE_IFRAME_TICK_MS / 1000} 秒静默再注入；已处理过的文档会立即跳过，仅新出现的框架会执行脚本。弹窗模式下面板关闭即停止，建议用<strong>侧边栏</strong>。
+                        <strong>第三项（晚加载）</strong>：先注入一次，随后在 {LATE_IFRAME_TOTAL_MS / 1000} 秒内每隔 {LATE_IFRAME_TICK_MS / 1000} 秒自动补注新出现的框架。弹窗关闭即停止，建议用<strong>侧边栏</strong>。
                       </Text>
                     </Space>
                     <Text type="secondary">
-                      综合处理常见防复制手段：全局 CSS 覆盖 <code>user-select</code>；遍历节点与 Shadow
-                      DOM 写入可选中样式；移除 <code>oncopy</code> 等内联事件并由 MutationObserver
-                      持续清理；劫持 <code>Event.prototype.preventDefault</code>（仅针对 copy / cut /
-                      contextmenu / selectstart / dragstart），站点无论在<strong>捕获</strong>还是<strong>冒泡</strong>阶段调用均会被中和。
-                    </Text>
-                    <Text type="secondary">
-                      说明：Canvas / 图片排版文字仍无法按纯文本复制。
+                      覆盖 CSS <code>user-select</code>、移除内联防复制事件、MutationObserver 持续清理、劫持 copy / contextmenu 等事件的 <code>preventDefault</code>。Canvas / 图片文字无法按纯文本复制。
                     </Text>
                   </Space>
                 ),

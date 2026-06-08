@@ -130,10 +130,10 @@
 .settings-section-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary, #667eea);
   margin: 6px;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--theme-border, #e2e8f0);
+  border-bottom: 2px solid var(--theme-primarySoft, rgba(102, 126, 234, 0.2));
 }
 
 .settings-section-content {
@@ -349,7 +349,7 @@
 
 .storage-progress-bar {
   height: 100%;
-  background: var(--theme-active, #667eea);
+  background: var(--theme-gradient-main, linear-gradient(135deg, #667eea, #764ba2));
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -438,7 +438,7 @@
 }
 
 .about-value {
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary, #667eea);
   font-weight: 600;
 }
 

@@ -34,7 +34,7 @@
   margin: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary, #334155);
 }
 
 .header-desc {
@@ -216,7 +216,7 @@
 .rule-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary, #334155);
   margin-bottom: 6px;
 }
 

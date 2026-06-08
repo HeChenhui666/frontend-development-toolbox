@@ -114,7 +114,7 @@
 .preview-header label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary, #334155);
 }
 
 .preview-actions {

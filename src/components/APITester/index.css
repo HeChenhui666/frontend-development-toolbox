@@ -16,10 +16,10 @@
 .api-tester-section-title {
   font-weight: 600;
   font-size: 13px;
-  color: var(--theme-text, #334155);
+  color: var(--theme-primary, #334155);
   margin-bottom: 8px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--theme-border, #e8ecf0);
+  border-bottom: 2px solid var(--theme-primarySoft, rgba(102, 126, 234, 0.2));
 }
 
 .api-tester-section-subtitle {
