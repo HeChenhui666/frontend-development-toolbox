@@ -1,13 +1,15 @@
 import React, { useState, memo, useCallback } from 'react';
-import { CloseOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { CloseOutlined, ArrowLeftOutlined, SettingOutlined } from '@ant-design/icons';
 import './index.css';
 import { games, GameConfig } from './games/gamesConfig';
 
 interface EasterEggProps {
   onClose: () => void;
+  onOpenChat?: () => void;
+  onOpenChatSettings?: () => void;
 }
 
-const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
+const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose, onOpenChat, onOpenChatSettings }) => {
   const [selectedGame, setSelectedGame] = useState<GameConfig | null>(null);
 
   const handleGameClick = useCallback((game: GameConfig) => {
@@ -54,8 +56,8 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
         <div className="ee-header-glow" aria-hidden />
         <div className="ee-trophy">🎉</div>
         <div className="ee-header-text">
-          <h2 className="ee-title">发现彩蛋！</h2>
-          <p className="ee-subtitle">你是一个细心的人 · 选一个游戏开始吧</p>
+          <h2 className="ee-title">缤果~发现彩蛋！</h2>
+          <p className="ee-subtitle">你是一个细心的人 · 选一个卡片开始吧</p>
         </div>
         <button className="ee-close" onClick={onClose} aria-label="关闭">
           <CloseOutlined />
@@ -77,6 +79,29 @@ const EasterEgg: React.FC<EasterEggProps> = memo(({ onClose }) => {
             <span className="ee-game-play">开始 →</span>
           </button>
         ))}
+        {onOpenChat && (
+          <button
+            className="ee-game-card ee-chat-card"
+            onClick={onOpenChat}
+            type="button"
+          >
+            {onOpenChatSettings && (
+              <button
+                className="ee-chat-settings-btn"
+                type="button"
+                title="聊天设置"
+                onClick={(e) => { e.stopPropagation(); onOpenChatSettings(); }}
+              >
+                <SettingOutlined />
+              </button>
+            )}
+            <span className="ee-game-icon">💬</span>
+            <span className="ee-game-name">局域网聊天</span>
+            <span className="ee-game-desc">与同网络的人实时通讯</span>
+            <span className="ee-chat-badge">实验性</span>
+            <span className="ee-game-play">打开 →</span>
+          </button>
+        )}
       </div>
 
       {/* 底部签名 */}

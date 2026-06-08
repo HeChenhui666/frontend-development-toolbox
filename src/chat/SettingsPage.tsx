@@ -7,7 +7,7 @@ import Settings from '../components/Settings';
 const SettingsPage: React.FC = () => {
   return (
     <div className="chat-settings-page">
-      <Settings embedded chatRelayPanelInTab onClose={() => {}} />
+      <Settings embedded chatRelayPanelInTab onlyTabs={['chat']} onClose={() => {}} />
     </div>
   );
 };

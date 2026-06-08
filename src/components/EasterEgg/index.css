@@ -237,6 +237,56 @@
   transform: translateY(0);
 }
 
+/* ===== 聊天卡片设置按钮 ===== */
+.ee-chat-settings-btn {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  border: none;
+  background: var(--theme-primarySoft);
+  color: var(--theme-active);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  opacity: 0;
+  transform: scale(0.75);
+  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  z-index: 2;
+  padding: 0;
+  line-height: 1;
+}
+
+.ee-chat-card:hover .ee-chat-settings-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ee-chat-settings-btn:hover {
+  background: var(--theme-primarySoftHover, var(--theme-primarySoft));
+  transform: scale(1.12) !important;
+}
+
+.ee-chat-settings-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* ===== 聊天卡片徽标 ===== */
+.ee-chat-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--theme-primarySoft);
+  color: var(--theme-active);
+  position: relative;
+  letter-spacing: 0.3px;
+}
+
 /* ===== 底部 ===== */
 .ee-footer {
   position: relative;
