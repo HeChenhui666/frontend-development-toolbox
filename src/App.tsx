@@ -1,5 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo } from 'react';
-import { ConfigProvider, theme as antdTheme, Tooltip } from 'antd';
+import { ConfigProvider, theme as antdTheme, Tooltip, Modal } from 'antd';
 import {
   QrcodeOutlined,
   LinkOutlined,
@@ -15,7 +15,6 @@ import {
   CompassOutlined,
   StarOutlined,
   PartitionOutlined,
-  MessageOutlined,
   SettingOutlined,
   FireOutlined,
   AppstoreOutlined,
@@ -237,6 +236,7 @@ const App: React.FC = () => {
   const [clickCount, setClickCount] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showChatSettings, setShowChatSettings] = useState(false);
   const [tabOrderVersion, setTabOrderVersion] = useState(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isTabPending, startTabTransition] = useTransition();
@@ -494,7 +494,7 @@ const App: React.FC = () => {
         <div className="app-sider-wrapper">
         <aside className="app-sider">
           {/* Logo */}
-          <div className="sider-logo" onClick={handleTitleClick} title="点击10次有彩蛋">
+          <div className="sider-logo" onClick={handleTitleClick} title="你能找到彩蛋吗？">
             <FireOutlined className="sider-logo-icon" />
             <span className="sider-logo-text">工具箱</span>
           </div>
@@ -514,7 +514,6 @@ const App: React.FC = () => {
 
           {/* 底部操作 */}
           <div className="sider-bottom">
-            <SiderAction icon={<MessageOutlined />} label="聊天(测试)" onClick={handleOpenChat} collapsed={isCollapsed} />
             <SiderAction icon={<SettingOutlined />} label="设置" onClick={() => setShowSettings(v => !v)} collapsed={isCollapsed} isActive={showSettings} />
           </div>
         </aside>
@@ -542,7 +541,7 @@ const App: React.FC = () => {
           <div className="content">
             <Suspense fallback={<div className="loading">加载中…</div>}>
               {showEasterEgg ? (
-                <EasterEgg onClose={handleCloseEasterEgg} />
+                <EasterEgg onClose={handleCloseEasterEgg} onOpenChat={handleOpenChat} onOpenChatSettings={() => setShowChatSettings(true)} />
               ) : showSettings ? (
                 <Settings onClose={() => setShowSettings(false)} embedded={true} />
               ) : isTabPending ? null : (
@@ -556,6 +555,21 @@ const App: React.FC = () => {
           </div>
         </main>
       </div>
+      {showChatSettings && (
+        <Modal
+          open={true}
+          title="聊天设置"
+          onCancel={() => setShowChatSettings(false)}
+          footer={null}
+          width={480}
+          centered
+          destroyOnClose
+        >
+          <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>加载中…</div>}>
+            <Settings embedded onlyTabs={['chat']} onClose={() => setShowChatSettings(false)} />
+          </Suspense>
+        </Modal>
+      )}
     </ConfigProvider>
   );
 };

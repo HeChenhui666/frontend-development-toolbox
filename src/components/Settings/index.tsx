@@ -81,6 +81,11 @@ interface SettingsProps {
    * 不再单独显示 WebSocket 输入框以免重复。
    */
   chatRelayPanelInTab?: boolean;
+  /**
+   * 限定显示的 tab。不传时默认显示 general + theme（不含 chat）。
+   * 传 ['chat'] 时直接渲染聊天设置内容，不展示 Tab 导航栏。
+   */
+  onlyTabs?: SettingsTab[];
 }
 
 type SettingsTab = 'general' | 'theme' | 'chat';
@@ -118,8 +123,10 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   codec: '编码/解码',
 };
 
-const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, chatRelayPanelInTab = false }) => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, chatRelayPanelInTab = false, onlyTabs }) => {
+  // 默认显示 general + theme，不含 chat
+  const allowedTabs = onlyTabs ?? (['general', 'theme'] as SettingsTab[]);
+  const [activeTab, setActiveTab] = useState<SettingsTab>(allowedTabs[0] ?? 'general');
   const [defaultTab, setDefaultTab] = useState<DefaultTab>(getDefaultTab());
   const [storageInfo, setStorageInfo] = useState(getStorageInfo());
   const [cacheTypeInfo, setCacheTypeInfo] = useState(getCacheTypeInfo());
@@ -633,12 +640,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, cha
     setDragOverIndex(null);
   };
 
-  const settingsTabs = (
-    <Tabs
-        className={embedded ? 'settings-embedded-tabs' : undefined}
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as SettingsTab)}
-        items={[
+  const allTabItems = [
           {
             key: 'general',
             label: (
@@ -984,8 +986,19 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, cha
               </div>
             ),
           },
-        ]}
-      />
+  ];
+  const visibleTabItems = allTabItems.filter(item => allowedTabs.includes(item.key as SettingsTab));
+
+  // 单 tab 时直接渲染内容，不显示 Tab 导航栏
+  const settingsTabs = visibleTabItems.length === 1 ? (
+    visibleTabItems[0].children
+  ) : (
+    <Tabs
+      className={embedded ? 'settings-embedded-tabs' : undefined}
+      activeKey={activeTab}
+      onChange={(key) => setActiveTab(key as SettingsTab)}
+      items={visibleTabItems}
+    />
   );
 
   const tabOrderManagerModal = (
@@ -1038,11 +1051,13 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, cha
   if (embedded) {
     return (
       <div className="settings-embedded-root">
-        <Title level={4} className="settings-embedded-title">
-          设置
-        </Title>
+        {!onlyTabs && (
+          <Title level={4} className="settings-embedded-title">
+            设置
+          </Title>
+        )}
         {settingsTabs}
-        {tabOrderManagerModal}
+        {visibleTabItems.some(t => t.key === 'general') && tabOrderManagerModal}
       </div>
     );
   }
@@ -1061,7 +1076,7 @@ const Settings: React.FC<SettingsProps> = memo(({ onClose, embedded = false, cha
       closeIcon={<CloseOutlined />}
     >
       {settingsTabs}
-      {tabOrderManagerModal}
+      {visibleTabItems.some(t => t.key === 'general') && tabOrderManagerModal}
     </Modal>
   );
 });
