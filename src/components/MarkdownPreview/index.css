@@ -1,0 +1,100 @@
+.markdown-preview {
+  display: flex;
+  gap: 6px;
+  height: 100%;
+  padding: 6px;
+  overflow: hidden;
+}
+
+.md-editor-pane, .md-preview-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--theme-borderLight);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.md-pane-header {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--theme-surfaceElevated);
+  border-bottom: 1px solid var(--theme-borderLight);
+  color: var(--theme-textMuted);
+}
+
+.md-textarea {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  resize: none;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  outline: none;
+}
+
+.md-rendered {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--theme-text);
+}
+
+.md-rendered h1 { font-size: 18px; margin: 8px 0 4px; border-bottom: 1px solid var(--theme-borderLight); padding-bottom: 4px; }
+.md-rendered h2 { font-size: 15px; margin: 8px 0 4px; }
+.md-rendered h3 { font-size: 13px; margin: 6px 0 3px; }
+.md-rendered p { margin: 4px 0; }
+.md-rendered blockquote { margin: 4px 0; padding: 4px 8px; border-left: 3px solid var(--theme-primary); background: var(--theme-surfaceElevated); font-style: italic; }
+.md-rendered hr { border: none; border-top: 1px solid var(--theme-borderLight); margin: 8px 0; }
+.md-rendered ul, .md-rendered ol { margin: 4px 0; padding-left: 18px; }
+.md-rendered li { margin: 2px 0; }
+.md-rendered a { color: var(--theme-primary); text-decoration: none; }
+.md-rendered a:hover { text-decoration: underline; }
+.md-rendered strong { font-weight: 700; }
+.md-rendered del { text-decoration: line-through; opacity: 0.6; }
+
+.md-inline-code {
+  padding: 1px 4px;
+  background: var(--theme-surfaceElevated);
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 10px;
+}
+
+.md-code-block {
+  margin: 6px 0;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.md-code-block code { font-family: inherit; }
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0;
+  font-size: 11px;
+}
+
+.md-table th, .md-table td {
+  padding: 4px 8px;
+  border: 1px solid var(--theme-borderLight);
+  text-align: left;
+}
+
+.md-table th {
+  background: var(--theme-surfaceElevated);
+  font-weight: 600;
+}

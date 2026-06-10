@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Select, Input, Button, Space, Checkbox, message as antdMessage } from 'antd';
+import { Select, Input, Button, Space, Checkbox, Collapse, Tabs, Typography, Tag, Alert, message as antdMessage } from 'antd';
 import {
   CopyOutlined,
   ClearOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   ThunderboltOutlined,
+  ExperimentOutlined,
 } from '@ant-design/icons';
+
+const { Text } = Typography;
 import RandExp from 'randexp';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { useCompatibility } from '../../hooks/useCompatibility';
@@ -324,9 +327,356 @@ const RegexTester: React.FC = () => {
         </div>
       )}
 
+      {/* 扩展工具 */}
+      <RegexExtendedTools pattern={regexPattern} />
+
       {/* 清空 */}
       <Button icon={<ClearOutlined />} onClick={clearAll} size="small" block>清空</Button>
     </div>
+  );
+};
+
+/* ─── 正则可视化：将正则 AST 转为铁路图 SVG ─── */
+interface RailroadNode {
+  type: 'literal' | 'charset' | 'group' | 'quantifier' | 'alternation' | 'anchor' | 'any' | 'backreference';
+  value: string;
+  children?: RailroadNode[];
+  min?: number;
+  max?: number;
+  greedy?: boolean;
+}
+
+const tokenizeRegex = (pattern: string): RailroadNode[] => {
+  const nodes: RailroadNode[] = [];
+  let index = 0;
+
+  while (index < pattern.length) {
+    const char = pattern[index];
+
+    if (char === '\\') {
+      index++;
+      if (index >= pattern.length) break;
+      const escaped = pattern[index];
+      const escapeMap: Record<string, string> = {
+        'd': '数字 [0-9]', 'D': '非数字', 'w': '字母数字 [a-zA-Z0-9_]', 'W': '非字母数字',
+        's': '空白字符', 'S': '非空白', 'b': '单词边界', 'B': '非单词边界',
+        'n': '换行符', 't': '制表符', 'r': '回车符',
+      };
+      if (escapeMap[escaped]) {
+        nodes.push({ type: 'charset', value: escapeMap[escaped] });
+      } else if (/\d/.test(escaped)) {
+        nodes.push({ type: 'backreference', value: `反向引用 \\${escaped}` });
+      } else {
+        nodes.push({ type: 'literal', value: escaped });
+      }
+      index++;
+      continue;
+    }
+
+    if (char === '[') {
+      const closeIdx = pattern.indexOf(']', index + 1);
+      if (closeIdx > index) {
+        const content = pattern.slice(index, closeIdx + 1);
+        nodes.push({ type: 'charset', value: content });
+        index = closeIdx + 1;
+        continue;
+      }
+    }
+
+    if (char === '(') {
+      let depth = 1;
+      let groupEnd = index + 1;
+      while (groupEnd < pattern.length && depth > 0) {
+        if (pattern[groupEnd] === '(' && pattern[groupEnd - 1] !== '\\') depth++;
+        if (pattern[groupEnd] === ')' && pattern[groupEnd - 1] !== '\\') depth--;
+        groupEnd++;
+      }
+      const groupContent = pattern.slice(index + 1, groupEnd - 1);
+      let groupLabel = '捕获组';
+      let innerContent = groupContent;
+
+      if (groupContent.startsWith('?:')) { groupLabel = '非捕获组'; innerContent = groupContent.slice(2); }
+      else if (groupContent.startsWith('?=')) { groupLabel = '正向前瞻'; innerContent = groupContent.slice(2); }
+      else if (groupContent.startsWith('?!')) { groupLabel = '负向前瞻'; innerContent = groupContent.slice(2); }
+      else if (groupContent.startsWith('?<=')) { groupLabel = '正向后瞻'; innerContent = groupContent.slice(3); }
+      else if (groupContent.startsWith('?<!')) { groupLabel = '负向后瞻'; innerContent = groupContent.slice(3); }
+
+      nodes.push({ type: 'group', value: groupLabel, children: tokenizeRegex(innerContent) });
+      index = groupEnd;
+      continue;
+    }
+
+    if (char === '|') {
+      const remaining = tokenizeRegex(pattern.slice(index + 1));
+      return [{ type: 'alternation', value: '或', children: [{ type: 'group', value: '', children: nodes }, { type: 'group', value: '', children: remaining }] }];
+    }
+
+    if (char === '.' ) { nodes.push({ type: 'any', value: '任意字符' }); index++; continue; }
+    if (char === '^') { nodes.push({ type: 'anchor', value: '行首' }); index++; continue; }
+    if (char === '$') { nodes.push({ type: 'anchor', value: '行尾' }); index++; continue; }
+
+    if ((char === '*' || char === '+' || char === '?' || char === '{') && nodes.length > 0) {
+      const lastNode = nodes[nodes.length - 1];
+      let min = 0, max = Infinity;
+      let nextIdx = index + 1;
+
+      if (char === '*') { min = 0; max = Infinity; }
+      else if (char === '+') { min = 1; max = Infinity; }
+      else if (char === '?') { min = 0; max = 1; }
+      else if (char === '{') {
+        const braceEnd = pattern.indexOf('}', index);
+        if (braceEnd > index) {
+          const range = pattern.slice(index + 1, braceEnd);
+          const parts = range.split(',');
+          min = parseInt(parts[0], 10) || 0;
+          max = parts.length > 1 ? (parts[1] ? parseInt(parts[1], 10) : Infinity) : min;
+          nextIdx = braceEnd + 1;
+        }
+      }
+
+      const greedy = !(nextIdx < pattern.length && pattern[nextIdx] === '?');
+      if (!greedy) nextIdx++;
+
+      nodes[nodes.length - 1] = { type: 'quantifier', value: formatQuantifier(min, max, greedy), min, max, greedy, children: [lastNode] };
+      index = nextIdx;
+      continue;
+    }
+
+    nodes.push({ type: 'literal', value: char });
+    index++;
+  }
+
+  return nodes;
+};
+
+const formatQuantifier = (min: number, max: number, greedy: boolean): string => {
+  const lazyStr = greedy ? '' : ' (惰性)';
+  if (min === 0 && max === Infinity) return `0 或多次${lazyStr}`;
+  if (min === 1 && max === Infinity) return `1 或多次${lazyStr}`;
+  if (min === 0 && max === 1) return `可选${lazyStr}`;
+  if (min === max) return `恰好 ${min} 次${lazyStr}`;
+  if (max === Infinity) return `至少 ${min} 次${lazyStr}`;
+  return `${min}-${max} 次${lazyStr}`;
+};
+
+const renderRailroadText = (nodes: RailroadNode[], depth: number = 0): string => {
+  const indent = '  '.repeat(depth);
+  return nodes.map((node) => {
+    switch (node.type) {
+      case 'literal': return `${indent}── "${node.value}" ──`;
+      case 'charset': return `${indent}── [${node.value}] ──`;
+      case 'any': return `${indent}── . ${node.value} ──`;
+      case 'anchor': return `${indent}◆ ${node.value}`;
+      case 'backreference': return `${indent}← ${node.value}`;
+      case 'quantifier':
+        return `${indent}┌─ ${node.value} ─┐\n${node.children ? renderRailroadText(node.children, depth + 1) : ''}\n${indent}└──────────┘`;
+      case 'group': {
+        const label = node.value ? `${node.value}` : '';
+        const inner = node.children ? renderRailroadText(node.children, depth + 1) : '';
+        return label ? `${indent}┌─ (${label}) ─┐\n${inner}\n${indent}└──────────┘` : inner;
+      }
+      case 'alternation': {
+        if (!node.children || node.children.length < 2) return '';
+        return node.children.map((child, index) => {
+          const inner = child.children ? renderRailroadText(child.children, depth + 1) : '';
+          return `${indent}${index === 0 ? '┬' : '├'}─ 分支 ${index + 1} ──\n${inner}`;
+        }).join('\n') + `\n${indent}└──────────┘`;
+      }
+      default: return `${indent}── ${node.value} ──`;
+    }
+  }).join('\n');
+};
+
+/* ─── 正则自然语言解释 ─── */
+const explainNode = (node: RailroadNode): string => {
+  switch (node.type) {
+    case 'literal': return `匹配字符 "${node.value}"`;
+    case 'charset': return `匹配 ${node.value}`;
+    case 'any': return '匹配任意字符（除换行符）';
+    case 'anchor': return node.value === '行首' ? '从字符串开头匹配' : '匹配到字符串结尾';
+    case 'backreference': return node.value;
+    case 'quantifier': {
+      const inner = node.children ? node.children.map(explainNode).join('') : '';
+      return `${inner}，重复 ${node.value}`;
+    }
+    case 'group': {
+      const inner = node.children ? node.children.map(explainNode).join('，然后 ') : '';
+      if (!node.value) return inner;
+      if (node.value === '正向前瞻') return `后面紧跟着 ${inner}`;
+      if (node.value === '负向前瞻') return `后面不跟着 ${inner}`;
+      if (node.value === '正向后瞻') return `前面是 ${inner}`;
+      if (node.value === '负向后瞻') return `前面不是 ${inner}`;
+      return `(${node.value}: ${inner})`;
+    }
+    case 'alternation': {
+      if (!node.children) return '';
+      return node.children.map((child) => {
+        return child.children ? child.children.map(explainNode).join('，然后 ') : '';
+      }).filter(Boolean).join('；或者 ');
+    }
+    default: return node.value;
+  }
+};
+
+const explainRegex = (pattern: string): string => {
+  if (!pattern.trim()) return '';
+  try {
+    const nodes = tokenizeRegex(pattern);
+    const explanations = nodes.map(explainNode).filter(Boolean);
+    return explanations.join('，然后 ');
+  } catch {
+    return '无法解析该正则表达式';
+  }
+};
+
+/* ─── ReDoS 检测 ─── */
+interface RedosResult {
+  safe: boolean;
+  risks: string[];
+  severity: 'safe' | 'low' | 'medium' | 'high';
+}
+
+const detectRedos = (pattern: string): RedosResult => {
+  const risks: string[] = [];
+
+  // 1. 嵌套量词 (a+)+ or (a*)*
+  if (/\([^)]*[+*]\)[+*]/.test(pattern)) {
+    risks.push('检测到嵌套量词（如 (a+)+ ），这是最常见的 ReDoS 模式');
+  }
+
+  // 2. 重叠的量词交替 (a|a)+
+  const altInQuantGroup = /\(([^)]+)\|([^)]+)\)[+*]/;
+  const altMatch = pattern.match(altInQuantGroup);
+  if (altMatch) {
+    const [, branchA, branchB] = altMatch;
+    // 简单的重叠检查：如果两个分支有相同的字符
+    if (branchA && branchB) {
+      const charsA = new Set(branchA.replace(/\\./g, '').split(''));
+      const charsB = new Set(branchB.replace(/\\./g, '').split(''));
+      const overlap = [...charsA].some((c) => charsB.has(c));
+      if (overlap) {
+        risks.push(`交替分支 "${branchA}" 和 "${branchB}" 存在字符重叠，在量词内可能导致回溯`);
+      }
+    }
+  }
+
+  // 3. .*后跟可选模式再重复
+  if (/\.\*.*\.\*/.test(pattern)) {
+    risks.push('检测到多个 .* 贪婪匹配，可能产生大量回溯');
+  }
+
+  // 4. 字符类后紧跟相同或重叠的字符类+量词
+  if (/\[([^\]]+)\][+*].*\[([^\]]+)\][+*]/.test(pattern)) {
+    risks.push('检测到多个量化的字符类，可能存在重叠导致回溯');
+  }
+
+  // 5. 超长回溯链
+  const quantifierCount = (pattern.match(/[+*{]/g) || []).length;
+  if (quantifierCount > 5) {
+    risks.push(`检测到 ${quantifierCount} 个量词，复杂度较高，建议简化`);
+  }
+
+  // 6. 指数级回溯模式: (\w+\s+)+ 等
+  if (/\([^)]*\\[wdsDW][+*][^)]*\\[sdwSDW][+*][^)]*\)[+*]/.test(pattern)) {
+    risks.push('检测到典型的指数级回溯模式（如 (\\w+\\s+)+）');
+  }
+
+  let severity: RedosResult['severity'] = 'safe';
+  if (risks.length === 1) severity = 'low';
+  else if (risks.length === 2) severity = 'medium';
+  else if (risks.length >= 3) severity = 'high';
+  if (risks.some((r) => r.includes('嵌套量词') || r.includes('指数级'))) severity = 'high';
+
+  return { safe: risks.length === 0, risks, severity };
+};
+
+/* ─── 正则扩展工具组件 ─── */
+const RegexExtendedTools: React.FC<{ pattern: string }> = ({ pattern }) => {
+  const [activeTab, setActiveTab] = useState('visualize');
+
+  const railroadText = useMemo(() => {
+    if (!pattern.trim()) return '';
+    try {
+      const nodes = tokenizeRegex(pattern);
+      return renderRailroadText(nodes);
+    } catch {
+      return '解析失败';
+    }
+  }, [pattern]);
+
+  const explanation = useMemo(() => explainRegex(pattern), [pattern]);
+
+  const redosResult = useMemo(() => {
+    if (!pattern.trim()) return null;
+    return detectRedos(pattern);
+  }, [pattern]);
+
+  const severityColorMap: Record<string, string> = {
+    safe: 'green', low: 'gold', medium: 'orange', high: 'red',
+  };
+  const severityLabelMap: Record<string, string> = {
+    safe: '安全', low: '低风险', medium: '中风险', high: '高风险',
+  };
+
+  if (!pattern.trim()) return null;
+
+  const visualizeTab = (
+    <div className="rx-ext-content">
+      <Text style={{ fontSize: 10, color: 'var(--theme-textMuted)' }}>正则结构（文本铁路图）</Text>
+      <pre className="rx-railroad-text">{railroadText || '请输入正则表达式'}</pre>
+    </div>
+  );
+
+  const explainTab = (
+    <div className="rx-ext-content">
+      <Text style={{ fontSize: 10, color: 'var(--theme-textMuted)' }}>自然语言解释</Text>
+      <div className="rx-explanation">{explanation || '请输入正则表达式'}</div>
+    </div>
+  );
+
+  const redosTab = (
+    <div className="rx-ext-content">
+      {redosResult && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Tag color={severityColorMap[redosResult.severity]}>{severityLabelMap[redosResult.severity]}</Tag>
+            <Text style={{ fontSize: 11 }}>
+              {redosResult.safe ? '未检测到明显的 ReDoS 风险' : `检测到 ${redosResult.risks.length} 个潜在风险`}
+            </Text>
+          </div>
+          {redosResult.risks.length > 0 && (
+            <div className="rx-redos-risks">
+              {redosResult.risks.map((risk, index) => (
+                <Alert key={index} message={risk} type="warning" showIcon style={{ fontSize: 11 }} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <Collapse
+      size="small"
+      items={[{
+        key: 'extended',
+        label: <Space size={4}><ExperimentOutlined /><span style={{ fontSize: 12 }}>正则分析工具</span></Space>,
+        children: (
+          <Tabs
+            size="small"
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={[
+              { key: 'visualize', label: '结构图', children: visualizeTab },
+              { key: 'explain', label: '解释', children: explainTab },
+              { key: 'redos', label: 'ReDoS', children: redosTab },
+            ]}
+            style={{ marginTop: -8 }}
+          />
+        ),
+      }]}
+    />
   );
 };
 

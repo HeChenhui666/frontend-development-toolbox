@@ -1,0 +1,38 @@
+.json-yaml-converter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+}
+
+.jyc-toolbar {
+  display: flex;
+  justify-content: center;
+}
+
+.jyc-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jyc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jyc-output {
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  max-height: 250px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  color: var(--theme-text);
+}

@@ -1,0 +1,67 @@
+.storage-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.sm-toolbar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.sm-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sm-add-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.sm-entry-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.sm-entry-item {
+  padding: 4px 0 !important;
+}
+
+.sm-entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+}
+
+.sm-entry-key {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sm-entry-key code {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text);
+  word-break: break-all;
+}
+
+.sm-entry-value {
+  font-size: 10px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  color: var(--theme-textMuted);
+  word-break: break-all;
+  max-height: 40px;
+  overflow: hidden;
+}

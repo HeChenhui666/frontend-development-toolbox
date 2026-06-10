@@ -9,8 +9,12 @@ import {
   message,
   Popconfirm,
   Modal,
+  Collapse,
+  Tabs,
+  List,
+  Tag,
 } from 'antd';
-import { SendOutlined, SaveOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { SendOutlined, SaveOutlined, DeleteOutlined, PlusOutlined, CodeOutlined, SettingOutlined } from '@ant-design/icons';
 import './index.css';
 
 const { Text } = Typography;
@@ -679,7 +683,340 @@ const APITester = () => {
           )}
         </div>
       )}
+
+      {/* 扩展工具 */}
+      <APIExtendedTools
+        method={method}
+        url={url}
+        headers={headers}
+        body={body}
+        lastResponseStatus={response?.status}
+        onImport={(importedMethod, importedUrl, importedHeaders, importedBody) => {
+          setMethod(importedMethod);
+          setUrl(importedUrl);
+          setHeaders(importedHeaders);
+          if (importedBody) setBody(importedBody);
+        }}
+      />
     </div>
+  );
+};
+
+/* ─── cURL 解析器 ─── */
+const parseCurl = (curlCommand: string): { method: string; url: string; headers: HeaderItem[]; body: string } | null => {
+  try {
+    let cmd = curlCommand.trim();
+    if (cmd.startsWith('curl ')) cmd = cmd.slice(5);
+    // 去除反斜杠换行
+    cmd = cmd.replace(/\\\n/g, ' ').replace(/\\\r\n/g, ' ');
+
+    let method = 'GET';
+    let url = '';
+    const headers: HeaderItem[] = [];
+    let body = '';
+
+    const tokens: string[] = [];
+    let current = '';
+    let inQuote: string | null = null;
+
+    for (let i = 0; i < cmd.length; i++) {
+      const char = cmd[i];
+      if (inQuote) {
+        if (char === inQuote && cmd[i - 1] !== '\\') {
+          inQuote = null;
+        } else {
+          current += char;
+        }
+      } else if (char === '"' || char === "'") {
+        inQuote = char;
+      } else if (char === ' ' || char === '\t') {
+        if (current) { tokens.push(current); current = ''; }
+      } else {
+        current += char;
+      }
+    }
+    if (current) tokens.push(current);
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token === '-X' || token === '--request') {
+        method = tokens[++i]?.toUpperCase() || 'GET';
+      } else if (token === '-H' || token === '--header') {
+        const headerStr = tokens[++i] || '';
+        const colonIdx = headerStr.indexOf(':');
+        if (colonIdx > 0) {
+          headers.push({ key: headerStr.slice(0, colonIdx).trim(), value: headerStr.slice(colonIdx + 1).trim() });
+        }
+      } else if (token === '-d' || token === '--data' || token === '--data-raw' || token === '--data-binary') {
+        body = tokens[++i] || '';
+        if (method === 'GET') method = 'POST';
+      } else if (token.startsWith('http://') || token.startsWith('https://')) {
+        url = token;
+      } else if (!token.startsWith('-') && !url) {
+        url = token;
+      }
+    }
+
+    if (!url) return null;
+    return { method, url, headers, body };
+  } catch {
+    return null;
+  }
+};
+
+const generateCurl = (method: string, url: string, headers: HeaderItem[], body: string): string => {
+  const parts = ['curl'];
+  if (method !== 'GET') parts.push(`-X ${method}`);
+  parts.push(`'${url}'`);
+  headers.forEach((h) => {
+    if (h.key && h.value) parts.push(`-H '${h.key}: ${h.value}'`);
+  });
+  if (body && !['GET', 'HEAD'].includes(method)) {
+    parts.push(`-d '${body.replace(/'/g, "\\'")}'`);
+  }
+  return parts.join(' \\\n  ');
+};
+
+/* ─── API 请求历史 ─── */
+const API_HISTORY_KEY = 'api_tester_history';
+const API_ENV_KEY = 'api_tester_env';
+const MAX_API_HISTORY = 30;
+
+interface APIHistoryItem {
+  id: string;
+  method: string;
+  url: string;
+  status?: number;
+  timestamp: number;
+  headers: HeaderItem[];
+  body: string;
+}
+
+interface EnvVariable {
+  key: string;
+  value: string;
+}
+
+const loadAPIHistory = (): APIHistoryItem[] => {
+  try { return JSON.parse(localStorage.getItem(API_HISTORY_KEY) || '[]'); }
+  catch { return []; }
+};
+
+const addToAPIHistory = (item: Omit<APIHistoryItem, 'id' | 'timestamp'>) => {
+  try {
+    const existing = loadAPIHistory();
+    const newItem: APIHistoryItem = { ...item, id: `${Date.now()}`, timestamp: Date.now() };
+    const updated = [newItem, ...existing.filter((h) => h.url !== item.url || h.method !== item.method)].slice(0, MAX_API_HISTORY);
+    localStorage.setItem(API_HISTORY_KEY, JSON.stringify(updated));
+    return updated;
+  } catch { return loadAPIHistory(); }
+};
+
+const loadEnvVars = (): EnvVariable[] => {
+  try { return JSON.parse(localStorage.getItem(API_ENV_KEY) || '[]'); }
+  catch { return []; }
+};
+
+const saveEnvVars = (vars: EnvVariable[]) => {
+  try { localStorage.setItem(API_ENV_KEY, JSON.stringify(vars)); }
+  catch { /* ignore */ }
+};
+
+/* ─── API 扩展工具组件 ─── */
+const APIExtendedTools: React.FC<{
+  method: string;
+  url: string;
+  headers: HeaderItem[];
+  body: string;
+  lastResponseStatus?: number;
+  onImport: (method: string, url: string, headers: HeaderItem[], body: string) => void;
+}> = ({ method, url, headers, body, lastResponseStatus, onImport }) => {
+  const [curlInput, setCurlInput] = useState('');
+  const [curlOutput, setCurlOutput] = useState('');
+  const [history, setHistory] = useState<APIHistoryItem[]>(loadAPIHistory);
+  const [envVars, setEnvVars] = useState<EnvVariable[]>(loadEnvVars);
+  const [newEnvKey, setNewEnvKey] = useState('');
+  const [newEnvValue, setNewEnvValue] = useState('');
+
+  // 自动记录请求历史
+  useEffect(() => {
+    if (url.trim() && lastResponseStatus !== undefined) {
+      const updated = addToAPIHistory({ method, url, headers, body, status: lastResponseStatus });
+      setHistory(updated);
+    }
+  }, [lastResponseStatus]);
+
+  const importCurl = () => {
+    if (!curlInput.trim()) { message.warning('请粘贴 cURL 命令'); return; }
+    const parsed = parseCurl(curlInput);
+    if (!parsed) { message.error('无法解析该 cURL 命令'); return; }
+    onImport(parsed.method, parsed.url, parsed.headers, parsed.body);
+    message.success('cURL 已导入');
+    setCurlInput('');
+  };
+
+  const exportCurl = () => {
+    const curl = generateCurl(method, url, headers, body);
+    setCurlOutput(curl);
+    navigator.clipboard?.writeText(curl).then(() => message.success('cURL 已复制到剪贴板'));
+  };
+
+  const addEnvVar = () => {
+    if (!newEnvKey.trim()) { message.warning('请输入变量名'); return; }
+    const updated = [...envVars.filter((v) => v.key !== newEnvKey.trim()), { key: newEnvKey.trim(), value: newEnvValue.trim() }];
+    setEnvVars(updated);
+    saveEnvVars(updated);
+    setNewEnvKey('');
+    setNewEnvValue('');
+  };
+
+  const deleteEnvVar = (key: string) => {
+    const updated = envVars.filter((v) => v.key !== key);
+    setEnvVars(updated);
+    saveEnvVars(updated);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(API_HISTORY_KEY);
+    message.success('请求历史已清空');
+  };
+
+  const restoreFromHistory = (item: APIHistoryItem) => {
+    onImport(item.method, item.url, item.headers, item.body);
+    message.success('已恢复请求配置');
+  };
+
+  const methodColorMap: Record<string, string> = {
+    GET: 'green', POST: 'blue', PUT: 'orange', DELETE: 'red', PATCH: 'purple', HEAD: 'cyan', OPTIONS: 'default',
+  };
+
+  const curlTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 11, fontWeight: 600 }}>导入 cURL</Text>
+      <Input.TextArea
+        value={curlInput}
+        onChange={(e) => setCurlInput(e.target.value)}
+        placeholder="粘贴 cURL 命令..."
+        rows={3}
+        style={{ fontFamily: 'monospace', fontSize: 10 }}
+      />
+      <Button size="small" type="primary" icon={<CodeOutlined />} onClick={importCurl} block>
+        导入
+      </Button>
+      <div style={{ borderTop: '1px solid var(--theme-borderLight)', paddingTop: 6 }}>
+        <Text style={{ fontSize: 11, fontWeight: 600 }}>导出 cURL</Text>
+        <Button size="small" onClick={exportCurl} block style={{ marginTop: 4 }}>
+          生成当前请求的 cURL
+        </Button>
+        {curlOutput && (
+          <pre style={{ fontSize: 10, fontFamily: 'monospace', padding: 6, background: 'var(--theme-surfaceElevated)', borderRadius: 4, marginTop: 4, whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 150, overflow: 'auto' }}>
+            {curlOutput}
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+
+  const envTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ fontSize: 10, color: 'var(--theme-textMuted)' }}>
+        在 URL 和 Header 中使用 {'{{变量名}}'} 引用环境变量
+      </div>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <Input value={newEnvKey} onChange={(e) => setNewEnvKey(e.target.value)} placeholder="变量名" size="small" style={{ flex: 1 }} />
+        <Input value={newEnvValue} onChange={(e) => setNewEnvValue(e.target.value)} placeholder="值" size="small" style={{ flex: 1 }} onPressEnter={addEnvVar} />
+        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={addEnvVar} />
+      </div>
+      {envVars.length > 0 && (
+        <List
+          size="small"
+          dataSource={envVars}
+          renderItem={(item) => (
+            <List.Item
+              style={{ padding: '3px 0' }}
+              actions={[
+                <Popconfirm key="del" title="删除？" onConfirm={() => deleteEnvVar(item.key)} okText="确认" cancelText="取消">
+                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>,
+              ]}
+            >
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 11 }}>
+                <code style={{ padding: '1px 4px', background: 'var(--theme-surfaceElevated)', borderRadius: 2, color: 'var(--theme-primary)' }}>
+                  {`{{${item.key}}}`}
+                </code>
+                <span style={{ color: 'var(--theme-textMuted)' }}>→</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 10, wordBreak: 'break-all' }}>{item.value}</span>
+              </div>
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
+
+  const historyTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {history.length === 0 ? (
+        <Text type="secondary" style={{ fontSize: 11 }}>暂无请求历史</Text>
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Popconfirm title="清空请求历史？" onConfirm={clearHistory} okText="确认" cancelText="取消">
+              <Button size="small" danger type="text" icon={<DeleteOutlined />}>清空</Button>
+            </Popconfirm>
+          </div>
+          <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+            <List
+              size="small"
+              dataSource={history}
+              renderItem={(item) => (
+                <List.Item
+                  style={{ padding: '3px 0', cursor: 'pointer' }}
+                  onClick={() => restoreFromHistory(item)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0 }}>
+                    <Tag color={methodColorMap[item.method] || 'default'} style={{ margin: 0, fontSize: 9, lineHeight: '16px' }}>
+                      {item.method}
+                    </Tag>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.url}
+                      </div>
+                      <div style={{ fontSize: 9, color: 'var(--theme-textMuted)' }}>
+                        {item.status && <span style={{ marginRight: 6 }}>HTTP {item.status}</span>}
+                        {new Date(item.timestamp).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <Collapse
+      size="small"
+      items={[{
+        key: 'extended',
+        label: <Space size={4}><SettingOutlined /><span style={{ fontSize: 12 }}>扩展工具</span></Space>,
+        children: (
+          <Tabs
+            size="small"
+            items={[
+              { key: 'curl', label: 'cURL', children: curlTab },
+              { key: 'env', label: `环境变量(${envVars.length})`, children: envTab },
+              { key: 'history', label: `历史(${history.length})`, children: historyTab },
+            ]}
+            style={{ marginTop: -8 }}
+          />
+        ),
+      }]}
+    />
   );
 };
 

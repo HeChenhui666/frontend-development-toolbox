@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Card, Collapse, Input, Space, Typography, message as antdMessage } from 'antd';
-import { ClusterOutlined, CopyOutlined, FieldTimeOutlined, UnlockOutlined } from '@ant-design/icons';
+import { Button, Collapse, Input, Space, Typography, message as antdMessage, Tag, Descriptions } from 'antd';
+import { ClusterOutlined, CopyOutlined, FieldTimeOutlined, UnlockOutlined, BulbOutlined, DashboardOutlined, ApartmentOutlined } from '@ant-design/icons';
 import './index.css';
 
 const { Paragraph, Text } = Typography;
@@ -347,15 +347,360 @@ const WebActions: React.FC = () => {
             ]}
           />
 
-          <Card size="small" className="web-actions-card web-actions-card--placeholder">
-            <Space direction="vertical" align="center" style={{ width: '100%' }} size="small">
-              <CopyOutlined className="web-actions-placeholder-icon" />
-              <Text type="secondary">更多网页操作功能将陆续加入</Text>
-            </Space>
-          </Card>
+          <WebActionsExtended />
         </div>
       </Space>
     </div>
+  );
+};
+
+/* ─── 暗黑模式注入 ─── */
+const injectDarkMode = (tabId: number): Promise<boolean> =>
+  new Promise((resolve) => {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const existingStyle = document.getElementById('__devtool_dark_mode__');
+        if (existingStyle) {
+          existingStyle.remove();
+          return 'removed';
+        }
+        const style = document.createElement('style');
+        style.id = '__devtool_dark_mode__';
+        style.textContent = `
+          html { filter: invert(1) hue-rotate(180deg) !important; }
+          img, video, canvas, svg, [style*="background-image"] { filter: invert(1) hue-rotate(180deg) !important; }
+        `;
+        document.head.appendChild(style);
+        return 'applied';
+      },
+      world: 'MAIN',
+    }, (results) => {
+      if (chrome.runtime.lastError) { resolve(false); return; }
+      const result = results?.[0]?.result;
+      if (result === 'removed') {
+        antdMessage.success('暗黑模式已关闭');
+      } else {
+        antdMessage.success('暗黑模式已开启（再次点击可关闭）');
+      }
+      resolve(true);
+    });
+  });
+
+/* ─── 页面性能分析 ─── */
+interface PerformanceData {
+  dnsLookup: number;
+  tcpConnect: number;
+  ttfb: number;
+  contentDownload: number;
+  domInteractive: number;
+  domComplete: number;
+  loadComplete: number;
+  resourceCount: number;
+  totalTransferSize: number;
+  jsCount: number;
+  cssCount: number;
+  imgCount: number;
+}
+
+const collectPerformance = (tabId: number): Promise<PerformanceData | null> =>
+  new Promise((resolve) => {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        if (!nav) return null;
+        const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+        return {
+          dnsLookup: Math.round(nav.domainLookupEnd - nav.domainLookupStart),
+          tcpConnect: Math.round(nav.connectEnd - nav.connectStart),
+          ttfb: Math.round(nav.responseStart - nav.requestStart),
+          contentDownload: Math.round(nav.responseEnd - nav.responseStart),
+          domInteractive: Math.round(nav.domInteractive - nav.startTime),
+          domComplete: Math.round(nav.domComplete - nav.startTime),
+          loadComplete: Math.round(nav.loadEventEnd - nav.startTime),
+          resourceCount: resources.length,
+          totalTransferSize: resources.reduce((s, r) => s + (r.transferSize || 0), 0),
+          jsCount: resources.filter((r) => r.initiatorType === 'script').length,
+          cssCount: resources.filter((r) => r.initiatorType === 'link' || r.initiatorType === 'css').length,
+          imgCount: resources.filter((r) => r.initiatorType === 'img').length,
+        };
+      },
+      world: 'MAIN',
+    }, (results) => {
+      if (chrome.runtime.lastError) { resolve(null); return; }
+      resolve(results?.[0]?.result as PerformanceData | null);
+    });
+  });
+
+/* ─── DOM 统计 ─── */
+interface DomStats {
+  totalElements: number;
+  totalNodes: number;
+  maxDepth: number;
+  elementsWithId: number;
+  elementsWithClass: number;
+  elementsWithInlineStyle: number;
+  images: number;
+  links: number;
+  forms: number;
+  inputs: number;
+  scripts: number;
+  iframes: number;
+  tagCounts: Record<string, number>;
+}
+
+const collectDomStats = (tabId: number): Promise<DomStats | null> =>
+  new Promise((resolve) => {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const allElements = document.querySelectorAll('*');
+        const tagCounts: Record<string, number> = {};
+        let elementsWithId = 0;
+        let elementsWithClass = 0;
+        let elementsWithInlineStyle = 0;
+
+        allElements.forEach((el) => {
+          const tag = el.tagName.toLowerCase();
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          if (el.id) elementsWithId++;
+          if (el.classList.length > 0) elementsWithClass++;
+          if ((el as HTMLElement).style?.cssText) elementsWithInlineStyle++;
+        });
+
+        const getMaxDepth = (node: Node, depth: number): number => {
+          let max = depth;
+          node.childNodes.forEach((child) => {
+            if (child.nodeType === 1) {
+              const childDepth = getMaxDepth(child, depth + 1);
+              if (childDepth > max) max = childDepth;
+            }
+          });
+          return max;
+        };
+
+        // 只取 top 10 标签
+        const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const top10Tags = Object.fromEntries(sortedTags);
+
+        return {
+          totalElements: allElements.length,
+          totalNodes: document.querySelectorAll('*').length + document.querySelectorAll('*').length, // approx
+          maxDepth: getMaxDepth(document.documentElement, 0),
+          elementsWithId,
+          elementsWithClass,
+          elementsWithInlineStyle,
+          images: document.querySelectorAll('img').length,
+          links: document.querySelectorAll('a').length,
+          forms: document.querySelectorAll('form').length,
+          inputs: document.querySelectorAll('input,textarea,select').length,
+          scripts: document.querySelectorAll('script').length,
+          iframes: document.querySelectorAll('iframe').length,
+          tagCounts: top10Tags,
+        };
+      },
+      world: 'MAIN',
+    }, (results) => {
+      if (chrome.runtime.lastError) { resolve(null); return; }
+      resolve(results?.[0]?.result as DomStats | null);
+    });
+  });
+
+/* ─── 扩展功能组件 ─── */
+const WebActionsExtended: React.FC = () => {
+  const [darkModeLoading, setDarkModeLoading] = useState(false);
+  const [perfData, setPerfData] = useState<PerformanceData | null>(null);
+  const [perfLoading, setPerfLoading] = useState(false);
+  const [domStats, setDomStats] = useState<DomStats | null>(null);
+  const [domLoading, setDomLoading] = useState(false);
+
+  const getActiveTab = (): Promise<chrome.tabs.Tab | null> =>
+    new Promise((resolve) => {
+      if (!isExtensionInjectEnv()) { resolve(null); return; }
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => resolve(tabs[0] || null));
+    });
+
+  const handleDarkMode = useCallback(async () => {
+    if (!isExtensionInjectEnv()) { antdMessage.warning('请在扩展环境中使用'); return; }
+    setDarkModeLoading(true);
+    const tab = await getActiveTab();
+    if (!tab?.id || !isInjectablePageUrl(tab.url)) {
+      setDarkModeLoading(false);
+      antdMessage.warning('当前页面不支持此操作');
+      return;
+    }
+    await injectDarkMode(tab.id);
+    setDarkModeLoading(false);
+  }, []);
+
+  const handlePerfAnalysis = useCallback(async () => {
+    if (!isExtensionInjectEnv()) { antdMessage.warning('请在扩展环境中使用'); return; }
+    setPerfLoading(true);
+    const tab = await getActiveTab();
+    if (!tab?.id || !isInjectablePageUrl(tab.url)) {
+      setPerfLoading(false);
+      antdMessage.warning('当前页面不支持此操作');
+      return;
+    }
+    const data = await collectPerformance(tab.id);
+    setPerfLoading(false);
+    if (!data) { antdMessage.error('无法获取性能数据'); return; }
+    setPerfData(data);
+  }, []);
+
+  const handleDomStats = useCallback(async () => {
+    if (!isExtensionInjectEnv()) { antdMessage.warning('请在扩展环境中使用'); return; }
+    setDomLoading(true);
+    const tab = await getActiveTab();
+    if (!tab?.id || !isInjectablePageUrl(tab.url)) {
+      setDomLoading(false);
+      antdMessage.warning('当前页面不支持此操作');
+      return;
+    }
+    const stats = await collectDomStats(tab.id);
+    setDomLoading(false);
+    if (!stats) { antdMessage.error('无法获取 DOM 统计'); return; }
+    setDomStats(stats);
+  }, []);
+
+  const formatMs = (ms: number) => ms > 1000 ? `${(ms / 1000).toFixed(2)}s` : `${ms}ms`;
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  };
+
+  const getTimeColor = (ms: number): string => {
+    if (ms <= 100) return 'green';
+    if (ms <= 500) return 'orange';
+    return 'red';
+  };
+
+  return (
+    <Collapse
+      bordered={false}
+      size="small"
+      className="web-actions-collapse"
+      items={[
+        {
+          key: 'dark-mode',
+          label: (
+            <span className="web-actions-collapse-label">
+              <BulbOutlined aria-hidden />
+              <span>暗黑模式</span>
+            </span>
+          ),
+          children: (
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Button type="primary" icon={<BulbOutlined />} loading={darkModeLoading} onClick={handleDarkMode} block>
+                切换暗黑模式
+              </Button>
+              <Text type="secondary" style={{ fontSize: 11 }}>
+                通过 CSS filter invert 实现全页面暗黑模式，图片/视频会自动反转回正常颜色。再次点击可关闭。
+              </Text>
+            </Space>
+          ),
+        },
+        {
+          key: 'performance',
+          label: (
+            <span className="web-actions-collapse-label">
+              <DashboardOutlined aria-hidden />
+              <span>页面性能分析</span>
+            </span>
+          ),
+          children: (
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Button type="primary" icon={<DashboardOutlined />} loading={perfLoading} onClick={handlePerfAnalysis} block>
+                分析当前页面性能
+              </Button>
+              {perfData && (
+                <Descriptions size="small" column={2} bordered style={{ fontSize: 10 }}>
+                  <Descriptions.Item label="DNS 解析">
+                    <Tag color={getTimeColor(perfData.dnsLookup)}>{formatMs(perfData.dnsLookup)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="TCP 连接">
+                    <Tag color={getTimeColor(perfData.tcpConnect)}>{formatMs(perfData.tcpConnect)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="TTFB">
+                    <Tag color={getTimeColor(perfData.ttfb)}>{formatMs(perfData.ttfb)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="内容下载">
+                    <Tag color={getTimeColor(perfData.contentDownload)}>{formatMs(perfData.contentDownload)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="DOM Interactive">
+                    <Tag color={getTimeColor(perfData.domInteractive)}>{formatMs(perfData.domInteractive)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="DOM Complete">
+                    <Tag color={getTimeColor(perfData.domComplete)}>{formatMs(perfData.domComplete)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="页面加载完成" span={2}>
+                    <Tag color={getTimeColor(perfData.loadComplete)}>{formatMs(perfData.loadComplete)}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="资源总数">{perfData.resourceCount}</Descriptions.Item>
+                  <Descriptions.Item label="传输总量">{formatBytes(perfData.totalTransferSize)}</Descriptions.Item>
+                  <Descriptions.Item label="JS 文件">{perfData.jsCount}</Descriptions.Item>
+                  <Descriptions.Item label="CSS 文件">{perfData.cssCount}</Descriptions.Item>
+                  <Descriptions.Item label="图片" span={2}>{perfData.imgCount}</Descriptions.Item>
+                </Descriptions>
+              )}
+            </Space>
+          ),
+        },
+        {
+          key: 'dom-stats',
+          label: (
+            <span className="web-actions-collapse-label">
+              <ApartmentOutlined aria-hidden />
+              <span>DOM 统计</span>
+            </span>
+          ),
+          children: (
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Button type="primary" icon={<ApartmentOutlined />} loading={domLoading} onClick={handleDomStats} block>
+                统计当前页面 DOM
+              </Button>
+              {domStats && (
+                <>
+                  <Descriptions size="small" column={2} bordered style={{ fontSize: 10 }}>
+                    <Descriptions.Item label="元素总数">
+                      <Tag color={domStats.totalElements > 3000 ? 'red' : domStats.totalElements > 1500 ? 'orange' : 'green'}>
+                        {domStats.totalElements}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="最大嵌套深度">
+                      <Tag color={domStats.maxDepth > 30 ? 'red' : domStats.maxDepth > 15 ? 'orange' : 'green'}>
+                        {domStats.maxDepth} 层
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="有 ID 属性">{domStats.elementsWithId}</Descriptions.Item>
+                    <Descriptions.Item label="有 Class 属性">{domStats.elementsWithClass}</Descriptions.Item>
+                    <Descriptions.Item label="内联样式" span={2}>
+                      <Tag color={domStats.elementsWithInlineStyle > 50 ? 'orange' : 'green'}>
+                        {domStats.elementsWithInlineStyle}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="图片">{domStats.images}</Descriptions.Item>
+                    <Descriptions.Item label="链接">{domStats.links}</Descriptions.Item>
+                    <Descriptions.Item label="表单">{domStats.forms}</Descriptions.Item>
+                    <Descriptions.Item label="输入控件">{domStats.inputs}</Descriptions.Item>
+                    <Descriptions.Item label="脚本">{domStats.scripts}</Descriptions.Item>
+                    <Descriptions.Item label="iframe">{domStats.iframes}</Descriptions.Item>
+                  </Descriptions>
+                  <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4 }}>Top 10 标签分布</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {Object.entries(domStats.tagCounts).map(([tag, count]) => (
+                      <Tag key={tag} style={{ fontSize: 10 }}>{`<${tag}> ${count}`}</Tag>
+                    ))}
+                  </div>
+                </>
+              )}
+            </Space>
+          ),
+        },
+      ]}
+    />
   );
 };
 

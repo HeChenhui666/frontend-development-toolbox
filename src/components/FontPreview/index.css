@@ -1,0 +1,65 @@
+.font-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.fp-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fp-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fp-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.fp-card {
+  border: 1px solid var(--theme-borderLight);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fp-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--theme-surfaceElevated);
+  border-bottom: 1px solid var(--theme-borderLight);
+}
+
+.fp-font-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.fp-font-meta {
+  font-size: 9px;
+  color: var(--theme-textMuted);
+}
+
+.fp-card-sample {
+  padding: 8px 10px;
+  color: var(--theme-text);
+  word-break: break-word;
+}

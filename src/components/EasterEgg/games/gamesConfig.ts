@@ -4,6 +4,8 @@ import Tetris from './Tetris';
 import Snake from './Snake';
 import Minesweeper from './Minesweeper';
 import Sudoku from './Sudoku';
+import Wordle from './Wordle';
+import TypingPractice from './TypingPractice';
 
 export interface GameConfig {
   id: string;
@@ -49,6 +51,19 @@ export const games: GameConfig[] = [
     description: '可选难度的逻辑推理游戏',
     component: Sudoku,
   },
-  // 可以在这里添加更多游戏
+  {
+    id: 'Wordle',
+    name: 'Wordle',
+    icon: '🔤',
+    description: '五字母猜词游戏',
+    component: Wordle,
+  },
+  {
+    id: 'TypingPractice',
+    name: '打字练习',
+    icon: '⌨️',
+    description: '测试你的打字速度和准确率',
+    component: TypingPractice,
+  },
 ];
 

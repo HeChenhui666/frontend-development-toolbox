@@ -1,0 +1,72 @@
+.img-compressor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+}
+
+.ic-upload {
+  padding: 12px !important;
+}
+
+.ic-upload-icon {
+  font-size: 24px;
+  color: var(--theme-primary);
+  margin: 0;
+}
+
+.ic-upload-text {
+  font-size: 12px;
+  margin: 4px 0 0;
+  color: var(--theme-text);
+}
+
+.ic-upload-hint {
+  font-size: 10px;
+  margin: 2px 0 0;
+  color: var(--theme-textMuted);
+}
+
+.ic-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ic-control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ic-control-row .ant-slider {
+  margin: 4px 0;
+}
+
+.ic-result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+}
+
+.ic-comparison {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.ic-size-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.ic-preview-img {
+  text-align: center;
+}
