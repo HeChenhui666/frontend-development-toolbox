@@ -1,0 +1,87 @@
+.placeholder-generator {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+}
+
+.pg-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pg-preset-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pg-preset-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--theme-textMuted);
+  transition: all 0.15s;
+}
+
+.pg-preset-tag:hover {
+  color: var(--theme-primary);
+  border-color: var(--theme-primary);
+}
+
+.pg-preset-tag.active {
+  color: var(--theme-primary);
+  border-color: var(--theme-primary);
+  background: var(--theme-primaryBackground, rgba(64, 150, 255, 0.08));
+}
+
+.pg-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg-size-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pg-size-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.pg-color-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.pg-color-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pg-result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  align-items: center;
+}
+
+.pg-preview {
+  text-align: center;
+}

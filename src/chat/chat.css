@@ -607,3 +607,38 @@ body {
   color: var(--theme-textSecondary, #888);
   line-height: 1.5;
 }
+
+/* ─── 代码片段样式 ─── */
+.chat-code-block {
+  margin: 4px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--theme-borderLight, #e0e0e0);
+  background: var(--theme-surfaceElevated, #f5f5f5);
+}
+
+.chat-code-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: var(--theme-textMuted, #999);
+  background: var(--theme-surface, #eee);
+  border-bottom: 1px solid var(--theme-borderLight, #e0e0e0);
+}
+
+.chat-code-content {
+  margin: 0;
+  padding: 8px 10px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--theme-text, #333);
+}
+
+.chat-code-content code {
+  font-family: inherit;
+}

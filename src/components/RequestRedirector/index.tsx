@@ -15,6 +15,7 @@ import {
   Popconfirm,
   message as antdMessage,
   Collapse,
+  Tabs,
 } from 'antd';
 import {
   PlusOutlined,
@@ -22,6 +23,9 @@ import {
   DeleteOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  ImportOutlined,
+  ExportOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { useCompatibility } from '../../hooks/useCompatibility';
@@ -523,7 +527,216 @@ const RequestRedirector: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 规则导入导出 */}
+      <RedirectExtendedTools rules={rules} onImportRules={async (imported) => {
+        for (const rule of imported) {
+          await addRedirectRule({ ...rule, name: rule.name || '', type: 'url' });
+        }
+        await loadRules();
+        await handleApplyRules();
+      }} />
     </div>
+  );
+};
+
+/* ─── 规则组管理常量 ─── */
+const RULE_GROUPS_KEY = 'redirect_rule_groups';
+
+interface RuleGroup {
+  name: string;
+  rules: Array<{ source: string; target: string; enabled: boolean; priority: number; ruleName?: string }>;
+  timestamp: number;
+}
+
+const loadRuleGroups = (): RuleGroup[] => {
+  try { return JSON.parse(localStorage.getItem(RULE_GROUPS_KEY) || '[]'); }
+  catch { return []; }
+};
+
+const saveRuleGroups = (groups: RuleGroup[]) => {
+  try { localStorage.setItem(RULE_GROUPS_KEY, JSON.stringify(groups)); }
+  catch { /* ignore */ }
+};
+
+/* ─── 扩展工具组件 ─── */
+const RedirectExtendedTools: React.FC<{
+  rules: RedirectRule[];
+  onImportRules: (rules: Array<{ source: string; target: string; enabled: boolean; priority: number; name?: string }>) => Promise<void>;
+}> = ({ rules, onImportRules }) => {
+  const [groups, setGroups] = useState<RuleGroup[]>(loadRuleGroups);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [importText, setImportText] = useState('');
+
+  const exportRules = () => {
+    const exportData = rules.map((r) => ({
+      source: r.source,
+      target: r.target,
+      enabled: r.enabled,
+      priority: r.priority,
+      name: r.name || '',
+    }));
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    navigator.clipboard?.writeText(jsonStr).then(() => antdMessage.success('规则 JSON 已复制到剪贴板'));
+  };
+
+  const downloadRules = () => {
+    const exportData = rules.map((r) => ({
+      source: r.source, target: r.target, enabled: r.enabled, priority: r.priority, name: r.name || '',
+    }));
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.download = `redirect_rules_${new Date().toISOString().slice(0, 10)}.json`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const importRules = async () => {
+    if (!importText.trim()) { antdMessage.warning('请粘贴规则 JSON'); return; }
+    try {
+      const parsed = JSON.parse(importText);
+      const rulesArray = Array.isArray(parsed) ? parsed : [parsed];
+      const validRules = rulesArray.filter((r: any) => (r.source || r.from) && (r.target || r.to)).map((r: any) => ({
+        source: String(r.source || r.from),
+        target: String(r.target || r.to),
+        enabled: r.enabled !== false,
+        priority: Number(r.priority) || 1,
+        name: r.name || r.comment || '',
+      }));
+      if (validRules.length === 0) { antdMessage.error('未找到有效的规则'); return; }
+      await onImportRules(validRules);
+      antdMessage.success(`成功导入 ${validRules.length} 条规则`);
+      setImportText('');
+    } catch {
+      antdMessage.error('JSON 格式错误');
+    }
+  };
+
+  const saveCurrentAsGroup = () => {
+    if (!newGroupName.trim()) { antdMessage.warning('请输入规则组名称'); return; }
+    if (rules.length === 0) { antdMessage.warning('当前没有规则可以保存'); return; }
+    const group: RuleGroup = {
+      name: newGroupName.trim(),
+      rules: rules.map((r) => ({ source: r.source, target: r.target, enabled: r.enabled, priority: r.priority, ruleName: r.name || '' })),
+      timestamp: Date.now(),
+    };
+    const updated = [group, ...groups.filter((g) => g.name !== group.name)];
+    setGroups(updated);
+    saveRuleGroups(updated);
+    setNewGroupName('');
+    antdMessage.success(`规则组 "${group.name}" 已保存`);
+  };
+
+  const restoreGroup = async (group: RuleGroup) => {
+    const mapped = group.rules.map((r) => ({
+      source: r.source,
+      target: r.target,
+      enabled: r.enabled,
+      priority: r.priority,
+      name: r.ruleName || '',
+    }));
+    await onImportRules(mapped);
+    antdMessage.success(`已恢复规则组 "${group.name}" (${group.rules.length} 条规则)`);
+  };
+
+  const deleteGroup = (name: string) => {
+    const updated = groups.filter((g) => g.name !== name);
+    setGroups(updated);
+    saveRuleGroups(updated);
+  };
+
+  const importExportTab = (
+    <Space direction="vertical" style={{ width: '100%' }} size={6}>
+      <Space size={6}>
+        <Button size="small" icon={<ExportOutlined />} onClick={exportRules}>复制 JSON</Button>
+        <Button size="small" icon={<ExportOutlined />} onClick={downloadRules}>下载文件</Button>
+      </Space>
+      <Text style={{ fontSize: 11, fontWeight: 600, marginTop: 4 }}>导入规则</Text>
+      <Input.TextArea
+        value={importText}
+        onChange={(e) => setImportText(e.target.value)}
+        placeholder='粘贴 JSON 数组：[{"from":"...", "to":"..."}]'
+        rows={3}
+        style={{ fontFamily: 'monospace', fontSize: 10 }}
+      />
+      <Button size="small" type="primary" icon={<ImportOutlined />} onClick={importRules} block>
+        导入
+      </Button>
+    </Space>
+  );
+
+  const groupsTab = (
+    <Space direction="vertical" style={{ width: '100%' }} size={6}>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <Input
+          value={newGroupName}
+          onChange={(e) => setNewGroupName(e.target.value)}
+          placeholder="规则组名称（如：开发环境）"
+          size="small"
+          style={{ flex: 1 }}
+          onPressEnter={saveCurrentAsGroup}
+        />
+        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={saveCurrentAsGroup}>
+          保存当前
+        </Button>
+      </div>
+      <div style={{ fontSize: 10, color: 'var(--theme-textMuted)' }}>
+        将当前所有规则保存为一个规则组，方便在不同环境间快速切换
+      </div>
+      {groups.length === 0 ? (
+        <Text type="secondary" style={{ fontSize: 11 }}>暂无保存的规则组</Text>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {groups.map((group) => (
+            <div
+              key={group.name}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '4px 8px', background: 'var(--theme-surfaceElevated)',
+                border: '1px solid var(--theme-borderLight)', borderRadius: 4,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600 }}>{group.name}</div>
+                <div style={{ fontSize: 9, color: 'var(--theme-textMuted)' }}>
+                  {group.rules.length} 条规则 · {new Date(group.timestamp).toLocaleString()}
+                </div>
+              </div>
+              <Space size={4}>
+                <Button size="small" type="primary" onClick={() => restoreGroup(group)}>
+                  <SwapOutlined /> 应用
+                </Button>
+                <Popconfirm title={`删除规则组 "${group.name}"？`} onConfirm={() => deleteGroup(group.name)} okText="确认" cancelText="取消">
+                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+              </Space>
+            </div>
+          ))}
+        </div>
+      )}
+    </Space>
+  );
+
+  return (
+    <Collapse
+      size="small"
+      style={{ marginTop: 6 }}
+      items={[{
+        key: 'extended',
+        label: <Space size={4}><SwapOutlined /><span style={{ fontSize: 12 }}>规则管理</span></Space>,
+        children: (
+          <Tabs
+            size="small"
+            items={[
+              { key: 'import-export', label: '导入/导出', children: importExportTab },
+              { key: 'groups', label: `规则组(${groups.length})`, children: groupsTab },
+            ]}
+            style={{ marginTop: -8 }}
+          />
+        ),
+      }]}
+    />
   );
 };
 

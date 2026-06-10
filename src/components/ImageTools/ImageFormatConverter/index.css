@@ -1,0 +1,77 @@
+.img-format-converter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+}
+
+.ifc-target-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ifc-upload {
+  padding: 12px !important;
+}
+
+.ifc-upload-icon {
+  font-size: 24px;
+  color: var(--theme-primary);
+  margin: 0;
+}
+
+.ifc-upload-text {
+  font-size: 12px;
+  margin: 4px 0 0;
+  color: var(--theme-text);
+}
+
+.ifc-upload-hint {
+  font-size: 10px;
+  margin: 2px 0 0;
+  color: var(--theme-textMuted);
+}
+
+.ifc-result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+}
+
+.ifc-conversion-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.ifc-format-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: 6px;
+}
+
+.ifc-format-target {
+  border-color: var(--theme-primary);
+  background: var(--theme-primaryBackground, rgba(64, 150, 255, 0.06));
+}
+
+.ifc-format-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--theme-text);
+}
+
+.ifc-preview {
+  text-align: center;
+}

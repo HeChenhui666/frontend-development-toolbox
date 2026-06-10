@@ -178,3 +178,125 @@
   border-left: 3px solid var(--theme-error, #c62828);
   flex-shrink: 0;
 }
+
+/* ── 扩展工具通用 ── */
+.ts-ext-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── 多时区 ── */
+.ts-tz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ts-tz-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  gap: 8px;
+}
+
+.ts-tz-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--theme-text);
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.ts-tz-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ts-tz-offset {
+  font-size: 9px;
+  color: var(--theme-textMuted);
+  font-weight: 600;
+}
+
+.ts-tz-value {
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--theme-active);
+}
+
+/* ── Cron ── */
+.ts-cron-result {
+  padding: 6px 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ts-cron-explain {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--theme-text);
+}
+
+.ts-cron-runs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+/* ── 计时器 ── */
+.ts-timer-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+}
+
+.ts-timer-value {
+  font-size: 28px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--theme-active);
+  letter-spacing: 1px;
+}
+
+.ts-countdown-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-active);
+  padding: 6px 0;
+}
+
+/* ── 日期差 ── */
+.ts-datediff-result {
+  padding: 6px 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--theme-text);
+}

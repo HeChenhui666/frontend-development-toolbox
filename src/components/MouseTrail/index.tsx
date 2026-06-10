@@ -29,6 +29,97 @@ const CLIP_PRESETS: { label: string; value: string }[] = [
   { label: '菱形', value: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' },
   { label: '三角形', value: 'polygon(50% 0%, 100% 100%, 0% 100%)' },
   { label: '星形感', value: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' },
+  { label: '六边形', value: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)' },
+  { label: '十字', value: 'polygon(35% 0%, 65% 0%, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0% 65%, 0% 35%, 35% 35%)' },
+  { label: '心形', value: 'polygon(50% 100%, 0% 60%, 0% 30%, 15% 10%, 35% 5%, 50% 20%, 65% 5%, 85% 10%, 100% 30%, 100% 60%)' },
+  { label: '箭头', value: 'polygon(50% 0%, 100% 40%, 75% 40%, 75% 100%, 25% 100%, 25% 40%, 0% 40%)' },
+  { label: '椭圆', value: 'ellipse(50% 35% at 50% 50%)' },
+];
+
+/* ─── 效果预设（一键组合 clip-path + background + 尺寸） ─── */
+interface EffectPreset {
+  label: string;
+  emoji: string;
+  clipPath: string;
+  background: string;
+  trailSize: number;
+  particleCount: number;
+  lerpFactor: number;
+}
+
+const EFFECT_PRESETS: EffectPreset[] = [
+  {
+    label: '霓虹光点',
+    emoji: '✨',
+    clipPath: 'circle(50% at 50% 50%)',
+    background: 'radial-gradient(circle, #ff00ff, #00ffff, transparent)',
+    trailSize: 14,
+    particleCount: 25,
+    lerpFactor: 0.15,
+  },
+  {
+    label: '火焰尾迹',
+    emoji: '🔥',
+    clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)',
+    background: 'linear-gradient(180deg, #ff4500, #ff8c00, #ffd700)',
+    trailSize: 16,
+    particleCount: 30,
+    lerpFactor: 0.2,
+  },
+  {
+    label: '冰晶散射',
+    emoji: '❄️',
+    clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)',
+    background: 'linear-gradient(135deg, #e0f7fa, #80deea, #4dd0e1)',
+    trailSize: 12,
+    particleCount: 20,
+    lerpFactor: 0.12,
+  },
+  {
+    label: '星空流光',
+    emoji: '🌌',
+    clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+    background: 'linear-gradient(45deg, #1a237e, #7c4dff, #e040fb)',
+    trailSize: 18,
+    particleCount: 15,
+    lerpFactor: 0.1,
+  },
+  {
+    label: '樱花飘落',
+    emoji: '🌸',
+    clipPath: 'polygon(50% 100%, 0% 60%, 0% 30%, 15% 10%, 35% 5%, 50% 20%, 65% 5%, 85% 10%, 100% 30%, 100% 60%)',
+    background: 'radial-gradient(circle, #ffb7c5, #ff69b4, #ff1493)',
+    trailSize: 14,
+    particleCount: 20,
+    lerpFactor: 0.08,
+  },
+  {
+    label: '极光彩带',
+    emoji: '🌈',
+    clipPath: 'inset(5% round 30%)',
+    background: 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff)',
+    trailSize: 20,
+    particleCount: 35,
+    lerpFactor: 0.18,
+  },
+  {
+    label: '金属碎片',
+    emoji: '⚡',
+    clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+    background: 'linear-gradient(135deg, #37474f, #78909c, #cfd8dc, #78909c)',
+    trailSize: 10,
+    particleCount: 40,
+    lerpFactor: 0.25,
+  },
+  {
+    label: '薄荷清爽',
+    emoji: '🍃',
+    clipPath: 'ellipse(50% 35% at 50% 50%)',
+    background: 'linear-gradient(135deg, #a5d6a7, #66bb6a, #2e7d32)',
+    trailSize: 16,
+    particleCount: 18,
+    lerpFactor: 0.12,
+  },
 ];
 
 const MAX_IMAGE_BYTES = 1.8 * 1024 * 1024;
@@ -171,6 +262,32 @@ const MouseTrail: React.FC = () => {
 
           {config.mode === 'css' && (
             <>
+              <div>
+                <Text strong>效果预设</Text>
+                <Paragraph type="secondary" className="mouse-trail-hint">
+                  一键应用预设效果组合（clip-path + 背景色 + 参数），也可在下方单独调整。
+                </Paragraph>
+                <div className="mouse-trail-presets" style={{ flexWrap: 'wrap' }}>
+                  {EFFECT_PRESETS.map((preset) => (
+                    <Button
+                      key={preset.label}
+                      size="small"
+                      type="text"
+                      disabled={!config.enabled}
+                      onClick={() => patch({
+                        followTheme: false,
+                        clipPath: preset.clipPath,
+                        background: preset.background,
+                        trailSize: preset.trailSize,
+                        particleCount: preset.particleCount,
+                        lerpFactor: preset.lerpFactor,
+                      })}
+                    >
+                      {preset.emoji} {preset.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <div className="mouse-trail-row">
                 <div>
                   <Text strong>跟随主题渐变</Text>

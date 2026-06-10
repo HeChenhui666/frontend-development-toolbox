@@ -1,0 +1,58 @@
+.jsonpath-query {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+}
+
+.jsonpath-input-section,
+.jsonpath-path-section,
+.jsonpath-result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jsonpath-presets {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.jsonpath-preset-tag {
+  font-size: 10px;
+  font-family: monospace;
+  padding: 1px 6px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--theme-textMuted);
+  transition: all 0.15s;
+}
+
+.jsonpath-preset-tag:hover {
+  color: var(--theme-primary);
+  border-color: var(--theme-primary);
+}
+
+.jsonpath-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jsonpath-result-code {
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  color: var(--theme-text);
+}

@@ -106,3 +106,42 @@
   font-style: italic;
   padding: 4px 0;
 }
+
+/* ── 扩展工具 ── */
+.rx-ext-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rx-railroad-text {
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre;
+  margin: 0;
+  color: var(--theme-text);
+  line-height: 1.5;
+}
+
+.rx-explanation {
+  font-size: 12px;
+  padding: 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+  color: var(--theme-text);
+  line-height: 1.6;
+}
+
+.rx-redos-risks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}

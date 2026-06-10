@@ -1,0 +1,12 @@
+.barcode-style-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.barcode-style-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

@@ -1,0 +1,67 @@
+.cb-simulator {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+}
+
+.cb-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cb-original {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--theme-surfaceElevated);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+}
+
+.cb-color-block {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 2px solid var(--theme-border);
+  flex-shrink: 0;
+}
+
+.cb-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cb-sim-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-borderLight);
+  border-radius: var(--app-radius);
+}
+
+.cb-sim-colors {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.cb-color-block-small {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-border);
+}
+
+.cb-sim-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}

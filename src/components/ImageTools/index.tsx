@@ -3,9 +3,12 @@ import { Select } from 'antd';
 import RandomImageGenerator from './RandomImageGenerator';
 import Base64Encoder from './Base64Encoder';
 import LottiePreview from './LottiePreview';
+import ImageCompressor from './ImageCompressor';
+import ImageFormatConverter from './ImageFormatConverter';
+import PlaceholderGenerator from './PlaceholderGenerator';
 import './index.css';
 
-type ImageToolTab = 'random' | 'base64' | 'lottie';
+type ImageToolTab = 'random' | 'base64' | 'lottie' | 'compress' | 'convert' | 'placeholder';
 
 interface ToolOption {
   value: ImageToolTab;
@@ -17,6 +20,9 @@ const TOOL_OPTIONS: ToolOption[] = [
   { value: 'random', label: '随机图片', icon: '🖼️' },
   { value: 'base64', label: 'Base64编码', icon: '🔐' },
   { value: 'lottie', label: 'Lottie预览', icon: '🎬' },
+  { value: 'compress', label: '图片压缩', icon: '📦' },
+  { value: 'convert', label: '格式转换', icon: '🔄' },
+  { value: 'placeholder', label: '占位图', icon: '🏷️' },
 ];
 
 const ImageTools: React.FC = () => {
@@ -30,6 +36,12 @@ const ImageTools: React.FC = () => {
         return <Base64Encoder />;
       case 'lottie':
         return <LottiePreview />;
+      case 'compress':
+        return <ImageCompressor />;
+      case 'convert':
+        return <ImageFormatConverter />;
+      case 'placeholder':
+        return <PlaceholderGenerator />;
       default:
         return <RandomImageGenerator />;
     }

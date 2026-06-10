@@ -3,9 +3,12 @@ import { Select } from 'antd';
 import ColorConverter from './ColorConverter';
 import ColorPalette from './ColorPalette';
 import GradientGenerator from './GradientGenerator';
+import ContrastChecker from './ContrastChecker';
+import ColorBlindSimulator from './ColorBlindSimulator';
+import ShadowGenerator from './ShadowGenerator';
 import './index.css';
 
-type ColorToolTab = 'converter' | 'palette' | 'gradient';
+type ColorToolTab = 'converter' | 'palette' | 'gradient' | 'contrast' | 'colorblind' | 'shadow';
 
 interface ToolOption {
   value: ColorToolTab;
@@ -17,6 +20,9 @@ const TOOL_OPTIONS: ToolOption[] = [
   { value: 'converter', label: '颜色转换器', icon: '🔄' },
   { value: 'palette', label: '颜色搭配', icon: '🎨' },
   { value: 'gradient', label: '渐变背景', icon: '🌈' },
+  { value: 'contrast', label: '对比度检查', icon: '🔲' },
+  { value: 'colorblind', label: '色盲模拟', icon: '👁️' },
+  { value: 'shadow', label: 'CSS阴影', icon: '🌓' },
 ];
 
 const ColorTools: React.FC = () => {
@@ -31,6 +37,12 @@ const ColorTools: React.FC = () => {
         return <ColorPalette />;
       case 'gradient':
         return <GradientGenerator />;
+      case 'contrast':
+        return <ContrastChecker />;
+      case 'colorblind':
+        return <ColorBlindSimulator />;
+      case 'shadow':
+        return <ShadowGenerator />;
       default:
         return <ColorConverter />;
     }

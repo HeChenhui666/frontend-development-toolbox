@@ -5,11 +5,14 @@ import JSONCompare from './JSONCompare';
 import JSONSchemaGenerator from './JSONSchemaGenerator';
 import JSONToTypeScript from './JSONToTypeScript';
 import JSONToCSV from './JSONToCSV';
+import JSONPathQuery from './JSONPathQuery';
+import JSONYamlConverter from './JSONYamlConverter';
+import JSONMockGenerator from './JSONMockGenerator';
 import CompatibilityWarning from '../CompatibilityWarning';
 import { useCompatibility } from '../../hooks/useCompatibility';
 import './index.css';
 
-type JSONSubTab = 'parser' | 'compare' | 'schema' | 'typescript' | 'csv';
+type JSONSubTab = 'parser' | 'compare' | 'schema' | 'typescript' | 'csv' | 'jsonpath' | 'yaml' | 'mock';
 
 interface ToolOption {
   value: JSONSubTab;
@@ -23,6 +26,9 @@ const TOOL_OPTIONS: ToolOption[] = [
   { value: 'schema', label: 'Schema生成', icon: '📋' },
   { value: 'typescript', label: 'TypeScript', icon: '🔷' },
   { value: 'csv', label: '转CSV', icon: '📊' },
+  { value: 'jsonpath', label: 'JSONPath', icon: '🔎' },
+  { value: 'yaml', label: 'YAML互转', icon: '🔄' },
+  { value: 'mock', label: 'Mock生成', icon: '🎲' },
 ];
 
 const JSONTools: React.FC = () => {
@@ -46,6 +52,12 @@ const JSONTools: React.FC = () => {
         return <JSONToTypeScript />;
       case 'csv':
         return <JSONToCSV />;
+      case 'jsonpath':
+        return <JSONPathQuery />;
+      case 'yaml':
+        return <JSONYamlConverter />;
+      case 'mock':
+        return <JSONMockGenerator />;
       default:
         return <JSONParser />;
     }

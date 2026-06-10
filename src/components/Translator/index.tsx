@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Select, Switch } from 'antd';
-import { CheckOutlined, SwapOutlined } from '@ant-design/icons';
+import { Select, Switch, Collapse, Tabs, Button, Input, Space, Typography, Popconfirm, List, message as antdMessage } from 'antd';
+import { CheckOutlined, SwapOutlined, BookOutlined, DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
+
+const { Text } = Typography;
 import './index.css';
 import { parseGoogleTranslateSingleResult } from '../../utils/parseGoogleTranslateResult';
 
@@ -246,7 +248,263 @@ const Translator: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* 扩展工具 */}
+      <TranslatorExtendedTools
+        lastSource={inputText}
+        lastTarget={translatedText}
+        lastTargetLang={targetLang}
+        onRestoreHistory={(source, target) => {
+          setInputText(source);
+          setTranslatedText(target);
+        }}
+      />
     </div>
+  );
+};
+
+/* ─── 翻译扩展工具常量 ─── */
+const GLOSSARY_STORAGE_KEY = 'translator_glossary';
+const HISTORY_STORAGE_KEY = 'translator_history';
+const MAX_HISTORY = 50;
+
+interface GlossaryEntry {
+  id: string;
+  source: string;
+  target: string;
+}
+
+interface TranslationHistoryItem {
+  id: string;
+  source: string;
+  target: string;
+  targetLang: string;
+  timestamp: number;
+}
+
+const loadGlossary = (): GlossaryEntry[] => {
+  try {
+    const raw = localStorage.getItem(GLOSSARY_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+};
+
+const saveGlossary = (entries: GlossaryEntry[]) => {
+  try { localStorage.setItem(GLOSSARY_STORAGE_KEY, JSON.stringify(entries)); }
+  catch { /* ignore */ }
+};
+
+const loadTranslationHistory = (): TranslationHistoryItem[] => {
+  try {
+    const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+};
+
+const saveTranslationHistory = (items: TranslationHistoryItem[]) => {
+  try { localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(items.slice(0, MAX_HISTORY))); }
+  catch { /* ignore */ }
+};
+
+/* ─── 翻译扩展工具组件 ─── */
+const TranslatorExtendedTools: React.FC<{
+  lastSource: string;
+  lastTarget: string;
+  lastTargetLang: string;
+  onRestoreHistory: (source: string, target: string) => void;
+}> = ({ lastSource, lastTarget, lastTargetLang, onRestoreHistory }) => {
+  // 术语表
+  const [glossary, setGlossary] = useState<GlossaryEntry[]>(loadGlossary);
+  const [newSource, setNewSource] = useState('');
+  const [newTarget, setNewTarget] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editSource, setEditSource] = useState('');
+  const [editTarget, setEditTarget] = useState('');
+
+  // 历史
+  const [history, setHistory] = useState<TranslationHistoryItem[]>(loadTranslationHistory);
+
+  // 自动记录翻译历史
+  useEffect(() => {
+    if (lastSource.trim() && lastTarget.trim()) {
+      setHistory((prev) => {
+        const filtered = prev.filter((item) => item.source !== lastSource);
+        const newHistory = [
+          { id: `${Date.now()}`, source: lastSource, target: lastTarget, targetLang: lastTargetLang, timestamp: Date.now() },
+          ...filtered,
+        ].slice(0, MAX_HISTORY);
+        saveTranslationHistory(newHistory);
+        return newHistory;
+      });
+    }
+  }, [lastTarget]);
+
+  const addGlossaryEntry = () => {
+    if (!newSource.trim() || !newTarget.trim()) {
+      antdMessage.warning('请填写原文和译文');
+      return;
+    }
+    const exists = glossary.some((e) => e.source.toLowerCase() === newSource.trim().toLowerCase());
+    if (exists) {
+      antdMessage.warning('该术语已存在');
+      return;
+    }
+    const entry: GlossaryEntry = { id: `${Date.now()}`, source: newSource.trim(), target: newTarget.trim() };
+    const updated = [...glossary, entry];
+    setGlossary(updated);
+    saveGlossary(updated);
+    setNewSource('');
+    setNewTarget('');
+    antdMessage.success('术语已添加');
+  };
+
+  const deleteGlossaryEntry = (id: string) => {
+    const updated = glossary.filter((e) => e.id !== id);
+    setGlossary(updated);
+    saveGlossary(updated);
+  };
+
+  const startEditing = (entry: GlossaryEntry) => {
+    setEditingId(entry.id);
+    setEditSource(entry.source);
+    setEditTarget(entry.target);
+  };
+
+  const saveEditing = () => {
+    if (!editSource.trim() || !editTarget.trim()) return;
+    const updated = glossary.map((e) =>
+      e.id === editingId ? { ...e, source: editSource.trim(), target: editTarget.trim() } : e
+    );
+    setGlossary(updated);
+    saveGlossary(updated);
+    setEditingId(null);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(HISTORY_STORAGE_KEY);
+    antdMessage.success('翻译历史已清空');
+  };
+
+  const glossaryTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <Input
+          value={newSource}
+          onChange={(e) => setNewSource(e.target.value)}
+          placeholder="原文术语"
+          size="small"
+          style={{ flex: 1 }}
+        />
+        <Input
+          value={newTarget}
+          onChange={(e) => setNewTarget(e.target.value)}
+          placeholder="期望译文"
+          size="small"
+          style={{ flex: 1 }}
+          onPressEnter={addGlossaryEntry}
+        />
+        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={addGlossaryEntry} />
+      </div>
+      <div style={{ fontSize: 10, color: 'var(--theme-textMuted)' }}>
+        添加技术术语映射，避免翻译引擎错误翻译（如 component → 组件 而非 零件）
+      </div>
+      {glossary.length === 0 ? (
+        <Text type="secondary" style={{ fontSize: 11 }}>暂无术语，点击 + 添加</Text>
+      ) : (
+        <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+          <List
+            size="small"
+            dataSource={glossary}
+            renderItem={(entry) => (
+              <List.Item
+                style={{ padding: '3px 0' }}
+                actions={[
+                  <Button key="edit" size="small" type="text" icon={<EditOutlined />} onClick={() => startEditing(entry)} />,
+                  <Popconfirm key="del" title="删除此术语？" onConfirm={() => deleteGlossaryEntry(entry.id)} okText="确认" cancelText="取消">
+                    <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>,
+                ]}
+              >
+                {editingId === entry.id ? (
+                  <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+                    <Input size="small" value={editSource} onChange={(e) => setEditSource(e.target.value)} style={{ flex: 1 }} />
+                    <Input size="small" value={editTarget} onChange={(e) => setEditTarget(e.target.value)} style={{ flex: 1 }} onPressEnter={saveEditing} />
+                    <Button size="small" type="primary" onClick={saveEditing}>保存</Button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 11 }}>
+                    <code style={{ padding: '1px 4px', background: 'var(--theme-surfaceElevated)', borderRadius: 2 }}>{entry.source}</code>
+                    <span style={{ color: 'var(--theme-textMuted)' }}>→</span>
+                    <span style={{ fontWeight: 600 }}>{entry.target}</span>
+                  </div>
+                )}
+              </List.Item>
+            )}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  const historyTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {history.length === 0 ? (
+        <Text type="secondary" style={{ fontSize: 11 }}>暂无翻译历史</Text>
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Popconfirm title="清空所有翻译历史？" onConfirm={clearHistory} okText="确认" cancelText="取消">
+              <Button size="small" danger type="text" icon={<DeleteOutlined />}>清空</Button>
+            </Popconfirm>
+          </div>
+          <div style={{ maxHeight: 250, overflowY: 'auto' }}>
+            <List
+              size="small"
+              dataSource={history}
+              renderItem={(item) => (
+                <List.Item
+                  style={{ padding: '4px 0', cursor: 'pointer' }}
+                  onClick={() => onRestoreHistory(item.source, item.target)}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, width: '100%' }}>
+                    <div style={{ fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.source}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--theme-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      → {item.target}
+                    </div>
+                    <div style={{ fontSize: 9, color: 'var(--theme-textMuted)' }}>
+                      {new Date(item.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <Collapse
+      size="small"
+      items={[{
+        key: 'extended',
+        label: <Space size={4}><BookOutlined /><span style={{ fontSize: 12 }}>翻译工具箱</span></Space>,
+        children: (
+          <Tabs
+            size="small"
+            items={[
+              { key: 'glossary', label: `术语表(${glossary.length})`, children: glossaryTab },
+              { key: 'history', label: `历史(${history.length})`, children: historyTab },
+            ]}
+            style={{ marginTop: -8 }}
+          />
+        ),
+      }]}
+    />
   );
 };
 

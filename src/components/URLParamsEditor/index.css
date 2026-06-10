@@ -118,3 +118,56 @@
   min-height: 32px;
   line-height: 1.5;
 }
+
+/* ── URL Diff 结果 ── */
+.upe-diff-result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--app-radius);
+}
+
+.upe-diff-section {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--theme-borderLight);
+}
+
+.upe-diff-section:last-child {
+  border-bottom: none;
+}
+
+.upe-diff-section code {
+  font-size: 10px;
+  padding: 1px 3px;
+  background: var(--theme-surfaceElevated);
+  border-radius: 2px;
+  word-break: break-all;
+}
+
+/* ── 深链解析结果 ── */
+.upe-deeplink-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--app-radius);
+}
+
+.upe-dl-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upe-dl-row code {
+  font-size: 10px;
+  padding: 1px 3px;
+  background: var(--theme-surfaceElevated);
+  border-radius: 2px;
+  word-break: break-all;
+}

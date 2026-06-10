@@ -15,6 +15,7 @@ import {
   CompassOutlined,
   StarOutlined,
   PartitionOutlined,
+  CopyOutlined,
   SettingOutlined,
   FireOutlined,
   AppstoreOutlined,
@@ -30,6 +31,7 @@ import { openChatWindow } from './utils/openChatWindow';
 // 懒加载组件
 const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
 const QRCodeDecoder = lazy(() => import('./components/QRCodeDecoder'));
+const BarcodeGenerator = lazy(() => import('./components/BarcodeGenerator'));
 const URLParamsEditor = lazy(() => import('./components/URLParamsEditor'));
 const TimestampConverter = lazy(() => import('./components/TimestampConverter'));
 const ColorTools = lazy(() => import('./components/ColorTools'));
@@ -39,10 +41,16 @@ const ImageTools = lazy(() => import('./components/ImageTools'));
 const Translator = lazy(() => import('./components/Translator'));
 const APITester = lazy(() => import('./components/APITester'));
 const CacheManager = lazy(() => import('./components/CacheManager'));
+const StorageManager = lazy(() => import('./components/StorageManager'));
 const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
 const WebActions = lazy(() => import('./components/WebActions'));
 const MouseTrail = lazy(() => import('./components/MouseTrail'));
 const CodecTools = lazy(() => import('./components/CodecTools'));
+const MarkdownPreview = lazy(() => import('./components/MarkdownPreview'));
+const DiffTool = lazy(() => import('./components/DiffTool'));
+const FontPreview = lazy(() => import('./components/FontPreview'));
+const MemoNotes = lazy(() => import('./components/ClipboardHistory'));
+const AsciiArt = lazy(() => import('./components/AsciiArt'));
 const Settings = lazy(() => import('./components/Settings'));
 const EasterEgg = lazy(() => import('./components/EasterEgg'));
 
@@ -72,6 +80,11 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   webactions: { id: 'webactions', name: '网页操作', icon: '🧭' },
   mousetrail: { id: 'mousetrail', name: '鼠标拖尾', icon: '✨' },
   codec: { id: 'codec', name: '编解码', icon: '🔣' },
+  markdown: { id: 'markdown', name: 'Markdown', icon: '📝' },
+  diff: { id: 'diff', name: 'Diff 对比', icon: '📊' },
+  fontpreview: { id: 'fontpreview', name: '字体预览', icon: '🔤' },
+  clipboard: { id: 'clipboard', name: '备忘录', icon: '📝' },
+  asciiart: { id: 'asciiart', name: 'ASCII 画布', icon: '🎨' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
@@ -91,6 +104,11 @@ const FEATURE_ICONS: Record<string, React.ReactNode> = {
   webactions: <CompassOutlined />,
   mousetrail: <StarOutlined />,
   codec: <PartitionOutlined />,
+  markdown: <CodeOutlined />,
+  diff: <PartitionOutlined />,
+  fontpreview: <SearchOutlined />,
+  clipboard: <CopyOutlined />,
+  asciiart: <StarOutlined />,
   future1: <AppstoreOutlined />,
   future2: <AppstoreOutlined />,
 };
@@ -101,8 +119,8 @@ const HIDDEN_FEATURES = new Set<FeatureTab>(['future1', 'future2']);
 
 interface ActiveTabPanelProps {
   tab: FeatureTab;
-  qrSubTab: 'generate' | 'decode';
-  onQrSubTabChange: (next: 'generate' | 'decode') => void;
+  qrSubTab: 'generate' | 'decode' | 'barcode' | 'storage';
+  onQrSubTabChange: (next: 'generate' | 'decode' | 'barcode' | 'storage') => void;
 }
 
 const ActiveTabPanel = memo<ActiveTabPanelProps>(({ tab, qrSubTab, onQrSubTabChange }) => {
@@ -127,9 +145,19 @@ const ActiveTabPanel = memo<ActiveTabPanelProps>(({ tab, qrSubTab, onQrSubTabCha
               <span className="sub-tab-icon">🔍</span>
               <span>解码</span>
             </button>
+            <button
+              type="button"
+              className={`sub-tab ${qrSubTab === 'barcode' ? 'active' : ''}`}
+              onClick={() => onQrSubTabChange('barcode')}
+            >
+              <span className="sub-tab-icon">📊</span>
+              <span>条形码</span>
+            </button>
           </div>
           <div className="sub-content">
-            {qrSubTab === 'generate' ? <QRCodeGenerator /> : <QRCodeDecoder />}
+            {qrSubTab === 'generate' && <QRCodeGenerator />}
+            {qrSubTab === 'decode' && <QRCodeDecoder />}
+            {qrSubTab === 'barcode' && <BarcodeGenerator />}
           </div>
         </div>
       );
@@ -141,11 +169,30 @@ const ActiveTabPanel = memo<ActiveTabPanelProps>(({ tab, qrSubTab, onQrSubTabCha
     case 'regex': return <RegexTester />;
     case 'translator': return <Translator />;
     case 'apitester': return <APITester />;
-    case 'cachemanager': return <CacheManager />;
+    case 'cachemanager': return (
+        <div className="feature-content">
+          <div className="sub-tabs">
+            <button type="button" className={`sub-tab ${qrSubTab === 'generate' || !['generate','decode','barcode','storage'].includes(qrSubTab) ? 'active' : ''}`} onClick={() => onQrSubTabChange('generate')}>
+              <span className="sub-tab-icon">🍪</span><span>Cookie/清理</span>
+            </button>
+            <button type="button" className={`sub-tab ${qrSubTab === 'storage' ? 'active' : ''}`} onClick={() => onQrSubTabChange('storage')}>
+              <span className="sub-tab-icon">💾</span><span>Storage</span>
+            </button>
+          </div>
+          <div className="sub-content">
+            {qrSubTab === 'storage' ? <StorageManager /> : <CacheManager />}
+          </div>
+        </div>
+      );
     case 'redirector': return <RequestRedirector />;
     case 'webactions': return <WebActions />;
     case 'mousetrail': return <MouseTrail />;
     case 'codec': return <CodecTools />;
+    case 'markdown': return <MarkdownPreview />;
+    case 'diff': return <DiffTool />;
+    case 'fontpreview': return <FontPreview />;
+    case 'clipboard': return <MemoNotes />;
+    case 'asciiart': return <AsciiArt />;
     default: return null;
   }
 });
@@ -232,7 +279,7 @@ const App: React.FC = () => {
   }, []);
 
   const [activeTab, setActiveTab] = useState<FeatureTab>(initialActiveTab);
-  const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode'>('generate');
+  const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode' | 'barcode' | 'storage'>('generate');
   const [clickCount, setClickCount] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -299,7 +346,7 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const handleQrSubTabChange = useCallback((tab: 'generate' | 'decode') => setQrSubTab(tab), []);
+  const handleQrSubTabChange = useCallback((tab: 'generate' | 'decode' | 'barcode' | 'storage') => setQrSubTab(tab), []);
   const handleOpenChat = useCallback(() => openChatWindow(), []);
 
   const features = useMemo(() => {
