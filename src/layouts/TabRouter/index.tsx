@@ -23,7 +23,6 @@ const DiffTool = lazy(() => import('../../features/code-tools/DiffTool'));
 // visual-tools
 const ColorTools = lazy(() => import('../../features/visual-tools/ColorTools'));
 const ImageTools = lazy(() => import('../../features/visual-tools/ImageTools'));
-const FontPreview = lazy(() => import('../../features/visual-tools/FontPreview'));
 const AsciiArt = lazy(() => import('../../features/visual-tools/AsciiArt'));
 // browser-tools
 const CacheManager = lazy(() => import('../../features/browser-tools/CacheManager'));
@@ -110,7 +109,6 @@ const TabRouter = memo<TabRouterProps>(({ tab, subTab, onSubTabChange }) => {
     case 'codec': return <CodecTools />;
     case 'markdown': return <MarkdownPreview />;
     case 'diff': return <DiffTool />;
-    case 'fontpreview': return <FontPreview />;
     case 'clipboard': return <MemoNotes />;
     case 'asciiart': return <AsciiArt />;
     default: return null;

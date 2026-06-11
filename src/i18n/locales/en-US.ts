@@ -44,7 +44,6 @@ const enUS = {
     codec: 'Codec',
     markdown: 'Markdown',
     diff: 'Diff',
-    fontpreview: 'Font Preview',
     clipboard: 'Memo Notes',
     asciiart: 'ASCII Art',
   },

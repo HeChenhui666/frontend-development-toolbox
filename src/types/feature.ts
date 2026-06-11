@@ -20,7 +20,6 @@ export type DefaultTab =
   | 'codec'
   | 'markdown'
   | 'diff'
-  | 'fontpreview'
   | 'clipboard'
   | 'asciiart';
 

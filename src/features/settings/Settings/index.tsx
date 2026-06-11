@@ -125,7 +125,6 @@ const TAB_NAMES: Record<FeatureTab, string> = {
   codec: '编码/解码',
   markdown: 'Markdown',
   diff: '文本对比',
-  fontpreview: '字体预览',
   clipboard: '剪贴板',
   asciiart: 'ASCII Art',
 };
