@@ -1,6 +1,6 @@
 {
   "name": "frontend-development-toolbox",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "一个功能强大的Chrome浏览器扩展，集成了多种实用的前端开发工具：二维码生成/解码、URL参数编辑、时间戳转换、JSON工具、渐变背景生成器、正则表达式测试等",
   "type": "module",
   "main": "dist/index.html",
@@ -42,6 +42,7 @@
   "dependencies": {
     "@nicolo-ribaudo/chokidar-2": "^2.1.8-no-fsevents.3",
     "antd": "^6.1.1",
+    "i18next": "^26.3.1",
     "jsbarcode": "^3.12.3",
     "jsqr": "^1.4.0",
     "lottie-web": "^5.12.2",
@@ -50,16 +51,23 @@
     "randexp": "^0.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-i18next": "^17.0.8",
     "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/chrome": "^0.0.251",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
+    "jsdom": "^29.1.1",
+    "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
+    "vite-plugin-compression": "^0.5.1",
+    "vitest": "^4.1.8",
     "ws": "^8.20.0"
   }
 }

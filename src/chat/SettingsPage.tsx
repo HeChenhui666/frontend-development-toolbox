@@ -1,5 +1,5 @@
 import React from 'react';
-import Settings from '../components/Settings';
+import Settings from '../features/settings/Settings';
 
 /**
  * 聊天室侧栏「设置」：与主应用相同的嵌入式 Settings；连接与进房在「聊天」标签内。

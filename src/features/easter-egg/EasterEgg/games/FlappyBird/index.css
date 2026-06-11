@@ -1,0 +1,82 @@
+.flappy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  user-select: none;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.flappy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 12px;
+  color: var(--theme-textSecondary, #64748b);
+  padding: 0 4px;
+}
+
+.flappy-score {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--theme-text, #1e293b);
+  font-variant-numeric: tabular-nums;
+}
+
+.flappy-canvas-wrapper {
+  position: relative;
+  line-height: 0;
+}
+
+.flappy-canvas {
+  border-radius: 6px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  display: block;
+  cursor: pointer;
+}
+
+.flappy-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 6px;
+  gap: 10px;
+  color: #fff;
+}
+
+.flappy-overlay-title {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.flappy-overlay-score {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.flappy-btn {
+  padding: 6px 18px;
+  border-radius: 4px;
+  border: none;
+  background: var(--theme-primary, #6366f1);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.flappy-btn:hover { opacity: 0.9; }
+
+.flappy-hint {
+  font-size: 10px;
+  color: var(--theme-textMuted, #94a3b8);
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import ChatApp from './chat/ChatApp';
-import ExtensionMouseTrail from './components/MouseTrail/ExtensionMouseTrail';
+import ExtensionMouseTrail from './features/browser-tools/MouseTrail/ExtensionMouseTrail';
 import { getSavedTheme, applyTheme } from './utils/theme';
 import './chat/chat.css';
 

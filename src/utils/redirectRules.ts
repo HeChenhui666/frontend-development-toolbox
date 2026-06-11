@@ -2,14 +2,28 @@
  * 请求重定向规则管理工具
  */
 
+/** 请求/响应头修改操作 */
+export interface HeaderOperation {
+  /** 操作类型 */
+  operation: 'set' | 'remove' | 'append';
+  /** Header 名称 */
+  header: string;
+  /** Header 值（remove 操作时可选） */
+  value?: string;
+}
+
 export interface RedirectRule {
   id: string;
   name: string;
   enabled: boolean;
-  type: 'url';
-  source: string; // 源URL
-  target: string; // 目标URL
+  type: 'url' | 'header';
+  source: string; // 源URL（url 类型为重定向源，header 类型为匹配 URL 模式）
+  target: string; // 目标URL（url 类型必填，header 类型可为空）
   priority: number; // 优先级，数字越大优先级越高
+  /** 请求头修改（仅 header 类型使用） */
+  requestHeaders?: HeaderOperation[];
+  /** 响应头修改（仅 header 类型使用） */
+  responseHeaders?: HeaderOperation[];
   createdAt: number;
   updatedAt: number;
 }
@@ -141,30 +155,46 @@ export function validateRule(rule: Partial<RedirectRule>): { valid: boolean; err
   if (!rule.source || !rule.source.trim()) {
     return { valid: false, error: '源URL或正则表达式不能为空' };
   }
-  
+
+  // ── Header 修改类型 ──
+  if (rule.type === 'header') {
+    const hasRequestHeaders = rule.requestHeaders && rule.requestHeaders.length > 0;
+    const hasResponseHeaders = rule.responseHeaders && rule.responseHeaders.length > 0;
+    if (!hasRequestHeaders && !hasResponseHeaders) {
+      return { valid: false, error: '至少需要配置一条请求头或响应头修改' };
+    }
+    const allHeaders = [...(rule.requestHeaders || []), ...(rule.responseHeaders || [])];
+    for (const header of allHeaders) {
+      if (!header.header?.trim()) {
+        return { valid: false, error: 'Header 名称不能为空' };
+      }
+      if (header.operation !== 'remove' && !header.value?.trim()) {
+        return { valid: false, error: `Header "${header.header}" 的值不能为空（非 remove 操作）` };
+      }
+    }
+    return { valid: true };
+  }
+
+  // ── URL 重定向类型 ──
   if (!rule.target || !rule.target.trim()) {
     return { valid: false, error: '目标URL不能为空' };
   }
   
   const isRegex = isRegexPattern(rule.source);
   
-  // 如果是正则模式，不强制验证目标URL格式（因为可能包含捕获组引用）
   if (!isRegex) {
-    // 简单URL模式：验证目标URL格式
     try {
       new URL(rule.target);
-    } catch (e) {
+    } catch {
       return { valid: false, error: '目标URL格式无效' };
     }
   } else {
-    // 正则模式：验证正则表达式是否有效
     try {
       const testPattern = convertPatternToRegex(rule.source);
       new RegExp(testPattern);
-    } catch (e) {
+    } catch {
       return { valid: false, error: '源正则表达式格式无效' };
     }
-    // 正则模式：验证目标URL协议安全性
     if (rule.target) {
       const allowedProtocols = ['http://', 'https://', 'ws://', 'wss://'];
       if (!allowedProtocols.some(p => rule.target!.startsWith(p))) {
@@ -238,18 +268,61 @@ function convertPatternToRegex(pattern: string): string {
 export function convertToDeclarativeNetRequestRule(rule: RedirectRule, index: number): chrome.declarativeNetRequest.Rule {
   // 使用固定范围生成ID，避免冲突
   const ruleId = Math.min(RULE_ID_BASE + index, RULE_ID_MAX);
-  
+
   // 构建条件 - 使用标准资源类型配置
+  const standardResourceTypes = [
+    chrome.declarativeNetRequest.ResourceType.SCRIPT,
+    chrome.declarativeNetRequest.ResourceType.STYLESHEET,
+    chrome.declarativeNetRequest.ResourceType.IMAGE,
+    chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+    chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
+    chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
+    chrome.declarativeNetRequest.ResourceType.OTHER,
+  ];
+
+  // ── Header 修改类型 ──
+  if (rule.type === 'header') {
+    const condition: chrome.declarativeNetRequest.RuleCondition = {
+      resourceTypes: standardResourceTypes,
+    };
+    // 使用 urlFilter 做前缀匹配（Header 规则通常匹配域名或路径前缀）
+    const isRegex = isRegexPattern(rule.source);
+    if (isRegex) {
+      const regexPattern = convertPatternToRegex(rule.source);
+      condition.regexFilter = `^${regexPattern}$`;
+    } else {
+      condition.urlFilter = rule.source.trim();
+    }
+
+    const toHeaderInfo = (ops: HeaderOperation[] | undefined) =>
+      (ops || []).map((op) => ({
+        header: op.header,
+        operation: op.operation === 'remove'
+          ? chrome.declarativeNetRequest.HeaderOperation.REMOVE
+          : op.operation === 'append'
+            ? chrome.declarativeNetRequest.HeaderOperation.APPEND
+            : chrome.declarativeNetRequest.HeaderOperation.SET,
+        ...(op.operation !== 'remove' && op.value ? { value: op.value } : {}),
+      }));
+
+    const requestHeaders = toHeaderInfo(rule.requestHeaders);
+    const responseHeaders = toHeaderInfo(rule.responseHeaders);
+
+    return {
+      id: ruleId,
+      priority: Math.min(rule.priority, 2147483647),
+      action: {
+        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+        ...(requestHeaders.length > 0 ? { requestHeaders } : {}),
+        ...(responseHeaders.length > 0 ? { responseHeaders } : {}),
+      },
+      condition,
+    };
+  }
+
+  // ── URL 重定向类型 ──
   const condition: chrome.declarativeNetRequest.RuleCondition = {
-    resourceTypes: [
-      chrome.declarativeNetRequest.ResourceType.SCRIPT,
-      chrome.declarativeNetRequest.ResourceType.STYLESHEET,
-      chrome.declarativeNetRequest.ResourceType.IMAGE,
-      chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
-      chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
-      chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
-      chrome.declarativeNetRequest.ResourceType.OTHER,
-    ],
+    resourceTypes: standardResourceTypes,
   };
   
   const isRegex = isRegexPattern(rule.source);
@@ -407,10 +480,11 @@ export async function applyRulesToDeclarativeNetRequest(): Promise<boolean> {
             : rule.condition.urlFilter 
             ? `urlFilter: ${rule.condition.urlFilter}`
             : '未知';
-          const actionInfo = (rule.action as any).redirect?.url 
-            ? `→ ${(rule.action as any).redirect.url}`
-            : (rule.action as any).redirect?.regexSubstitution
-            ? `→ regexSubstitution: ${(rule.action as any).redirect.regexSubstitution}`
+          const actionRedirect = (rule.action as { redirect?: { url?: string; regexSubstitution?: string } }).redirect;
+          const actionInfo = actionRedirect?.url 
+            ? `→ ${actionRedirect.url}`
+            : actionRedirect?.regexSubstitution
+            ? `→ regexSubstitution: ${actionRedirect.regexSubstitution}`
             : '未知';
           const resourceTypes = rule.condition.resourceTypes?.join(', ') || '未知';
           

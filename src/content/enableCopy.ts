@@ -10,7 +10,7 @@
  */
 (function xhhEnableUnrestrictedCopy() {
   const FLAG = '__XHH_ENABLE_COPY_V1__';
-  const rootWin = window as Window & Record<string, unknown>;
+  const rootWin = window as unknown as Window & Record<string, unknown>;
   if (rootWin[FLAG]) {
     return;
   }

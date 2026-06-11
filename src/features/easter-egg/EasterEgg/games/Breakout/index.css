@@ -1,0 +1,108 @@
+.breakout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  user-select: none;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.breakout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 12px;
+  color: var(--theme-textSecondary, #64748b);
+  padding: 0 4px;
+}
+
+.breakout-score {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--theme-text, #1e293b);
+  font-variant-numeric: tabular-nums;
+}
+
+.breakout-lives {
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.breakout-canvas {
+  border-radius: 6px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  background: #0f172a;
+  display: block;
+  cursor: none;
+  touch-action: none;
+}
+
+.breakout-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.breakout-btn {
+  padding: 4px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--theme-border, #e2e8f0);
+  background: var(--theme-surface, #f8fafc);
+  color: var(--theme-text, #1e293b);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.breakout-btn:hover {
+  background: var(--theme-primarySoft, rgba(99, 102, 241, 0.12));
+  color: var(--theme-primary, #6366f1);
+}
+
+.breakout-btn--primary {
+  background: var(--theme-primary, #6366f1);
+  color: #fff;
+  border-color: transparent;
+}
+
+.breakout-btn--primary:hover {
+  opacity: 0.9;
+}
+
+.breakout-hint {
+  font-size: 10px;
+  color: var(--theme-textMuted, #94a3b8);
+}
+
+.breakout-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 6px;
+  gap: 12px;
+  color: #fff;
+}
+
+.breakout-overlay-title {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.breakout-overlay-score {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.breakout-canvas-wrapper {
+  position: relative;
+  line-height: 0;
+}

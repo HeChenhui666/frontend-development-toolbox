@@ -1,0 +1,107 @@
+/* ===== CSS 变量定义 ===== */
+:root {
+  /* 主题色（由 applyTheme 在运行时覆盖，这里作为骨架兜底值，对应 default·暖橙主题） */
+  --theme-primary: #ff7f50;
+  --theme-secondary: #ffb347;
+  --theme-accent: #ff6b6b;
+  --theme-primaryGradient: #ffb347;
+  --theme-primaryGradientEnd: #ff6b6b;
+  --theme-background: #fffbf8;
+  --theme-surface: #fff5f0;
+  --theme-surfaceHover: #ffe8de;
+  --theme-text: #2d2420;
+  --theme-textSecondary: #6b564c;
+  --theme-textMuted: #a8948c;
+  --theme-border: #f0dccf;
+  --theme-borderLight: #f7ece4;
+  --theme-active: #ff7f50;
+  --theme-activeBackground: #ffffff;
+  --theme-activeHover: rgba(255, 127, 80, 0.15);
+  --theme-scrollbarTrack: #fff5f0;
+  --theme-scrollbarThumb: #e0c4b8;
+  --theme-scrollbarThumbHover: #cfae9f;
+  --theme-inputBackground: #ffffff;
+  --theme-inputBorder: #e0d0c5;
+  --theme-inputText: #2d2420;
+  --theme-inputFocusBorder: #ff7f50;
+  --theme-buttonPrimary: #ff7f50;
+  --theme-buttonPrimaryHover: #e56a3d;
+  --theme-buttonText: #ffffff;
+  --theme-success: #10b981;
+  --theme-successBackground: #ecfdf5;
+  --theme-error: #ef4444;
+  --theme-errorBackground: #fef2f2;
+  --theme-primarySoft: rgba(255, 127, 80, 0.12);
+  --theme-primarySoftHover: rgba(255, 127, 80, 0.2);
+  --theme-primarySoftActive: rgba(255, 127, 80, 0.28);
+  --theme-primaryOutline: rgba(255, 127, 80, 0.4);
+  --theme-primaryShadow: rgba(255, 127, 80, 0.25);
+  --theme-onPrimary: #ffffff;
+  --theme-surfaceElevated: #fff9f6;
+  --theme-surfaceSunken: #fbeed6;
+  --theme-borderStrong: #5e4c47;
+  --theme-borderMuted: #f6e8df;
+  --theme-overlay: rgba(45, 36, 32, 0.45);
+  --theme-overlayLight: rgba(255, 255, 255, 0.7);
+  --theme-headerGlow: rgba(255, 255, 255, 0.12);
+  --theme-headerControlBg: rgba(255, 255, 255, 0.2);
+  --theme-headerControlHover: rgba(255, 255, 255, 0.32);
+  --theme-shadowSubtle: rgba(255, 127, 80, 0.08);
+  --theme-shadowSoft: rgba(255, 127, 80, 0.18);
+  --theme-shadowStrong: rgba(255, 127, 80, 0.32);
+  --theme-errorShadow: rgba(239, 68, 68, 0.18);
+  --theme-successShadow: rgba(16, 185, 129, 0.18);
+
+  /* 渐变系统 */
+  --theme-gradient-main: linear-gradient(135deg, #ff7f50 0%, #ffa500 100%);
+  --theme-gradient-subtle: linear-gradient(135deg, rgba(255, 127, 80, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+  --theme-gradient-text: linear-gradient(to right, #ff7f50, #ff4500);
+  --theme-gradient-header: linear-gradient(135deg, #fffbf8 0%, #fff5f0 100%);
+  --theme-accentGradient: linear-gradient(135deg, #ff7f50 0%, #ffa500 100%);
+  --theme-backgroundGradient: linear-gradient(135deg, #fffbf8 0%, #fff5f0 100%);
+  --theme-surfaceGradient: linear-gradient(135deg, #fff5f0 0%, #ffeee6 100%);
+  --theme-borderGradient: linear-gradient(135deg, #f0dccf 0%, #f7ece4 100%);
+  --theme-tab-indicator-opacity: 1;
+
+  /* 2048 游戏色板 */
+  --theme-game-2048-accent: #ffb347;
+  --theme-game-2048-2: #fff7f4;
+  --theme-game-2048-4: #ffb38a;
+  --theme-game-2048-8: #ff9468;
+  --theme-game-2048-16: #ff8757;
+  --theme-game-2048-32: #ff7a47;
+  --theme-game-2048-64: #ff6d37;
+  --theme-game-2048-128: #ff9a47;
+  --theme-game-2048-256: #ffa34d;
+  --theme-game-2048-512: #ffab53;
+  --theme-game-2048-1024: #ffb258;
+  --theme-game-2048-2048: #ffb85c;
+  --theme-game-2048-text-2: #6b564c;
+  --theme-game-2048-text-4: #ffffff;
+  --theme-game-2048-text-8: #ffffff;
+  --theme-game-2048-text-16: #ffffff;
+  --theme-game-2048-text-32: #ffffff;
+  --theme-game-2048-text-64: #ffffff;
+  --theme-game-2048-text-128: #ffffff;
+  --theme-game-2048-text-256: #ffffff;
+  --theme-game-2048-text-512: #ffffff;
+  --theme-game-2048-text-1024: #ffffff;
+  --theme-game-2048-text-2048: #ffffff;
+
+  /* 间距比例尺 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* 组件尺寸 */
+  --app-spacing: 6px;
+  --app-radius: 3px;
+  --sider-collapsed-width: 48px;
+  --sider-expanded-width: 140px;
+  --sider-logo-height: 44px;
+  --sider-item-height: 34px;
+  --content-topbar-height: 36px;
+}

@@ -1,0 +1,128 @@
+.reaction-test {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  user-select: none;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.reaction-zone {
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.05s;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  line-height: 1.5;
+  position: relative;
+  overflow: hidden;
+}
+
+.reaction-zone--waiting {
+  background: #e74c3c;
+}
+
+.reaction-zone--ready {
+  background: #2ecc71;
+}
+
+.reaction-zone--result {
+  background: #3498db;
+}
+
+.reaction-zone--too-early {
+  background: #e67e22;
+}
+
+.reaction-zone--idle {
+  background: var(--theme-primary, #6366f1);
+}
+
+.reaction-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+.reaction-time {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -2px;
+}
+
+.reaction-time-unit {
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.reaction-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--theme-textSecondary, #64748b);
+}
+
+.reaction-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.reaction-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--theme-text, #1e293b);
+}
+
+.reaction-stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reaction-history {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.reaction-history-item {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--theme-surfaceElevated, #f1f5f9);
+  color: var(--theme-textSecondary, #64748b);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.reaction-history-item--best {
+  background: var(--theme-primarySoft, rgba(99, 102, 241, 0.12));
+  color: var(--theme-primary, #6366f1);
+  font-weight: 700;
+}
+
+.reaction-rating {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 12px;
+  background: var(--theme-primarySoft, rgba(99, 102, 241, 0.12));
+  color: var(--theme-primary, #6366f1);
+}

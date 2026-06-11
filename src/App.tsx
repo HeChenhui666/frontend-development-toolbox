@@ -1,58 +1,25 @@
-import React, { useState, useMemo, lazy, Suspense, useEffect, useRef, useCallback, useTransition, memo } from 'react';
-import { ConfigProvider, theme as antdTheme, Tooltip, Modal } from 'antd';
+import React, { useState, useMemo, lazy, Suspense, useEffect, useCallback, useTransition } from 'react';
+import { ConfigProvider, Tooltip, Modal } from 'antd';
 import {
-  QrcodeOutlined,
-  LinkOutlined,
-  ClockCircleOutlined,
-  PictureOutlined,
-  CodeOutlined,
-  BgColorsOutlined,
-  SearchOutlined,
-  GlobalOutlined,
-  ApiOutlined,
-  ClearOutlined,
-  RetweetOutlined,
-  CompassOutlined,
-  StarOutlined,
-  PartitionOutlined,
-  CopyOutlined,
   SettingOutlined,
   FireOutlined,
-  AppstoreOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   LeftOutlined,
   RightOutlined,
 } from '@ant-design/icons';
 import './App.css';
 import { getDefaultTab, getTabOrder, getActiveTab, saveActiveTab, DefaultTab } from './utils/userPreferences';
 import { openChatWindow } from './utils/openChatWindow';
+import ErrorBoundary from './components/ErrorBoundary';
+// NOTE: ErrorBoundary + CompatibilityWarning + ExampleFeature remain in components/ (shared)
+import TabRouter from './layouts/TabRouter';
+import { SiderNavItem, SiderAction } from './layouts/SiderNav';
+import { useRunMode } from './hooks/useRunMode';
+import { useEasterEggTrigger } from './hooks/useEasterEggTrigger';
+import { useAntdThemeConfig } from './hooks/useAntdThemeConfig';
 
-// 懒加载组件
-const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
-const QRCodeDecoder = lazy(() => import('./components/QRCodeDecoder'));
-const BarcodeGenerator = lazy(() => import('./components/BarcodeGenerator'));
-const URLParamsEditor = lazy(() => import('./components/URLParamsEditor'));
-const TimestampConverter = lazy(() => import('./components/TimestampConverter'));
-const ColorTools = lazy(() => import('./components/ColorTools'));
-const JSONTools = lazy(() => import('./components/JSONTools'));
-const RegexTester = lazy(() => import('./components/RegexTester'));
-const ImageTools = lazy(() => import('./components/ImageTools'));
-const Translator = lazy(() => import('./components/Translator'));
-const APITester = lazy(() => import('./components/APITester'));
-const CacheManager = lazy(() => import('./components/CacheManager'));
-const StorageManager = lazy(() => import('./components/StorageManager'));
-const RequestRedirector = lazy(() => import('./components/RequestRedirector'));
-const WebActions = lazy(() => import('./components/WebActions'));
-const MouseTrail = lazy(() => import('./components/MouseTrail'));
-const CodecTools = lazy(() => import('./components/CodecTools'));
-const MarkdownPreview = lazy(() => import('./components/MarkdownPreview'));
-const DiffTool = lazy(() => import('./components/DiffTool'));
-const FontPreview = lazy(() => import('./components/FontPreview'));
-const MemoNotes = lazy(() => import('./components/ClipboardHistory'));
-const AsciiArt = lazy(() => import('./components/AsciiArt'));
-const Settings = lazy(() => import('./components/Settings'));
-const EasterEgg = lazy(() => import('./components/EasterEgg'));
+// 懒加载：仅保留非路由级组件
+const Settings = lazy(() => import('./features/settings/Settings'));
+const EasterEgg = lazy(() => import('./features/easter-egg/EasterEgg'));
 
 type FeatureTab = DefaultTab | 'future1' | 'future2';
 
@@ -89,185 +56,7 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   future2: { id: 'future2', name: '未来功能2', icon: '🧪' },
 };
 
-const FEATURE_ICONS: Record<string, React.ReactNode> = {
-  qrcode: <QrcodeOutlined />,
-  urlparams: <LinkOutlined />,
-  timestamp: <ClockCircleOutlined />,
-  randomimage: <PictureOutlined />,
-  json: <CodeOutlined />,
-  gradient: <BgColorsOutlined />,
-  regex: <SearchOutlined />,
-  translator: <GlobalOutlined />,
-  apitester: <ApiOutlined />,
-  cachemanager: <ClearOutlined />,
-  redirector: <RetweetOutlined />,
-  webactions: <CompassOutlined />,
-  mousetrail: <StarOutlined />,
-  codec: <PartitionOutlined />,
-  markdown: <CodeOutlined />,
-  diff: <PartitionOutlined />,
-  fontpreview: <SearchOutlined />,
-  clipboard: <CopyOutlined />,
-  asciiart: <StarOutlined />,
-  future1: <AppstoreOutlined />,
-  future2: <AppstoreOutlined />,
-};
-
 const HIDDEN_FEATURES = new Set<FeatureTab>(['future1', 'future2']);
-
-// ── 内容面板 ─────────────────────────────────────────────────────────────────
-
-interface ActiveTabPanelProps {
-  tab: FeatureTab;
-  qrSubTab: 'generate' | 'decode' | 'barcode' | 'storage';
-  onQrSubTabChange: (next: 'generate' | 'decode' | 'barcode' | 'storage') => void;
-}
-
-const ActiveTabPanel = memo<ActiveTabPanelProps>(({ tab, qrSubTab, onQrSubTabChange }) => {
-  switch (tab) {
-    case 'qrcode':
-      return (
-        <div className="feature-content">
-          <div className="sub-tabs">
-            <button
-              type="button"
-              className={`sub-tab ${qrSubTab === 'generate' ? 'active' : ''}`}
-              onClick={() => onQrSubTabChange('generate')}
-            >
-              <span className="sub-tab-icon">📱</span>
-              <span>生成</span>
-            </button>
-            <button
-              type="button"
-              className={`sub-tab ${qrSubTab === 'decode' ? 'active' : ''}`}
-              onClick={() => onQrSubTabChange('decode')}
-            >
-              <span className="sub-tab-icon">🔍</span>
-              <span>解码</span>
-            </button>
-            <button
-              type="button"
-              className={`sub-tab ${qrSubTab === 'barcode' ? 'active' : ''}`}
-              onClick={() => onQrSubTabChange('barcode')}
-            >
-              <span className="sub-tab-icon">📊</span>
-              <span>条形码</span>
-            </button>
-          </div>
-          <div className="sub-content">
-            {qrSubTab === 'generate' && <QRCodeGenerator />}
-            {qrSubTab === 'decode' && <QRCodeDecoder />}
-            {qrSubTab === 'barcode' && <BarcodeGenerator />}
-          </div>
-        </div>
-      );
-    case 'urlparams': return <URLParamsEditor />;
-    case 'timestamp': return <TimestampConverter />;
-    case 'randomimage': return <ImageTools />;
-    case 'json': return <JSONTools />;
-    case 'gradient': return <ColorTools />;
-    case 'regex': return <RegexTester />;
-    case 'translator': return <Translator />;
-    case 'apitester': return <APITester />;
-    case 'cachemanager': return (
-        <div className="feature-content">
-          <div className="sub-tabs">
-            <button type="button" className={`sub-tab ${qrSubTab === 'generate' || !['generate','decode','barcode','storage'].includes(qrSubTab) ? 'active' : ''}`} onClick={() => onQrSubTabChange('generate')}>
-              <span className="sub-tab-icon">🍪</span><span>Cookie/清理</span>
-            </button>
-            <button type="button" className={`sub-tab ${qrSubTab === 'storage' ? 'active' : ''}`} onClick={() => onQrSubTabChange('storage')}>
-              <span className="sub-tab-icon">💾</span><span>Storage</span>
-            </button>
-          </div>
-          <div className="sub-content">
-            {qrSubTab === 'storage' ? <StorageManager /> : <CacheManager />}
-          </div>
-        </div>
-      );
-    case 'redirector': return <RequestRedirector />;
-    case 'webactions': return <WebActions />;
-    case 'mousetrail': return <MouseTrail />;
-    case 'codec': return <CodecTools />;
-    case 'markdown': return <MarkdownPreview />;
-    case 'diff': return <DiffTool />;
-    case 'fontpreview': return <FontPreview />;
-    case 'clipboard': return <MemoNotes />;
-    case 'asciiart': return <AsciiArt />;
-    default: return null;
-  }
-});
-ActiveTabPanel.displayName = 'ActiveTabPanel';
-
-// ── 侧边栏导航项 ──────────────────────────────────────────────────────────────
-
-interface SiderNavItemProps {
-  feature: FeatureMeta;
-  isActive: boolean;
-  onClick: (tab: FeatureTab) => void;
-  collapsed: boolean;
-}
-
-const SiderNavItem = memo<SiderNavItemProps>(({ feature, isActive, onClick, collapsed }) => {
-  const handleClick = useCallback(() => onClick(feature.id), [feature.id, onClick]);
-
-  const btn = (
-    <button
-      type="button"
-      className={`sider-item${isActive ? ' active' : ''}`}
-      onClick={handleClick}
-      aria-label={feature.name}
-      aria-current={isActive ? 'page' : undefined}
-    >
-      <span className="sider-item-icon">{FEATURE_ICONS[feature.id]}</span>
-      <span className="sider-item-label">{feature.name}</span>
-    </button>
-  );
-
-  if (collapsed) {
-    return (
-      <Tooltip title={feature.name} placement="right" mouseEnterDelay={0.3}>
-        {btn}
-      </Tooltip>
-    );
-  }
-  return btn;
-});
-SiderNavItem.displayName = 'SiderNavItem';
-
-// ── 侧边栏底部操作按钮 ────────────────────────────────────────────────────────
-
-interface SiderActionProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  collapsed: boolean;
-  isActive?: boolean;
-}
-
-const SiderAction = memo<SiderActionProps>(({ icon, label, onClick, collapsed, isActive }) => {
-  const btn = (
-    <button
-      type="button"
-      className={`sider-action${isActive ? ' active' : ''}`}
-      onClick={onClick}
-      aria-label={label}
-      aria-current={isActive ? 'page' : undefined}
-    >
-      <span className="sider-action-icon">{icon}</span>
-      <span className="sider-action-label">{label}</span>
-    </button>
-  );
-
-  if (collapsed) {
-    return (
-      <Tooltip title={label} placement="right" mouseEnterDelay={0.3}>
-        {btn}
-      </Tooltip>
-    );
-  }
-  return btn;
-});
-SiderAction.displayName = 'SiderAction';
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
@@ -280,36 +69,15 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<FeatureTab>(initialActiveTab);
   const [qrSubTab, setQrSubTab] = useState<'generate' | 'decode' | 'barcode' | 'storage'>('generate');
-  const [clickCount, setClickCount] = useState(0);
-  const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
   const [tabOrderVersion, setTabOrderVersion] = useState(0);
-  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isTabPending, startTabTransition] = useTransition();
   const [, startDeferredUpdate] = useTransition();
 
-  // 运行模式检测
-  const { isPopupMode, isSidePanelMode } = useMemo(() => {
-    if (typeof window === 'undefined') return { isPopupMode: false, isSidePanelMode: false };
-
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get('mode');
-    const path = window.location.pathname;
-    const isSidePanelEntry = /(^|\/)sidepanel\.html$/i.test(path);
-    const isPopupEntry = /(^|\/)popup\.html$/i.test(path);
-    const isExtensionProtocol = /-extension:$/i.test(window.location.protocol);
-    const hasChromeRuntime =
-      typeof (window as any).chrome !== 'undefined' &&
-      (window as any).chrome.runtime?.id;
-    const isSmallWindow = window.innerWidth <= 500 && window.innerHeight <= 650;
-    const isPopupHeuristic = (isExtensionProtocol || hasChromeRuntime) && isSmallWindow;
-
-    if (mode === 'sidepanel' || isSidePanelEntry) return { isPopupMode: false, isSidePanelMode: true };
-    if (mode === 'popup' || isPopupEntry) return { isPopupMode: true, isSidePanelMode: false };
-    if (mode === 'standalone' || /(^|\/)standalone\.html$/i.test(path)) return { isPopupMode: false, isSidePanelMode: false };
-    return { isPopupMode: isPopupHeuristic, isSidePanelMode: false };
-  }, []);
+  // 提取的 Hooks
+  const { isPopupMode, isSidePanelMode } = useRunMode();
+  const { showEasterEgg, handleTriggerClick: handleTitleClick, closeEasterEgg: handleCloseEasterEgg } = useEasterEggTrigger();
 
   // 手动收起状态（null 表示跟随运行模式默认值）
   const [manualCollapsed, setManualCollapsed] = useState<boolean | null>(() => {
@@ -356,19 +124,6 @@ const App: React.FC = () => {
       .filter((f): f is FeatureMeta => f !== undefined && !HIDDEN_FEATURES.has(f.id));
   }, [tabOrderVersion]);
 
-  const handleTitleClick = useCallback(() => {
-    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-    const newCount = clickCount + 1;
-    setClickCount(newCount);
-    if (newCount >= 10) {
-      setShowEasterEgg(true);
-      setClickCount(0);
-    } else {
-      clickTimeoutRef.current = setTimeout(() => setClickCount(0), 2000);
-    }
-  }, [clickCount]);
-
-  const handleCloseEasterEgg = useCallback(() => setShowEasterEgg(false), []);
 
   const handleTabChange = useCallback((tab: FeatureTab) => {
     startTabTransition(() => setActiveTab(tab));
@@ -391,149 +146,8 @@ const App: React.FC = () => {
     };
   }, [activeTab]);
 
-  useEffect(() => () => { if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current); }, []);
-
-  // 主题变化
-  const [themeVersion, setThemeVersion] = useState(0);
-  useEffect(() => {
-    const bump = () => setThemeVersion(v => v + 1);
-    const onStorage = (e: StorageEvent) => { if (e.key === 'app-theme') bump(); };
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('themeChanged', bump);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('themeChanged', bump);
-    };
-  }, []);
-
-  const dynamicThemeConfig = useMemo(() => {
-    const root = getComputedStyle(document.documentElement);
-    const v = (name: string) => root.getPropertyValue(name).trim() || undefined;
-    const appRadius = parseInt(root.getPropertyValue('--app-radius') || '6', 10);
-    return {
-      algorithm: antdTheme.defaultAlgorithm,
-      token: {
-        colorPrimary: v('--theme-primary') || v('--theme-buttonPrimary'),
-        colorSuccess: v('--theme-success'),
-        colorError: v('--theme-error'),
-        colorWarning: '#faad14',
-        colorInfo: v('--theme-primary') || v('--theme-buttonPrimary'),
-        borderRadius: appRadius,
-        borderRadiusSM: Math.max(2, appRadius - 2),
-        borderRadiusLG: appRadius + 2,
-        padding: 6,
-        paddingXXS: 4,
-        paddingXS: 6,
-        paddingSM: 8,
-        paddingLG: 12,
-        paddingXL: 16,
-        colorBgContainer: v('--theme-inputBackground') || v('--theme-background'),
-        colorText: v('--theme-text'),
-        colorTextSecondary: v('--theme-textSecondary'),
-        colorTextTertiary: v('--theme-textMuted'),
-        colorBorder: v('--theme-border'),
-        colorBorderSecondary: v('--theme-borderLight'),
-        fontSizeSM: 11,
-        fontSize: 12,
-        fontSizeLG: 13,
-        controlHeight: 28,
-        controlHeightSM: 24,
-        controlHeightLG: 32,
-      },
-      components: {
-        Button: {
-          primaryColor: v('--theme-buttonText') || '#ffffff',
-          colorPrimary: v('--theme-buttonPrimary') || v('--theme-primary'),
-          colorPrimaryHover: v('--theme-buttonPrimaryHover'),
-          colorPrimaryActive: v('--theme-buttonPrimaryHover'),
-          contentFontSizeSM: 11,
-          contentFontSize: 12,
-          paddingInlineSM: 8,
-          paddingInline: 10,
-        },
-        Card: {
-          colorBgContainer: v('--theme-surface') || v('--theme-background'),
-          colorBorderSecondary: v('--theme-border'),
-          paddingLG: 10,
-          padding: 10,
-        },
-        Input: {
-          colorBgContainer: v('--theme-inputBackground') || v('--theme-background'),
-          colorBorder: v('--theme-inputBorder') || v('--theme-border'),
-          colorText: v('--theme-inputText') || v('--theme-text'),
-          activeBorderColor: v('--theme-inputFocusBorder') || v('--theme-primary'),
-          fontSize: 12,
-          paddingBlock: 4,
-          paddingInline: 8,
-        },
-        Select: {
-          colorBgContainer: v('--theme-inputBackground') || v('--theme-background'),
-          colorBorder: v('--theme-inputBorder') || v('--theme-border'),
-          colorText: v('--theme-text'),
-          fontSize: 12,
-        },
-        Switch: {
-          colorPrimary: v('--theme-primary') || v('--theme-buttonPrimary'),
-          colorPrimaryHover: v('--theme-buttonPrimaryHover'),
-        },
-        Tag: {
-          colorPrimary: v('--theme-primary') || v('--theme-buttonPrimary'),
-          fontSize: 11,
-        },
-        Slider: {
-          railBg: v('--theme-border'),
-          trackBg: v('--theme-primary'),
-          handleColor: v('--theme-primary'),
-          handleActiveColor: v('--theme-primary'),
-        },
-        Radio: {
-          colorPrimary: v('--theme-primary'),
-          buttonBg: v('--theme-surface'),
-          buttonSolidCheckedBg: v('--theme-primary'),
-          buttonSolidCheckedColor: '#fff',
-          buttonCheckedBg: v('--theme-primarySoft'),
-          buttonColor: v('--theme-textSecondary'),
-          fontSize: 12,
-        },
-        Tabs: {
-          colorPrimary: v('--theme-primary'),
-          itemSelectedColor: v('--theme-active'),
-          itemHoverColor: v('--theme-active'),
-          fontSize: 12,
-        },
-        Modal: {
-          contentBg: v('--theme-surface'),
-          headerBg: v('--theme-surface'),
-          colorBgContainer: v('--theme-surface'),
-          titleColor: v('--theme-text'),
-          colorText: v('--theme-text'),
-        },
-        Tooltip: {
-          colorBgSpotlight: v('--theme-surface'),
-          colorTextLightSolid: v('--theme-text'),
-          colorText: v('--theme-text'),
-        },
-        Typography: {
-          colorText: v('--theme-text'),
-          colorTextSecondary: v('--theme-textSecondary'),
-          fontSize: 12,
-        },
-        Form: {
-          labelColor: v('--theme-text'),
-          labelFontSize: 12,
-          verticalLabelPadding: '0 0 4px',
-        },
-        InputNumber: {
-          colorBgContainer: v('--theme-inputBackground') || v('--theme-background'),
-          colorBorder: v('--theme-inputBorder') || v('--theme-border'),
-          colorText: v('--theme-text'),
-          fontSize: 12,
-          paddingBlock: 4,
-          paddingInline: 8,
-        },
-      },
-    };
-  }, [themeVersion]);
+  // Antd 主题配置（从 CSS 变量动态生成，监听主题变化自动更新）
+  const dynamicThemeConfig = useAntdThemeConfig();
 
   const activeFeatureName = FEATURE_META_MAP[activeTab as FeatureTab]?.name ?? '';
 
@@ -590,19 +204,21 @@ const App: React.FC = () => {
             </div>
           )}
           <div className="content">
-            <Suspense fallback={<div className="loading">加载中…</div>}>
-              {showEasterEgg ? (
-                <EasterEgg onClose={handleCloseEasterEgg} onOpenChat={handleOpenChat} onOpenChatSettings={() => setShowChatSettings(true)} />
-              ) : showSettings ? (
-                <Settings onClose={() => setShowSettings(false)} embedded={true} />
-              ) : isTabPending ? null : (
-                <ActiveTabPanel
-                  tab={activeTab}
-                  qrSubTab={qrSubTab}
-                  onQrSubTabChange={handleQrSubTabChange}
-                />
-              )}
-            </Suspense>
+            <ErrorBoundary componentName={showEasterEgg ? '彩蛋' : showSettings ? '设置' : activeFeatureName}>
+              <Suspense fallback={<div className="loading">加载中…</div>}>
+                {showEasterEgg ? (
+                  <EasterEgg onClose={handleCloseEasterEgg} onOpenChat={handleOpenChat} onOpenChatSettings={() => setShowChatSettings(true)} />
+                ) : showSettings ? (
+                  <Settings onClose={() => setShowSettings(false)} embedded={true} />
+                ) : isTabPending ? null : (
+                  <TabRouter
+                    tab={activeTab}
+                    subTab={qrSubTab}
+                    onSubTabChange={handleQrSubTabChange}
+                  />
+                )}
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </main>
       </div>

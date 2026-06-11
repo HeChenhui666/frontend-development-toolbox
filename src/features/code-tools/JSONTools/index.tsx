@@ -1,0 +1,114 @@
+import React, { useState, useMemo, useCallback } from 'react';
+import { Select } from 'antd';
+import JSONParser from './JSONParser';
+import JSONCompare from './JSONCompare';
+import JSONSchemaGenerator from './JSONSchemaGenerator';
+import JSONToTypeScript from './JSONToTypeScript';
+import JSONToCSV from './JSONToCSV';
+import JSONPathQuery from './JSONPathQuery';
+import JSONYamlConverter from './JSONYamlConverter';
+import JSONMockGenerator from './JSONMockGenerator';
+import CompatibilityWarning from '../../../components/CompatibilityWarning';
+import { useCompatibility } from '../../../hooks/useCompatibility';
+import './index.css';
+
+type JSONSubTab = 'parser' | 'compare' | 'schema' | 'typescript' | 'csv' | 'jsonpath' | 'yaml' | 'mock';
+
+interface ToolOption {
+  value: JSONSubTab;
+  label: string;
+  icon: string;
+}
+
+const TOOL_OPTIONS: ToolOption[] = [
+  { value: 'parser', label: 'JSON解析', icon: '📝' },
+  { value: 'compare', label: 'JSON比对', icon: '🔍' },
+  { value: 'schema', label: 'Schema生成', icon: '📋' },
+  { value: 'typescript', label: 'TypeScript', icon: '🔷' },
+  { value: 'csv', label: '转CSV', icon: '📊' },
+  { value: 'jsonpath', label: 'JSONPath', icon: '🔎' },
+  { value: 'yaml', label: 'YAML互转', icon: '🔄' },
+  { value: 'mock', label: 'Mock生成', icon: '🎲' },
+];
+
+const JSONTools: React.FC = () => {
+  const [activeSubTab, setActiveSubTab] = useState<JSONSubTab>('parser');
+  const { isCompatible } = useCompatibility({
+    featureName: 'JSON工具',
+    requiredFeatures: ['JSON'],
+    checkTypes: ['json', 'basic'],
+  });
+
+  // 使用 useMemo 缓存渲染内容，避免每次渲染重新创建组件
+  const renderContent = useMemo(() => {
+    switch (activeSubTab) {
+      case 'parser':
+        return <JSONParser />;
+      case 'compare':
+        return <JSONCompare />;
+      case 'schema':
+        return <JSONSchemaGenerator />;
+      case 'typescript':
+        return <JSONToTypeScript />;
+      case 'csv':
+        return <JSONToCSV />;
+      case 'jsonpath':
+        return <JSONPathQuery />;
+      case 'yaml':
+        return <JSONYamlConverter />;
+      case 'mock':
+        return <JSONMockGenerator />;
+      default:
+        return <JSONParser />;
+    }
+  }, [activeSubTab]);
+
+  // 使用 useCallback 优化 onChange 处理函数
+  const handleSubTabChange = useCallback((value: JSONSubTab) => {
+    setActiveSubTab(value);
+  }, []);
+
+  const selectedOption = useMemo(() => 
+    TOOL_OPTIONS.find(opt => opt.value === activeSubTab),
+    [activeSubTab]
+  );
+
+  return (
+    <div className="json-tools">
+      {!isCompatible && (
+        <CompatibilityWarning
+          featureName="JSON工具"
+          requiredFeatures={['JSON']}
+        />
+      )}
+      <div className="tool-selector">
+        <Select
+          value={activeSubTab || 'parser'}
+          onChange={(value) => {
+            if (value) {
+              handleSubTabChange(value as JSONSubTab);
+            }
+          }}
+          style={{ width: '100%' }}
+          size="small"
+          className="json-tool-select"
+          options={TOOL_OPTIONS.map((option) => ({
+            value: option.value,
+            label: (
+              <span className="tool-option">
+                <span className="tool-option-icon">{option.icon}</span>
+                <span className="tool-option-label">{option.label}</span>
+              </span>
+            ),
+          }))}
+        />
+      </div>
+      <div className="sub-content">
+        {renderContent}
+      </div>
+    </div>
+  );
+};
+
+export default JSONTools;
+

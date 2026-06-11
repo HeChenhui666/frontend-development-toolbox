@@ -2,6 +2,8 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
+import compression from 'vite-plugin-compression';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // 读取 package.json 获取版本号
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
@@ -32,7 +34,20 @@ function contentScriptIifeWrap(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), contentScriptIifeWrap()],
+  plugins: [
+    react(),
+    contentScriptIifeWrap(),
+    compression({ algorithm: 'gzip', threshold: 10240 }),
+    compression({ algorithm: 'brotliCompress', ext: '.br', threshold: 10240 }),
+    visualizer({ filename: 'dist/stats.html', open: false, gzipSize: true }),
+  ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    css: false,
+  },
   base: './', // Chrome 扩展需要使用相对路径
   define: {
     'import.meta.env.APP_VERSION': JSON.stringify(APP_VERSION),
@@ -73,6 +88,32 @@ export default defineConfig({
           return 'assets/[name].[ext]';
         },
         chunkFileNames: 'assets/[name]-[hash].js',
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            // 游戏组件合并为一个 chunk（彩蛋不常用，避免分散加载）
+            if (id.includes('/EasterEgg/games/')) return 'games';
+            // 按领域分组 chunk，减少 HTTP 请求数
+            if (id.includes('/features/code-tools/')) return 'feat-code';
+            if (id.includes('/features/network-tools/')) return 'feat-network';
+            if (id.includes('/features/visual-tools/')) return 'feat-visual';
+            if (id.includes('/features/browser-tools/')) return 'feat-browser';
+            if (id.includes('/features/utility-tools/')) return 'feat-utility';
+            return undefined;
+          }
+          // React 核心及运行时依赖同 chunk，避免加载顺序导致 useLayoutEffect 未定义
+          if (
+            /node_modules\/(react|react-dom|scheduler|react-i18next|i18next)\//.test(id)
+          ) {
+            return 'vendor-react';
+          }
+          // Ant Design 及其直接依赖合并，消除 vendor ↔ vendor-antd 循环
+          if (
+            /node_modules\/(antd|@ant-design|rc-|@rc-component)/.test(id)
+          ) {
+            return 'vendor-antd';
+          }
+          return 'vendor';
+        },
         entryFileNames: (chunkInfo) => {
           // content script和background文件不使用hash
           if (chunkInfo.name === 'content/translator') {
