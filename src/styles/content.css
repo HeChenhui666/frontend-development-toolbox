@@ -41,11 +41,14 @@
   background: var(--theme-backgroundGradient);
 }
 
-/* popup/侧边栏时 root 对齐 */
+/* popup 模式时 root 约束 */
 html:has(.mode-popup), body:has(.mode-popup) { min-width: 450px; width: 100%; }
 #root:has(.mode-popup) {
+  height: 580px;
+  max-height: 580px;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   background: var(--theme-surface);
 }
 
