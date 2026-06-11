@@ -47,7 +47,6 @@ const FEATURE_ICONS: Record<string, ReactNode> = {
   codec: <PartitionOutlined />,
   markdown: <CodeOutlined />,
   diff: <PartitionOutlined />,
-  fontpreview: <SearchOutlined />,
   clipboard: <CopyOutlined />,
   asciiart: <StarOutlined />,
   future1: <AppstoreOutlined />,

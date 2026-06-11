@@ -49,7 +49,6 @@ const FEATURE_META_MAP: Record<FeatureTab, FeatureMeta> = {
   codec: { id: 'codec', name: '编解码', icon: '🔣' },
   markdown: { id: 'markdown', name: 'Markdown', icon: '📝' },
   diff: { id: 'diff', name: 'Diff 对比', icon: '📊' },
-  fontpreview: { id: 'fontpreview', name: '字体预览', icon: '🔤' },
   clipboard: { id: 'clipboard', name: '备忘录', icon: '📝' },
   asciiart: { id: 'asciiart', name: 'ASCII 画布', icon: '🎨' },
   future1: { id: 'future1', name: '未来功能1', icon: '🧪' },

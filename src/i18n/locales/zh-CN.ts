@@ -44,7 +44,6 @@ const zhCN = {
     codec: '编解码',
     markdown: 'Markdown',
     diff: 'Diff 对比',
-    fontpreview: '字体预览',
     clipboard: '备忘录',
     asciiart: 'ASCII 画布',
   },

@@ -22,7 +22,6 @@ const DEFAULT_TAB_ORDER: FeatureTab[] = [
   'codec',
   'markdown',
   'diff',
-  'fontpreview',
   'clipboard',
   'asciiart',
 ];
