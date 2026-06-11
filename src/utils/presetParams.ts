@@ -88,19 +88,19 @@ export const deletePresetParam = (index: number): void => {
 /**
  * 验证预设参数格式
  */
-const isValidPreset = (preset: any): preset is PresetParam => {
+const isValidPreset = (preset: unknown): preset is PresetParam => {
+  if (typeof preset !== 'object' || preset === null) return false;
+  const candidate = preset as Record<string, unknown>;
   return (
-    typeof preset === 'object' &&
-    preset !== null &&
-    typeof preset.name === 'string' &&
-    preset.name.trim() !== '' &&
-    Array.isArray(preset.params) &&
-    preset.params.every(
-      (p: any) =>
-        typeof p === 'object' &&
-        p !== null &&
-        typeof p.key === 'string' &&
-        typeof p.value === 'string'
+    typeof candidate.name === 'string' &&
+    candidate.name.trim() !== '' &&
+    Array.isArray(candidate.params) &&
+    candidate.params.every(
+      (p: unknown) => {
+        if (typeof p !== 'object' || p === null) return false;
+        const param = p as Record<string, unknown>;
+        return typeof param.key === 'string' && typeof param.value === 'string';
+      }
     )
   );
 };

@@ -491,10 +491,10 @@ class TranslateBubble {
   'use strict';
 
   // 确保只初始化一次
-  if ((window as any).__translateBubbleInitialized) {
+  if ((window as unknown as Record<string, unknown>).__translateBubbleInitialized) {
     return;
   }
-  (window as any).__translateBubbleInitialized = true;
+  (window as unknown as Record<string, unknown>).__translateBubbleInitialized = true;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

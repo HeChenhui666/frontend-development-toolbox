@@ -1,24 +1,5 @@
-export type DefaultTab =
-  | 'qrcode'
-  | 'urlparams'
-  | 'timestamp'
-  | 'gradient'
-  | 'json'
-  | 'regex'
-  | 'randomimage'
-  | 'translator'
-  | 'apitester'
-  | 'redirector'
-  | 'cachemanager'
-  | 'webactions'
-  | 'mousetrail'
-  | 'codec'
-  | 'markdown'
-  | 'diff'
-  | 'fontpreview'
-  | 'clipboard'
-  | 'asciiart';
-export type FeatureTab = DefaultTab; // FeatureTab is now the same as DefaultTab for consistency
+export type { DefaultTab, FeatureTab, CacheType } from '../types/feature';
+import type { DefaultTab, FeatureTab, CacheType } from '../types/feature';
 
 const DEFAULT_TAB_KEY = 'app-default-tab';
 const TAB_ORDER_KEY = 'app-tab-order';
@@ -95,7 +76,7 @@ export const getTabOrder = (): FeatureTab[] => {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
         // 验证所有项都是有效的标签页
-        const validParsed = parsed.filter((item: any) => DEFAULT_TAB_ORDER.includes(item));
+        const validParsed = parsed.filter((item: unknown) => typeof item === 'string' && DEFAULT_TAB_ORDER.includes(item as FeatureTab));
         // 检查是否有新的标签页需要添加（即使当前顺序看起来完整）
         const missingTabs = DEFAULT_TAB_ORDER.filter(tab => !validParsed.includes(tab));
         if (missingTabs.length > 0) {
@@ -149,8 +130,6 @@ export const clearAllCache = (): void => {
   }
 };
 
-export type CacheType = 'theme' | 'presets' | 'games' | 'preferences' | 'apiTemplates';
-
 export const clearCacheByType = (type: CacheType): void => {
   try {
     switch (type) {
@@ -177,7 +156,7 @@ export const clearCacheByType = (type: CacheType): void => {
           const saved = localStorage.getItem('apiTemplates');
           if (saved) {
             const templates = JSON.parse(saved);
-            const systemPresets = templates.filter((t: any) => t.id && t.id.startsWith('preset-'));
+            const systemPresets = (templates as Array<{ id?: string }>).filter((t) => t.id && t.id.startsWith('preset-'));
             if (systemPresets.length > 0) {
               localStorage.setItem('apiTemplates', JSON.stringify(systemPresets));
             } else {
@@ -296,52 +275,87 @@ export const exportUserConfig = (): string => {
   }
 };
 
-// 导入用户配置
-export const importUserConfig = (jsonString: string): { success: boolean; message: string } => {
+/** 导入类别 → localStorage key 映射 */
+export const IMPORT_CATEGORY_KEYS: Record<CacheType, string[]> = {
+  theme: ['app-theme'],
+  presets: ['url-preset-params'],
+  games: ['game-high-score-tetris', 'game-high-score-snake', 'game-high-score-2048'],
+  preferences: [DEFAULT_TAB_KEY, TAB_ORDER_KEY, ACTIVE_TAB_KEY, 'translator-page-translate-enabled'],
+  apiTemplates: ['apiTemplates'],
+};
+
+/** 所有可导入的合法 key 集合 */
+const ALL_VALID_IMPORT_KEYS = Object.values(IMPORT_CATEGORY_KEYS).flat();
+
+/** 需要 JSON 校验的 key */
+const JSON_VALIDATED_KEYS = new Set([TAB_ORDER_KEY, 'apiTemplates', 'app-theme']);
+
+/**
+ * 解析导入配置文件，返回可选的类别及其包含的条目数。
+ * 用于在 UI 上展示「选择性导入」复选框。
+ */
+export const parseImportCategories = (
+  jsonString: string
+): { success: boolean; message: string; categories?: Record<CacheType, number> } => {
   try {
     const data = JSON.parse(jsonString);
-    
-    // 验证数据格式
     if (!data.config || typeof data.config !== 'object') {
       return { success: false, message: '配置文件格式无效' };
     }
-    
-    // 导入配置
-    let importedCount = 0;
-    const validKeys = [
-      'app-theme',
-      'url-preset-params',
-      DEFAULT_TAB_KEY,
-      TAB_ORDER_KEY,
-      ACTIVE_TAB_KEY,
-      'game-high-score-tetris',
-      'game-high-score-snake',
-      'game-high-score-2048',
-      'translator-page-translate-enabled',
-      'apiTemplates', // API模板
-    ];
-    
-    const jsonKeys = [TAB_ORDER_KEY, 'apiTemplates', 'app-theme'];
 
-    Object.entries(data.config).forEach(([key, value]) => {
-      // 只导入有效的key
-      if (validKeys.includes(key) && value !== null && typeof value === 'string') {
-        if (jsonKeys.includes(key)) {
-          try { JSON.parse(value as string); } catch { return; }
-        }
-        try {
-          localStorage.setItem(key, value);
-          importedCount++;
-        } catch (error) {
-          console.error(`Failed to import key "${key}":`, error);
-        }
+    const categories = {} as Record<CacheType, number>;
+    for (const [category, keys] of Object.entries(IMPORT_CATEGORY_KEYS)) {
+      const count = keys.filter((k) => data.config[k] !== undefined && data.config[k] !== null).length;
+      if (count > 0) categories[category as CacheType] = count;
+    }
+
+    if (Object.keys(categories).length === 0) {
+      return { success: false, message: '配置中没有可导入的数据' };
+    }
+    return { success: true, message: '', categories };
+  } catch {
+    return { success: false, message: '配置文件 JSON 格式无效' };
+  }
+};
+
+/**
+ * 导入用户配置。
+ * @param jsonString  配置 JSON 字符串
+ * @param selectedCategories  可选，指定只导入哪些类别；不传则全量导入
+ */
+export const importUserConfig = (
+  jsonString: string,
+  selectedCategories?: CacheType[]
+): { success: boolean; message: string } => {
+  try {
+    const data = JSON.parse(jsonString);
+
+    if (!data.config || typeof data.config !== 'object') {
+      return { success: false, message: '配置文件格式无效' };
+    }
+
+    // 计算本次允许导入的 key 集合
+    const allowedKeys = selectedCategories
+      ? selectedCategories.flatMap((cat) => IMPORT_CATEGORY_KEYS[cat] ?? [])
+      : ALL_VALID_IMPORT_KEYS;
+
+    let importedCount = 0;
+    for (const [key, value] of Object.entries(data.config)) {
+      if (!allowedKeys.includes(key) || value === null || typeof value !== 'string') continue;
+      if (JSON_VALIDATED_KEYS.has(key)) {
+        try { JSON.parse(value as string); } catch { continue; }
       }
-    });
-    
+      try {
+        localStorage.setItem(key, value as string);
+        importedCount++;
+      } catch (error) {
+        console.error(`Failed to import key "${key}":`, error);
+      }
+    }
+
     if (importedCount === 0) {
       return { success: false, message: '没有有效的配置项可导入' };
     }
-    
     return { success: true, message: `成功导入 ${importedCount} 项配置` };
   } catch (error) {
     console.error('Failed to import user config:', error);

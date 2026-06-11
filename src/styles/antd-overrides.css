@@ -1,0 +1,46 @@
+/* ===== antd 全局覆盖 ===== */
+.ant-card,
+.ant-modal-content,
+.ant-modal-header,
+.ant-popover-inner,
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-tooltip-inner {
+  border-radius: var(--app-radius) !important;
+}
+
+.ant-modal-content,
+.ant-popover-inner,
+.ant-dropdown,
+.ant-select-dropdown {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+.ant-modal-header { background: var(--theme-surface) !important; }
+
+.ant-modal-title,
+.ant-popover-title,
+.ant-drawer-title {
+  color: var(--theme-text) !important;
+}
+
+.ant-tooltip-inner {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border: 1px solid var(--theme-border) !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  min-height: auto !important;
+  box-shadow: var(--theme-shadow-card, 0 2px 8px rgba(0,0,0,0.08)) !important;
+}
+
+.ant-space-compact .ant-btn {
+  align-self: stretch;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

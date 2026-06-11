@@ -1,0 +1,1023 @@
+// src/components/APITester/index.tsx
+import { useState, useEffect } from 'react';
+import {
+  Button,
+  Input,
+  Select,
+  Space,
+  Typography,
+  message,
+  Popconfirm,
+  Modal,
+  Collapse,
+  Tabs,
+  List,
+  Tag,
+} from 'antd';
+import { SendOutlined, SaveOutlined, DeleteOutlined, PlusOutlined, CodeOutlined, SettingOutlined } from '@ant-design/icons';
+import './index.css';
+
+const { Text } = Typography;
+
+interface HeaderItem {
+  key: string;
+  value: string;
+}
+
+interface Template {
+  id: string;
+  name: string;
+  method: string;
+  url: string;
+  headers: HeaderItem[];
+  body: string;
+  bodyType: 'json' | 'form' | 'text';
+}
+
+interface ResponseData {
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+  body?: string | Record<string, unknown>;
+  error?: string;
+}
+
+const APITester = () => {
+  const [method, setMethod] = useState('GET');
+  const [url, setUrl] = useState('');
+  const [headers, setHeaders] = useState<HeaderItem[]>([]);
+  const [newHeaderKey, setNewHeaderKey] = useState('');
+  const [newHeaderValue, setNewHeaderValue] = useState('');
+  const [body, setBody] = useState('');
+  const [bodyType, setBodyType] = useState<'json' | 'form' | 'text'>('json');
+  const [response, setResponse] = useState<ResponseData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+
+  // 获取所有预设模板
+  const getAllPresetTemplates = (): Template[] => {
+    return [
+      // 1. JSON API请求（最常用）
+      {
+        id: 'preset-json-api',
+        name: 'JSON API请求',
+        method: 'GET',
+        url: '',
+        headers: [
+          { key: 'Content-Type', value: 'application/json' },
+          { key: 'Authorization', value: 'Bearer <your_token>' },
+          { key: 'Accept', value: 'application/json' },
+        ],
+        body: '',
+        bodyType: 'json'
+      },
+      // 2. 表单提交请求
+      {
+        id: 'preset-form',
+        name: '表单提交请求',
+        method: 'POST',
+        url: '',
+        headers: [
+          { key: 'Content-Type', value: 'application/x-www-form-urlencoded' },
+          { key: 'Authorization', value: 'Bearer <your_token>' },
+        ],
+        body: '',
+        bodyType: 'form'
+      },
+      // 3. 文件上传请求
+      {
+        id: 'preset-upload',
+        name: '文件上传请求',
+        method: 'POST',
+        url: '',
+        headers: [
+          { key: 'Content-Type', value: 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' },
+          { key: 'Authorization', value: 'Bearer <your_token>' },
+        ],
+        body: '',
+        bodyType: 'text'
+      },
+      // 4. 基础认证（Basic Auth）
+      {
+        id: 'preset-basic-auth',
+        name: '基础认证',
+        method: 'GET',
+        url: '',
+        headers: [
+          { key: 'Authorization', value: 'Basic base64(username:password)' },
+          { key: 'Accept', value: 'application/json' },
+        ],
+        body: '',
+        bodyType: 'json'
+      },
+      // 5. OAuth 2.0认证
+      {
+        id: 'preset-oauth',
+        name: 'OAuth 2.0认证',
+        method: 'GET',
+        url: '',
+        headers: [
+          { key: 'Authorization', value: 'Bearer <access_token>' },
+          { key: 'Accept', value: 'application/json' },
+        ],
+        body: '',
+        bodyType: 'json'
+      },
+      // 6. Azure服务认证
+      {
+        id: 'preset-azure',
+        name: 'Azure服务认证',
+        method: 'GET',
+        url: '',
+        headers: [
+          { key: 'Authorization', value: 'type=master&ver=1.0&sig=<signature>' },
+          { key: 'x-ms-date', value: new Date().toUTCString() },
+          { key: 'x-ms-version', value: '2015-12-16' },
+        ],
+        body: '',
+        bodyType: 'json'
+      },
+      // 7. GraphQL请求
+      {
+        id: 'preset-graphql',
+        name: 'GraphQL请求',
+        method: 'POST',
+        url: '',
+        headers: [
+          { key: 'Content-Type', value: 'application/json' },
+          { key: 'Authorization', value: 'Bearer <your_token>' },
+          { key: 'X-API-Version', value: '2024-01' },
+          { key: 'X-Request-ID', value: 'req-' + Date.now() },
+        ],
+        body: JSON.stringify({ query: '', variables: {} }, null, 2),
+        bodyType: 'json'
+      },
+      // 8. Azure Cosmos DB请求
+      {
+        id: 'preset-cosmos',
+        name: 'Azure Cosmos DB',
+        method: 'GET',
+        url: '',
+        headers: [
+          { key: 'x-ms-date', value: new Date().toUTCString() },
+          { key: 'x-ms-version', value: '2015-12-16' },
+          { key: 'x-ms-consistency-level', value: 'Session' },
+          { key: 'x-ms-activity-id', value: crypto.randomUUID?.() || '6e1c1b18-41c2-4c5d-951d-7d4b7b31d0f3' },
+        ],
+        body: '',
+        bodyType: 'json'
+      },
+      // 9. 带缓存控制的请求
+      {
+        id: 'preset-no-cache',
+        name: '带缓存控制',
+        method: 'GET',
+        url: '',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache' },
+          { key: 'Accept', value: 'application/json' },
+          { key: 'Authorization', value: 'Bearer <your_token>' },
+        ],
+        body: '',
+        bodyType: 'json'
+      },
+    ];
+  };
+
+  // 通用预设配置模板（保留作为默认）
+  const getCommonPresetTemplate = (): Template => {
+    return {
+      id: 'preset-common',
+      name: '通用预设配置',
+      method: 'GET',
+      url: '',
+      headers: [
+        { key: 'accept', value: 'application/json' },
+        { key: 'accept-encoding', value: 'gzip, deflate, br' },
+        { key: 'accept-language', value: 'zh-CN,zh;q=0.9,en;q=0.8' },
+        { key: 'content-type', value: 'application/json' },
+        { key: 'user-agent', value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+        { key: 'origin', value: typeof window !== 'undefined' ? window.location.origin : '' },
+        { key: 'referer', value: typeof window !== 'undefined' ? window.location.href : '' },
+      ],
+      body: '',
+      bodyType: 'json'
+    };
+  };
+
+  // 初始化：使用当前页面URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setUrl(window.location.href);
+    }
+    loadTemplates();
+  }, []);
+
+  // 从 chrome.storage 或 localStorage 加载模板
+  const loadTemplates = () => {
+    const allPresets = getAllPresetTemplates();
+    const commonPreset = getCommonPresetTemplate();
+    const allSystemPresets = [commonPreset, ...allPresets];
+    
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.get('apiTemplates', (result) => {
+        let loadedTemplates: Template[] = result.apiTemplates || [];
+        
+        // 检查并添加缺失的系统预设模板
+        const existingPresetIds = new Set(loadedTemplates.map(t => t.id));
+        const missingPresets = allSystemPresets.filter(p => !existingPresetIds.has(p.id));
+        
+        if (missingPresets.length > 0) {
+          loadedTemplates = [...allSystemPresets, ...loadedTemplates.filter(t => !t.id.startsWith('preset-'))];
+          chrome.storage.local.set({ apiTemplates: loadedTemplates }, () => {
+            setTemplates(loadedTemplates);
+          });
+        } else {
+          setTemplates(loadedTemplates);
+        }
+      });
+    } else {
+      try {
+        const saved = localStorage.getItem('apiTemplates');
+        let loadedTemplates: Template[] = saved ? JSON.parse(saved) : [];
+        
+        // 检查并添加缺失的系统预设模板
+        const existingPresetIds = new Set(loadedTemplates.map(t => t.id));
+        const missingPresets = allSystemPresets.filter(p => !existingPresetIds.has(p.id));
+        
+        if (missingPresets.length > 0) {
+          loadedTemplates = [...allSystemPresets, ...loadedTemplates.filter(t => !t.id.startsWith('preset-'))];
+          localStorage.setItem('apiTemplates', JSON.stringify(loadedTemplates));
+        }
+        
+        setTemplates(loadedTemplates);
+      } catch (e) {
+        console.error('加载模板失败:', e);
+        // 如果加载失败，至少添加系统预设
+        setTemplates(allSystemPresets);
+      }
+    }
+  };
+
+  // 保存请求模板
+  const saveTemplate = () => {
+    if (!url.trim()) {
+      message.warning('请先输入API地址');
+      return;
+    }
+
+    let inputValue = '';
+    Modal.confirm({
+      title: '保存模板',
+      content: (
+        <Input
+          placeholder="请输入模板名称"
+          onChange={(e) => { inputValue = e.target.value; }}
+          autoFocus
+        />
+      ),
+      onOk: () => {
+        if (!inputValue.trim()) return Promise.reject();
+        const newTemplate: Template = {
+          id: `template-${Date.now()}`,
+          name: inputValue.trim(),
+          method,
+          url,
+          headers: [...headers],
+          body,
+          bodyType,
+        };
+        const updated = [...templates, newTemplate];
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ apiTemplates: updated }, () => {
+            setTemplates(updated);
+            message.success('模板已保存');
+          });
+        } else {
+          try {
+            localStorage.setItem('apiTemplates', JSON.stringify(updated));
+            setTemplates(updated);
+            message.success('模板已保存');
+          } catch (e) {
+            message.error('保存失败');
+          }
+        }
+      },
+      okText: '保存',
+      cancelText: '取消',
+    });
+  };
+
+  // 删除模板
+  const deleteTemplate = (id: string) => {
+    // 系统预设模板不能被删除
+    if (id.startsWith('preset-')) {
+      message.warning('系统预设模板不能删除');
+      return;
+    }
+    
+    const updated = templates.filter(t => t.id !== id);
+    
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.set({ apiTemplates: updated }, () => {
+        setTemplates(updated);
+        message.success('模板已删除');
+      });
+    } else {
+      try {
+        localStorage.setItem('apiTemplates', JSON.stringify(updated));
+        setTemplates(updated);
+        message.success('模板已删除');
+      } catch (e) {
+        message.error('删除失败');
+      }
+    }
+  };
+
+  // 添加请求头
+  const addHeader = () => {
+    if (!newHeaderKey.trim()) {
+      message.warning('请输入请求头Key');
+      return;
+    }
+    setHeaders([...headers, { key: newHeaderKey.trim(), value: newHeaderValue.trim() }]);
+    setNewHeaderKey('');
+    setNewHeaderValue('');
+  };
+
+  // 删除请求头
+  const removeHeader = (index: number) => {
+    const newHeaders = headers.filter((_, i) => i !== index);
+    setHeaders(newHeaders);
+  };
+
+  // 更新请求头
+  const updateHeader = (index: number, field: 'key' | 'value', value: string) => {
+    const newHeaders = [...headers];
+    newHeaders[index][field] = value;
+    setHeaders(newHeaders);
+  };
+
+  // 发送请求
+  const sendRequest = async () => {
+    if (!url.trim()) {
+      message.warning('请输入API地址');
+      return;
+    }
+
+    setLoading(true);
+    setResponse(null);
+    
+    try {
+      const headersObj: Record<string, string> = {};
+      headers.forEach(h => {
+        if (h.key && h.value) {
+          headersObj[h.key] = h.value;
+        }
+      });
+
+      // 根据bodyType设置Content-Type
+      if (bodyType === 'json' && body) {
+        headersObj['Content-Type'] = 'application/json';
+      } else if (bodyType === 'form' && body) {
+        headersObj['Content-Type'] = 'application/x-www-form-urlencoded';
+      }
+
+      let requestBody: string | undefined;
+      if (body && !['GET', 'HEAD'].includes(method)) {
+        if (bodyType === 'json') {
+          try {
+            JSON.parse(body);
+          } catch {
+            message.warning('请求 body 不是合法的 JSON 格式，请检查后再发送');
+            setLoading(false);
+            return;
+          }
+          requestBody = body;
+        } else if (bodyType === 'form') {
+          requestBody = new URLSearchParams(body.split('\n').map(line => {
+            const [key, ...valueParts] = line.split('=');
+            return [key.trim(), valueParts.join('=').trim()];
+          }).filter(([key]) => key) as [string, string][]).toString();
+        } else {
+          requestBody = body;
+        }
+      }
+
+      const config: RequestInit = {
+        method,
+        headers: headersObj,
+        credentials: 'include',
+        body: ['GET', 'HEAD'].includes(method) ? undefined : requestBody,
+      };
+
+      const res = await fetch(url, config);
+      const text = await res.text();
+      
+      // 自动格式化响应
+      let parsedBody: string | Record<string, unknown> = text;
+      const contentType = res.headers.get('Content-Type') || '';
+      
+      try {
+        if (contentType.includes('application/json')) {
+          parsedBody = JSON.parse(text);
+        } else if (contentType.includes('text/html')) {
+          // HTML格式化（简单处理）
+          parsedBody = text;
+        }
+      } catch (e) {
+        // 如果解析失败，保持原始文本
+        parsedBody = text;
+      }
+
+      setResponse({
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries()),
+        body: parsedBody
+      });
+      
+      message.success(`请求成功 (${res.status})`);
+    } catch (error) {
+      setResponse({ 
+        error: error instanceof Error ? error.message : '请求失败',
+        status: 0,
+        statusText: 'Error'
+      });
+      message.error('请求失败: ' + (error instanceof Error ? error.message : '未知错误'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 加载模板
+  const loadTemplate = (template: Template) => {
+    setMethod(template.method);
+    setUrl(template.url);
+    setHeaders(template.headers || []);
+    setBody(template.body || '');
+    setBodyType(template.bodyType || 'json');
+    message.success(`已加载模板: ${template.name}`);
+  };
+
+  // 格式化响应体显示
+  const formatResponseBody = (body: string | Record<string, unknown> | undefined): string => {
+    if (typeof body === 'object') {
+      return JSON.stringify(body, null, 2);
+    }
+    return String(body);
+  };
+
+  // 判断是否为JSON
+  const isJSON = (body: string | Record<string, unknown> | undefined): boolean => {
+    if (typeof body === 'object') return true;
+    if (typeof body === 'string') {
+      try {
+        JSON.parse(body);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  };
+
+  return (
+    <div className="api-tester">
+      {/* 常用模板 */}
+      {templates.length > 0 && (
+        <div className="api-tester-section">
+          <div className="api-tester-templates">
+            <Text type="secondary" className="api-tester-templates-label">常用模板:</Text>
+            <Space wrap>
+              {templates.map((t, i) => {
+                const isSystemPreset = t.id.startsWith('preset-');
+                return (
+                  <span key={t.id} className="api-tester-template-item">
+                    <Button 
+                      type="link" 
+                      onClick={() => loadTemplate(t)}
+                      className="api-tester-template-btn"
+                      style={isSystemPreset ? { fontWeight: 500 } : {}}
+                    >
+                      {i + 1}. {t.name}
+                      {isSystemPreset && (
+                        <Text type="secondary" style={{ marginLeft: '6px', fontSize: '11px' }}>
+                          (预设)
+                        </Text>
+                      )}
+                    </Button>
+                    {!isSystemPreset && (
+                      <Popconfirm
+                        title="确定要删除这个模板吗？"
+                        onConfirm={() => deleteTemplate(t.id)}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <Button 
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined />}
+                          className="api-tester-template-delete-btn"
+                        />
+                      </Popconfirm>
+                    )}
+                  </span>
+                );
+              })}
+            </Space>
+          </div>
+        </div>
+      )}
+
+      {/* 请求配置区 */}
+      <div className="api-tester-section">
+        <div className="api-tester-request-line">
+          <Select 
+            value={method} 
+            onChange={setMethod} 
+            className="api-tester-method-select"
+          >
+            <Select.Option value="GET">GET</Select.Option>
+            <Select.Option value="POST">POST</Select.Option>
+            <Select.Option value="PUT">PUT</Select.Option>
+            <Select.Option value="DELETE">DELETE</Select.Option>
+            <Select.Option value="PATCH">PATCH</Select.Option>
+            <Select.Option value="HEAD">HEAD</Select.Option>
+          </Select>
+          
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://api.example.com"
+            className="api-tester-url-input"
+          />
+          
+          <Button 
+            type="primary" 
+            icon={<SendOutlined />}
+            onClick={sendRequest}
+            loading={loading}
+            className="api-tester-send-btn"
+          >
+            发送
+          </Button>
+          
+          <Button 
+            icon={<SaveOutlined />}
+            onClick={saveTemplate}
+            className="api-tester-save-btn"
+          >
+            保存模板
+          </Button>
+        </div>
+      </div>
+
+      {/* 请求头配置 */}
+      <div className="api-tester-section">
+        <div className="api-tester-section-title">请求头:</div>
+        <div className="api-tester-header-add">
+          <Input 
+            placeholder="Key (如: Authorization)"
+            value={newHeaderKey}
+            onChange={(e) => setNewHeaderKey(e.target.value)}
+            onPressEnter={addHeader}
+            className="api-tester-header-key-input"
+          />
+          <Input 
+            placeholder="Value (如: Bearer token)"
+            value={newHeaderValue}
+            onChange={(e) => setNewHeaderValue(e.target.value)}
+            onPressEnter={addHeader}
+            className="api-tester-header-value-input"
+          />
+          <Button 
+            type="dashed" 
+            icon={<PlusOutlined />}
+            onClick={addHeader}
+            className="api-tester-header-add-btn"
+          >
+            添加
+          </Button>
+        </div>
+        <div className="api-tester-headers-list">
+          {headers.map((h, index) => (
+            <div key={index} className="api-tester-header-item">
+              <Input 
+                value={h.key} 
+                onChange={e => updateHeader(index, 'key', e.target.value)}
+                className="api-tester-header-key-input"
+              />
+              <Input 
+                value={h.value} 
+                onChange={e => updateHeader(index, 'value', e.target.value)}
+                className="api-tester-header-value-input"
+              />
+              <Button 
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => removeHeader(index)}
+                className="api-tester-header-delete-btn"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 请求体配置 */}
+      <div className="api-tester-section">
+        <div className="api-tester-section-title">请求体:</div>
+        <Select 
+          value={bodyType} 
+          onChange={setBodyType}
+          className="api-tester-body-type-select"
+        >
+          <Select.Option value="json">JSON</Select.Option>
+          <Select.Option value="form">表单</Select.Option>
+          <Select.Option value="text">文本</Select.Option>
+        </Select>
+        <Input.TextArea 
+          value={body} 
+          onChange={e => setBody(e.target.value)} 
+          rows={8} 
+          placeholder={bodyType === 'json' ? '{\n  "name": "test",\n  "age": 30\n}' : bodyType === 'form' ? 'key1=value1\nkey2=value2' : '请求体内容'}
+          className="api-tester-body-input"
+        />
+      </div>
+
+      {/* 响应展示 */}
+      {response && (
+        <div className="api-tester-section api-tester-response-section">
+          <div className="api-tester-section-title">响应:</div>
+          
+          {response.error ? (
+            <div className="api-tester-error">
+              <Text strong>错误:</Text> {response.error}
+            </div>
+          ) : (
+            <>
+              <div className="api-tester-status">
+                <Text strong>状态码:</Text> {response.status} {response.statusText}
+              </div>
+
+              {response.headers && (
+                <>
+                  <div className="api-tester-section-subtitle">响应头:</div>
+                  <pre className="api-tester-code-block">
+                    {JSON.stringify(response.headers, null, 2)}
+                  </pre>
+                </>
+              )}
+
+              {response.body !== undefined && (
+                <>
+                  <div className="api-tester-section-subtitle">响应体:</div>
+                  <pre className={`api-tester-code-block ${isJSON(response.body) ? 'api-tester-json' : 'api-tester-text'}`}>
+                    {formatResponseBody(response.body)}
+                  </pre>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* 扩展工具 */}
+      <APIExtendedTools
+        method={method}
+        url={url}
+        headers={headers}
+        body={body}
+        lastResponseStatus={response?.status}
+        onImport={(importedMethod, importedUrl, importedHeaders, importedBody) => {
+          setMethod(importedMethod);
+          setUrl(importedUrl);
+          setHeaders(importedHeaders);
+          if (importedBody) setBody(importedBody);
+        }}
+      />
+    </div>
+  );
+};
+
+/* ─── cURL 解析器 ─── */
+const parseCurl = (curlCommand: string): { method: string; url: string; headers: HeaderItem[]; body: string } | null => {
+  try {
+    let cmd = curlCommand.trim();
+    if (cmd.startsWith('curl ')) cmd = cmd.slice(5);
+    // 去除反斜杠换行
+    cmd = cmd.replace(/\\\n/g, ' ').replace(/\\\r\n/g, ' ');
+
+    let method = 'GET';
+    let url = '';
+    const headers: HeaderItem[] = [];
+    let body = '';
+
+    const tokens: string[] = [];
+    let current = '';
+    let inQuote: string | null = null;
+
+    for (let i = 0; i < cmd.length; i++) {
+      const char = cmd[i];
+      if (inQuote) {
+        if (char === inQuote && cmd[i - 1] !== '\\') {
+          inQuote = null;
+        } else {
+          current += char;
+        }
+      } else if (char === '"' || char === "'") {
+        inQuote = char;
+      } else if (char === ' ' || char === '\t') {
+        if (current) { tokens.push(current); current = ''; }
+      } else {
+        current += char;
+      }
+    }
+    if (current) tokens.push(current);
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token === '-X' || token === '--request') {
+        method = tokens[++i]?.toUpperCase() || 'GET';
+      } else if (token === '-H' || token === '--header') {
+        const headerStr = tokens[++i] || '';
+        const colonIdx = headerStr.indexOf(':');
+        if (colonIdx > 0) {
+          headers.push({ key: headerStr.slice(0, colonIdx).trim(), value: headerStr.slice(colonIdx + 1).trim() });
+        }
+      } else if (token === '-d' || token === '--data' || token === '--data-raw' || token === '--data-binary') {
+        body = tokens[++i] || '';
+        if (method === 'GET') method = 'POST';
+      } else if (token.startsWith('http://') || token.startsWith('https://')) {
+        url = token;
+      } else if (!token.startsWith('-') && !url) {
+        url = token;
+      }
+    }
+
+    if (!url) return null;
+    return { method, url, headers, body };
+  } catch {
+    return null;
+  }
+};
+
+const generateCurl = (method: string, url: string, headers: HeaderItem[], body: string): string => {
+  const parts = ['curl'];
+  if (method !== 'GET') parts.push(`-X ${method}`);
+  parts.push(`'${url}'`);
+  headers.forEach((h) => {
+    if (h.key && h.value) parts.push(`-H '${h.key}: ${h.value}'`);
+  });
+  if (body && !['GET', 'HEAD'].includes(method)) {
+    parts.push(`-d '${body.replace(/'/g, "\\'")}'`);
+  }
+  return parts.join(' \\\n  ');
+};
+
+/* ─── API 请求历史 ─── */
+const API_HISTORY_KEY = 'api_tester_history';
+const API_ENV_KEY = 'api_tester_env';
+const MAX_API_HISTORY = 30;
+
+interface APIHistoryItem {
+  id: string;
+  method: string;
+  url: string;
+  status?: number;
+  timestamp: number;
+  headers: HeaderItem[];
+  body: string;
+}
+
+interface EnvVariable {
+  key: string;
+  value: string;
+}
+
+const loadAPIHistory = (): APIHistoryItem[] => {
+  try { return JSON.parse(localStorage.getItem(API_HISTORY_KEY) || '[]'); }
+  catch { return []; }
+};
+
+const addToAPIHistory = (item: Omit<APIHistoryItem, 'id' | 'timestamp'>) => {
+  try {
+    const existing = loadAPIHistory();
+    const newItem: APIHistoryItem = { ...item, id: `${Date.now()}`, timestamp: Date.now() };
+    const updated = [newItem, ...existing.filter((h) => h.url !== item.url || h.method !== item.method)].slice(0, MAX_API_HISTORY);
+    localStorage.setItem(API_HISTORY_KEY, JSON.stringify(updated));
+    return updated;
+  } catch { return loadAPIHistory(); }
+};
+
+const loadEnvVars = (): EnvVariable[] => {
+  try { return JSON.parse(localStorage.getItem(API_ENV_KEY) || '[]'); }
+  catch { return []; }
+};
+
+const saveEnvVars = (vars: EnvVariable[]) => {
+  try { localStorage.setItem(API_ENV_KEY, JSON.stringify(vars)); }
+  catch { /* ignore */ }
+};
+
+/* ─── API 扩展工具组件 ─── */
+const APIExtendedTools: React.FC<{
+  method: string;
+  url: string;
+  headers: HeaderItem[];
+  body: string;
+  lastResponseStatus?: number;
+  onImport: (method: string, url: string, headers: HeaderItem[], body: string) => void;
+}> = ({ method, url, headers, body, lastResponseStatus, onImport }) => {
+  const [curlInput, setCurlInput] = useState('');
+  const [curlOutput, setCurlOutput] = useState('');
+  const [history, setHistory] = useState<APIHistoryItem[]>(loadAPIHistory);
+  const [envVars, setEnvVars] = useState<EnvVariable[]>(loadEnvVars);
+  const [newEnvKey, setNewEnvKey] = useState('');
+  const [newEnvValue, setNewEnvValue] = useState('');
+
+  // 自动记录请求历史
+  useEffect(() => {
+    if (url.trim() && lastResponseStatus !== undefined) {
+      const updated = addToAPIHistory({ method, url, headers, body, status: lastResponseStatus });
+      setHistory(updated);
+    }
+  }, [lastResponseStatus]);
+
+  const importCurl = () => {
+    if (!curlInput.trim()) { message.warning('请粘贴 cURL 命令'); return; }
+    const parsed = parseCurl(curlInput);
+    if (!parsed) { message.error('无法解析该 cURL 命令'); return; }
+    onImport(parsed.method, parsed.url, parsed.headers, parsed.body);
+    message.success('cURL 已导入');
+    setCurlInput('');
+  };
+
+  const exportCurl = () => {
+    const curl = generateCurl(method, url, headers, body);
+    setCurlOutput(curl);
+    navigator.clipboard?.writeText(curl).then(() => message.success('cURL 已复制到剪贴板'));
+  };
+
+  const addEnvVar = () => {
+    if (!newEnvKey.trim()) { message.warning('请输入变量名'); return; }
+    const updated = [...envVars.filter((v) => v.key !== newEnvKey.trim()), { key: newEnvKey.trim(), value: newEnvValue.trim() }];
+    setEnvVars(updated);
+    saveEnvVars(updated);
+    setNewEnvKey('');
+    setNewEnvValue('');
+  };
+
+  const deleteEnvVar = (key: string) => {
+    const updated = envVars.filter((v) => v.key !== key);
+    setEnvVars(updated);
+    saveEnvVars(updated);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(API_HISTORY_KEY);
+    message.success('请求历史已清空');
+  };
+
+  const restoreFromHistory = (item: APIHistoryItem) => {
+    onImport(item.method, item.url, item.headers, item.body);
+    message.success('已恢复请求配置');
+  };
+
+  const methodColorMap: Record<string, string> = {
+    GET: 'green', POST: 'blue', PUT: 'orange', DELETE: 'red', PATCH: 'purple', HEAD: 'cyan', OPTIONS: 'default',
+  };
+
+  const curlTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 11, fontWeight: 600 }}>导入 cURL</Text>
+      <Input.TextArea
+        value={curlInput}
+        onChange={(e) => setCurlInput(e.target.value)}
+        placeholder="粘贴 cURL 命令..."
+        rows={3}
+        style={{ fontFamily: 'monospace', fontSize: 10 }}
+      />
+      <Button size="small" type="primary" icon={<CodeOutlined />} onClick={importCurl} block>
+        导入
+      </Button>
+      <div style={{ borderTop: '1px solid var(--theme-borderLight)', paddingTop: 6 }}>
+        <Text style={{ fontSize: 11, fontWeight: 600 }}>导出 cURL</Text>
+        <Button size="small" onClick={exportCurl} block style={{ marginTop: 4 }}>
+          生成当前请求的 cURL
+        </Button>
+        {curlOutput && (
+          <pre style={{ fontSize: 10, fontFamily: 'monospace', padding: 6, background: 'var(--theme-surfaceElevated)', borderRadius: 4, marginTop: 4, whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 150, overflow: 'auto' }}>
+            {curlOutput}
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+
+  const envTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ fontSize: 10, color: 'var(--theme-textMuted)' }}>
+        在 URL 和 Header 中使用 {'{{变量名}}'} 引用环境变量
+      </div>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <Input value={newEnvKey} onChange={(e) => setNewEnvKey(e.target.value)} placeholder="变量名" size="small" style={{ flex: 1 }} />
+        <Input value={newEnvValue} onChange={(e) => setNewEnvValue(e.target.value)} placeholder="值" size="small" style={{ flex: 1 }} onPressEnter={addEnvVar} />
+        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={addEnvVar} />
+      </div>
+      {envVars.length > 0 && (
+        <List
+          size="small"
+          dataSource={envVars}
+          renderItem={(item) => (
+            <List.Item
+              style={{ padding: '3px 0' }}
+              actions={[
+                <Popconfirm key="del" title="删除？" onConfirm={() => deleteEnvVar(item.key)} okText="确认" cancelText="取消">
+                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>,
+              ]}
+            >
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 11 }}>
+                <code style={{ padding: '1px 4px', background: 'var(--theme-surfaceElevated)', borderRadius: 2, color: 'var(--theme-primary)' }}>
+                  {`{{${item.key}}}`}
+                </code>
+                <span style={{ color: 'var(--theme-textMuted)' }}>→</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 10, wordBreak: 'break-all' }}>{item.value}</span>
+              </div>
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
+
+  const historyTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {history.length === 0 ? (
+        <Text type="secondary" style={{ fontSize: 11 }}>暂无请求历史</Text>
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Popconfirm title="清空请求历史？" onConfirm={clearHistory} okText="确认" cancelText="取消">
+              <Button size="small" danger type="text" icon={<DeleteOutlined />}>清空</Button>
+            </Popconfirm>
+          </div>
+          <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+            <List
+              size="small"
+              dataSource={history}
+              renderItem={(item) => (
+                <List.Item
+                  style={{ padding: '3px 0', cursor: 'pointer' }}
+                  onClick={() => restoreFromHistory(item)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0 }}>
+                    <Tag color={methodColorMap[item.method] || 'default'} style={{ margin: 0, fontSize: 9, lineHeight: '16px' }}>
+                      {item.method}
+                    </Tag>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.url}
+                      </div>
+                      <div style={{ fontSize: 9, color: 'var(--theme-textMuted)' }}>
+                        {item.status && <span style={{ marginRight: 6 }}>HTTP {item.status}</span>}
+                        {new Date(item.timestamp).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <Collapse
+      size="small"
+      items={[{
+        key: 'extended',
+        label: <Space size={4}><SettingOutlined /><span style={{ fontSize: 12 }}>扩展工具</span></Space>,
+        children: (
+          <Tabs
+            size="small"
+            items={[
+              { key: 'curl', label: 'cURL', children: curlTab },
+              { key: 'env', label: `环境变量(${envVars.length})`, children: envTab },
+              { key: 'history', label: `历史(${history.length})`, children: historyTab },
+            ]}
+            style={{ marginTop: -8 }}
+          />
+        ),
+      }]}
+    />
+  );
+};
+
+export default APITester;
