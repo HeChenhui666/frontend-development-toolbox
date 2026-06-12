@@ -112,6 +112,18 @@ export default defineConfig({
           ) {
             return 'vendor-antd';
           }
+          // 二维码相关库合并（不常用，可懒加载）
+          if (
+            /node_modules\/(qrcode|jsqr|qrcode-reader|jsbarcode)\//.test(id)
+          ) {
+            return 'vendor-qrcode';
+          }
+          // 其他工具库合并
+          if (
+            /node_modules\/(randexp|lottie-web)\//.test(id)
+          ) {
+            return 'vendor-utils';
+          }
           return 'vendor';
         },
         entryFileNames: (chunkInfo) => {
@@ -136,8 +148,7 @@ export default defineConfig({
         esModule: true,
       },
     },
-    // 禁用代码分割，避免模块加载问题
-    cssCodeSplit: false,
+    cssCodeSplit: true,
     // 确保模块正确识别
     modulePreload: false,
     // 确保文件有正确的扩展名

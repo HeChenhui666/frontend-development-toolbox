@@ -15,7 +15,7 @@ import {
   ClearOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
-import lottie from 'lottie-web';
+import type { LottiePlayer } from 'lottie-web';
 import './index.css';
 
 const { Text } = Typography;
@@ -67,11 +67,12 @@ const readJsonFromFile = (file: File) =>
 
 const LottiePreview: React.FC = () => {
   const [sourceUrl, setSourceUrl] = useState<string>('');
-  const [animationData, setAnimationData] = useState<any>(null);
+  const [animationData, setAnimationData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<ReturnType<typeof lottie.loadAnimation> | null>(null);
+  const animationRef = useRef<{ destroy(): void } | null>(null);
+  const lottieRef = useRef<LottiePlayer | null>(null);
 
   const destroyAnimation = useCallback(() => {
     if (animationRef.current) {
@@ -82,16 +83,27 @@ const LottiePreview: React.FC = () => {
 
   useEffect(() => {
     if (!animationData || !containerRef.current) return;
-    destroyAnimation();
-    animationRef.current = lottie.loadAnimation({
-      container: containerRef.current,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      animationData,
-    });
+    let cancelled = false;
 
+    const loadAndPlay = async () => {
+      if (!lottieRef.current) {
+        const mod = await import('lottie-web');
+        lottieRef.current = mod.default;
+      }
+      if (cancelled) return;
+      destroyAnimation();
+      animationRef.current = lottieRef.current!.loadAnimation({
+        container: containerRef.current!,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData,
+      });
+    };
+
+    loadAndPlay();
     return () => {
+      cancelled = true;
       destroyAnimation();
     };
   }, [animationData, destroyAnimation]);
