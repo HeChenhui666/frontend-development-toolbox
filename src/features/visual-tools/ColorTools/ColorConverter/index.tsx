@@ -294,10 +294,10 @@ const ColorConverter: React.FC = () => {
         }
       >
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          <div 
-            style={{ 
-              width: '100%', 
-              height: '80px', 
+          <div
+            style={{
+              width: '100%',
+              height: '80px',
               backgroundColor: hex,
               borderRadius: '4px',
               border: '1px solid var(--theme-borderLight, #d9d9d9)'
@@ -311,8 +311,8 @@ const ColorConverter: React.FC = () => {
       </Card>
 
       {/* HEX */}
-      <Card 
-        size="small" 
+      <Card
+        size="small"
         title="HEX"
         extra={
           <Button
@@ -339,8 +339,8 @@ const ColorConverter: React.FC = () => {
       </Card>
 
       {/* RGB */}
-      <Card 
-        size="small" 
+      <Card
+        size="small"
         title="RGB"
         extra={
           <Button
@@ -390,8 +390,8 @@ const ColorConverter: React.FC = () => {
       </Card>
 
       {/* RGBA */}
-      <Card 
-        size="small" 
+      <Card
+        size="small"
         title="RGBA"
         extra={
           <Button
@@ -455,8 +455,8 @@ const ColorConverter: React.FC = () => {
       </Card>
 
       {/* HSL */}
-      <Card 
-        size="small" 
+      <Card
+        size="small"
         title="HSL"
         extra={
           <Button
@@ -474,6 +474,7 @@ const ColorConverter: React.FC = () => {
             min={0}
             max={360}
             value={hsl.h}
+            className="hslColorInput"
             onChange={(value) => {
               const h = Math.max(0, Math.min(360, value || 0));
               updateFromHsl(h, hsl.s, hsl.l);
@@ -483,6 +484,7 @@ const ColorConverter: React.FC = () => {
           <InputNumber
             addonBefore="S"
             addonAfter="%"
+            className="hslColorInput"
             min={0}
             max={100}
             value={hsl.s}
@@ -495,6 +497,7 @@ const ColorConverter: React.FC = () => {
           <InputNumber
             addonBefore="L"
             addonAfter="%"
+            className="hslColorInput"
             min={0}
             max={100}
             value={hsl.l}
@@ -508,8 +511,8 @@ const ColorConverter: React.FC = () => {
       </Card>
 
       {/* HSLA */}
-      <Card 
-        size="small" 
+      <Card
+        size="small"
         title="HSLA"
         extra={
           <Button
@@ -525,6 +528,7 @@ const ColorConverter: React.FC = () => {
           <Space.Compact style={{ width: '100%' }}>
             <InputNumber
               addonBefore="H"
+              className="hslaColorInput"
               min={0}
               max={360}
               value={hsla.h}
@@ -537,6 +541,7 @@ const ColorConverter: React.FC = () => {
             <InputNumber
               addonBefore="S"
               addonAfter="%"
+              className="hslaColorInput"
               min={0}
               max={100}
               value={hsla.s}
@@ -549,6 +554,7 @@ const ColorConverter: React.FC = () => {
             <InputNumber
               addonBefore="L"
               addonAfter="%"
+              className="hslaColorInput"
               min={0}
               max={100}
               value={hsla.l}
