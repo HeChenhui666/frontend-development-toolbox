@@ -4,7 +4,10 @@
   gap: 12px;
   height: 100%;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .color-preview-section {
@@ -56,6 +59,8 @@
   border-radius: 3px;
   border: 1px solid var(--theme-border, #e2e8f0);
   flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .format-header {
@@ -87,6 +92,7 @@
 
 .color-input {
   width: 100%;
+  min-width: 0;
   padding: 6px;
   border: 1px solid var(--theme-inputBorder, #e2e8f0);
   border-radius: 3px;
@@ -95,6 +101,7 @@
   background: var(--theme-inputBackground, #ffffff);
   color: var(--theme-inputText, #334155);
   transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
 .color-input:focus {
@@ -107,6 +114,7 @@
 .hsl-inputs {
   display: flex;
   gap: 6px;
+  min-width: 0;
 }
 
 .rgba-inputs,
@@ -114,6 +122,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .rgb-input-group,
@@ -123,6 +132,7 @@
   align-items: center;
   gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .rgb-input-group label,
@@ -136,6 +146,7 @@
 
 .color-number-input {
   flex: 1;
+  min-width: 0;
   padding: 6px;
   border: 1px solid var(--theme-inputBorder, #e2e8f0);
   border-radius: 3px;
@@ -144,6 +155,7 @@
   background: var(--theme-inputBackground, #ffffff);
   color: var(--theme-inputText, #334155);
   transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
 .color-number-input:focus {
@@ -166,3 +178,28 @@
   color: var(--theme-textSecondary, #64748b);
 }
 
+/* HSL/HSLA — Ant Design InputNumber 在 Space.Compact 中溢出修复 */
+.color-converter .ant-space-compact {
+  width: 100% !important;
+  display: flex;
+}
+
+.color-converter .ant-space-compact>.ant-input-number-group-wrapper {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+}
+
+.color-converter .ant-space-compact>.ant-input-number-group-wrapper .ant-input-number {
+  width: 100% !important;
+}
+
+.color-converter .ant-input-number-group-addon {
+  padding: 0 4px;
+  font-size: 11px;
+}
+
+.hslColorInput,
+.hslaColorInput {
+  width: 25%;
+}
