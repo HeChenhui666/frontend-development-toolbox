@@ -112,10 +112,14 @@ const QRCodeGenerator: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (typeof chrome !== 'undefined' && chrome.tabs) {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
           if (tabs[0]?.url) {
             setUrl(tabs[0].url);
-            generateQRCodeForUrl(tabs[0].url);
+            const dataUrl = await generateQRCodeForUrl(tabs[0].url);
+            if (dataUrl) {
+              setQrCodeDataUrl(dataUrl);
+              addToHistory(tabs[0].url, dataUrl);
+            }
           }
         });
       }
