@@ -4,6 +4,7 @@
  */
 
 import { getRedirectRules, applyRulesToDeclarativeNetRequest } from '../utils/redirectRules';
+import { applyCorsRules, CORS_STORAGE_KEY } from '../utils/corsUtils';
 
 /**
  * sidePanel 仅在本扩展的 Service Worker / 部分扩展页面中注入。
@@ -221,11 +222,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   registerContextMenus();
 
   if (details.reason === 'install') {
-    // 首次安装，初始化默认规则（如果有）
     await applyRulesToDeclarativeNetRequest();
+    await applyCorsRules();
   } else if (details.reason === 'update') {
-    // 更新时重新应用规则
     await applyRulesToDeclarativeNetRequest();
+    await applyCorsRules();
   }
 });
 
@@ -297,17 +298,25 @@ chrome.windows.onRemoved.addListener((windowId) => {
 
 // 监听存储变化，自动更新规则
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === 'local' && changes['redirect-rules']) {
+  if (areaName !== 'local') return;
+  if (changes['redirect-rules']) {
     void applyRulesToDeclarativeNetRequest();
+  }
+  if (changes[CORS_STORAGE_KEY]) {
+    void applyCorsRules();
   }
 });
 
 // 启动时应用规则
 chrome.runtime.onStartup.addListener(async () => {
   await applyRulesToDeclarativeNetRequest();
+  await applyCorsRules();
 });
 
 // 初始化时应用规则
 applyRulesToDeclarativeNetRequest().catch((error) => {
   console.error('初始化规则失败:', error);
+});
+applyCorsRules().catch((error) => {
+  console.error('[CORS] 初始化规则失败:', error);
 });
