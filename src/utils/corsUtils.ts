@@ -5,11 +5,19 @@
 
 export interface CorsConfig {
   enabled: boolean;
-  /** 匹配 URL 模式，空字符串 = 所有 URL */
+  /** 匹配请求的目标 URL，空字符串 = 所有请求 */
   urlPattern: string;
   allowOrigin: string;
   allowMethods: string;
   allowHeaders: string;
+  /** 生效页面范围：all = 全部页面，specific = 指定页面 */
+  initiatorScope: 'all' | 'specific';
+  /** 指定页面时的子模式：domain = 域名列表，url = URL 通配符（Chrome 130+）*/
+  initiatorMode: 'domain' | 'url';
+  /** eTLD+1 域名列表，与 initiatorMode === 'domain' 配合使用 */
+  initiatorDomains: string[];
+  /** URL 通配符，与 initiatorMode === 'url' 配合使用，需 Chrome 130+ */
+  initiatorUrlPattern: string;
 }
 
 export const DEFAULT_CORS_CONFIG: CorsConfig = {
@@ -18,6 +26,10 @@ export const DEFAULT_CORS_CONFIG: CorsConfig = {
   allowOrigin: '*',
   allowMethods: 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   allowHeaders: '*',
+  initiatorScope: 'all',
+  initiatorMode: 'domain',
+  initiatorDomains: [],
+  initiatorUrlPattern: '',
 };
 
 export const CORS_STORAGE_KEY = 'cors-config';
@@ -94,6 +106,15 @@ function buildCorsRule(config: CorsConfig): chrome.declarativeNetRequest.Rule {
     condition.urlFilter = pattern;
   }
 
+  if (config.initiatorScope === 'specific') {
+    if (config.initiatorMode === 'domain' && config.initiatorDomains.length > 0) {
+      condition.initiatorDomains = config.initiatorDomains;
+    } else if (config.initiatorMode === 'url' && config.initiatorUrlPattern.trim()) {
+      // initiatorUrlFilter 在 Chrome 130+ 可用，@types/chrome 可能尚未包含此字段
+      (condition as Record<string, unknown>).initiatorUrlFilter = config.initiatorUrlPattern.trim();
+    }
+  }
+
   const responseHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [
     {
       header: 'Access-Control-Allow-Origin',
@@ -114,7 +135,7 @@ function buildCorsRule(config: CorsConfig): chrome.declarativeNetRequest.Rule {
 
   return {
     id: CORS_RULE_ID,
-    priority: 2, // 高于重定向规则默认优先级
+    priority: 2,
     action: {
       type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
       responseHeaders,
