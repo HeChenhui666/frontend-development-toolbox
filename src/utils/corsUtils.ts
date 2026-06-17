@@ -22,6 +22,30 @@ export const DEFAULT_CORS_CONFIG: CorsConfig = {
 
 export const CORS_STORAGE_KEY = 'cors-config';
 
+/** 最低支持 initiatorUrlFilter 的 Chrome 版本 */
+export const INITIATOR_URL_FILTER_MIN_CHROME = 130;
+
+/** 从 userAgent 解析 Chrome 主版本号，非 Chrome 环境返回 0 */
+export function getChromeVersion(): number {
+  const match = navigator.userAgent.match(/Chrome\/(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+/**
+ * 将用户输入的域名/URL 规范化为 eTLD+1 域名字符串（去除 scheme 和端口）。
+ * Chrome declarativeNetRequest initiatorDomains 仅接受纯域名，不含端口。
+ */
+export function normalizeDomain(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return '';
+  try {
+    const url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
+    return url.hostname;
+  } catch {
+    return trimmed.split(':')[0].split('/')[0].toLowerCase();
+  }
+}
+
 /** CORS 规则使用固定 ID，不与重定向规则(10000-20000)冲突 */
 const CORS_RULE_ID = 20001;
 
